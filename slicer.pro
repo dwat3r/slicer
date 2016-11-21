@@ -13,9 +13,10 @@ SOURCES += main.cpp \
     pdg.cpp \
     astwalker.cpp
 
-CXXFLAGS=$$system(/usr/lib/llvm-3.9/bin/llvm-config --cxxflags)
-LDFLAGS=$$system(/usr/lib/llvm-3.9/bin/llvm-config --ldflags --libs --system-libs)
-QMAKE_CXX=/usr/lib/llvm-3.9/bin/clang++
+CXXFLAGS=$$system(llvm-config --cxxflags)
+LDFLAGS=$$system(llvm-config --ldflags --libs --system-libs)
+
+QMAKE_CXX=clang++
 QMAKE_CXXFLAGS=$$CXXFLAGS -std=libc++
 QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-parameter
 QMAKE_LIBS+= $$LDFLAGS \
