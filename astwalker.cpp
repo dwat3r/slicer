@@ -1,18 +1,33 @@
 #include "astwalker.h"
 #include <iostream>
 
-
 void ASTWalker::while_start(clang::WhileStmt *Stmt)
 {
   //prepare while head
   std::cout << "while_start\n";
-  Node *pred = new Node(Statement,Stmt->getCond());
-  Node *header = new Node(Region,Stmt);
-  pdg.addNode(pdg.getActive(),header,No_Label);
-  pdg.addNode(header,pred,No_Label);
-  pdg.addNode(pred,new Node(Region,Stmt->getBody()),True);
-}
+  Node pred = boost::add_vertex(pdg);
+  pdg[pred].astref = Stmt->getCond();
+  pdg[pred].type = Statement;
 
+  Node header = boost::add_vertex(pdg);
+  pdg[header].astref = Stmt;
+  pdg[header].type = Region;
+
+  Node body = boost::add_vertex(pdg);
+  pdg[body].astref = Stmt->getBody();
+  pdg[body].type = Region;
+
+  boost::add_edge(CDStack.top(),header,pdg);
+  boost::add_edge(header,pred,pdg);
+  boost::add_edge(pred,body,pdg);
+
+//  //  Node *pred = new Node(Statement,Stmt->getCond());
+//  Node *header = new Node(Region,Stmt);
+//  pdg.addNode(pdg.getActive(),header,No_Label);
+//  pdg.addNode(header,pred,No_Label);
+//  pdg.addNode(pred,new Node(Region,Stmt->getBody()),True);
+}
+/*
 void ASTWalker::while_end(clang::WhileStmt *Stmt)
 {
   std::cout << "while_end\n";
@@ -102,3 +117,4 @@ bool ASTWalker::TraverseIfStmt(clang::IfStmt *Stmt)
   std::cout << "returned from if\n";
   return true;
 }
+*/

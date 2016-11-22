@@ -1,11 +1,16 @@
 #ifndef ASTWALKER_H
 #define ASTWALKER_H
+
 #include "clang/AST/ASTConsumer.h"
 #include "clang/AST/RecursiveASTVisitor.h"
 #include "clang/Frontend/CompilerInstance.h"
 #include "clang/Frontend/FrontendAction.h"
-#include "pdg.h"
+
+#include <stack>
 #include <iostream>
+
+#include "pdg.h"
+
 class ASTWalker : public clang::RecursiveASTVisitor<ASTWalker>
 {
 public:
@@ -14,7 +19,6 @@ public:
   ~ASTWalker()
   {
     std::cout << "in dtor" << std::endl;
-    pdg.print();
   }
 
   // we process nodes in Visit*
@@ -37,6 +41,7 @@ public:
 private:
   clang::ASTContext *Context;
   PDG pdg;
+  std::stack<Node> CDStack;
 };
 
 class ASTWalkerConsumer : public clang::ASTConsumer {
