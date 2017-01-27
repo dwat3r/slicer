@@ -9,27 +9,17 @@
 #include <stack>
 #include <iostream>
 
-#include "pdg.h"
+#include "graph.h"
 
-class ASTWalker : public clang::RecursiveASTVisitor<ASTWalker>
+// main class for processing the AST
+class GraphBuilder : public clang::RecursiveASTVisitor<GraphBuilder>
 {
 public:
-  explicit ASTWalker(clang::ASTContext *Context)
+  explicit GraphBuilder(clang::ASTContext *Context)
     : Context(Context),pdg() {}
-  ~ASTWalker()
-  {
-    std::cout << "in dtor" << std::endl;
-  }
 
   // we process nodes in Visit*
   void assign(clang::Stmt *Stmt);
-  void while_start(clang::WhileStmt *Stmt);
-  void while_end(clang::WhileStmt *Stmt);
-  void if_start(clang::IfStmt *Stmt);
-  void if_b_start(clang::IfStmt *Stmt,Label label);
-  void if_b_end(clang::IfStmt *Stmt);
-  void if_end(clang::IfStmt *Stmt);
-  void control_trans(clang::Stmt *Stmt);
   bool VisitGotoStmt(clang::GotoStmt *Stmt);
   bool VisitLabelStmt(clang::LabelStmt *Stmt);
 
@@ -40,28 +30,29 @@ public:
   bool TraverseIfStmt(clang::IfStmt *Stmt);
 private:
   clang::ASTContext *Context;
-  PDG pdg;
+  Graph graph;
   std::stack<Node> CDStack;
 };
 
-class ASTWalkerConsumer : public clang::ASTConsumer {
+// necessary class to hook
+class GraphBuilderConsumer : public clang::ASTConsumer {
 public:
-  explicit ASTWalkerConsumer(clang::ASTContext *Context)
+  explicit GraphBuilderConsumer(clang::ASTContext *Context)
     : Visitor(Context) {}
 
   virtual void HandleTranslationUnit(clang::ASTContext &Context) {
     Visitor.TraverseDecl(Context.getTranslationUnitDecl());
   }
 private:
-  ASTWalker Visitor;
+  GraphBuilder Visitor;
 };
 
-class ASTWalkerAction : public clang::ASTFrontendAction {
+class GraphBuilderAction : public clang::ASTFrontendAction {
 public:
   virtual std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(
     clang::CompilerInstance &Compiler, llvm::StringRef InFile) {
     return std::unique_ptr<clang::ASTConsumer>(
-        new ASTWalkerConsumer(&Compiler.getASTContext()));
+        new GraphBuilderConsumer(&Compiler.getASTContext()));
   }
 };
 #endif // ASTWALKER_H

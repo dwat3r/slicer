@@ -10,8 +10,9 @@ CONFIG -= app_bundle
 TEMPLATE = app
 
 SOURCES += main.cpp \
-    pdg.cpp \
-    astwalker.cpp
+    graph_builder.cpp \
+    slicer.cpp \
+    graph.cpp
 
 CXXFLAGS=$$system(llvm-config --cxxflags)
 LDFLAGS=$$system(llvm-config --ldflags --libs --system-libs)
@@ -36,5 +37,6 @@ QMAKE_LIBS+= $$LDFLAGS \
   -lclangTooling
 
 HEADERS += \
-    pdg.h \
-    astwalker.h
+    graph_builder.h \
+    slicer.h \
+    graph.h
