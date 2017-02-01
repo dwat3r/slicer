@@ -2,7 +2,7 @@
 #include <fstream>
 #include <sstream>
 #include "slicer.h"
-#include "graph_builder.h"
+#include "relations_builder.h"
 #include "clang/Tooling/Tooling.h"
 
 int main(int argc, char *argv[]){

@@ -9,7 +9,7 @@
 #include <stack>
 #include <iostream>
 
-#include "graph.h"
+#include "relations.h"
 
 // main class for processing the AST
 class GraphBuilder : public clang::RecursiveASTVisitor<GraphBuilder>

@@ -10,9 +10,9 @@ CONFIG -= app_bundle
 TEMPLATE = app
 
 SOURCES += main.cpp \
-    graph_builder.cpp \
     slicer.cpp \
-    graph.cpp
+    relations.cpp \
+    relations_builder.cpp
 
 CXXFLAGS=$$system(llvm-config --cxxflags)
 LDFLAGS=$$system(llvm-config --ldflags --libs --system-libs)
@@ -37,6 +37,6 @@ QMAKE_LIBS+= $$LDFLAGS \
   -lclangTooling
 
 HEADERS += \
-    graph_builder.h \
     slicer.h \
-    graph.h
+    relations.h \
+    relations_builder.h
