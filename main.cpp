@@ -15,7 +15,7 @@ int main(int argc, char *argv[]){
       if(file.is_open()){
           std::stringstream buffer;
           buffer << file.rdbuf();
-          clang::tooling::runToolOnCode(new GraphBuilderAction,buffer.str());
+          clang::tooling::runToolOnCode(new RelationsBuilderAction,buffer.str());
         }
     }
   return 0;

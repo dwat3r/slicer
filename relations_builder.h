@@ -12,47 +12,52 @@
 #include "relations.h"
 
 // main class for processing the AST
-class GraphBuilder : public clang::RecursiveASTVisitor<GraphBuilder>
+class RelationsBuilder : public clang::RecursiveASTVisitor<RelationsBuilder>
 {
 public:
-  explicit GraphBuilder(clang::ASTContext *Context)
-    : Context(Context),pdg() {}
+  explicit RelationsBuilder(clang::ASTContext *Context)
+    : Context(Context)
+    , graph()
+  {}
+
+  // Query functions
+  void vars(clang::Stmt *Stmt);
+  void defs(clang::Stmt *Stmt);
 
   // we process nodes in Visit*
-  void assign(clang::Stmt *Stmt);
-  bool VisitGotoStmt(clang::GotoStmt *Stmt);
-  bool VisitLabelStmt(clang::LabelStmt *Stmt);
+//  bool VisitGotoStmt(clang::GotoStmt *Stmt);
+//  bool VisitLabelStmt(clang::LabelStmt *Stmt);
+  bool VisitCompoundStmt(clang::CompoundStmt *Stmt);
 
   // we define order of processing in Traverse*
   bool TraverseWhileStmt(clang::WhileStmt *Stmt);
 //  bool TraverseDoStmt(clang::DoStmt *Stmt);
-
   bool TraverseIfStmt(clang::IfStmt *Stmt);
+
 private:
   clang::ASTContext *Context;
-  Graph graph;
-  std::stack<Node> CDStack;
+  Statement<SType::Compound> graph;
 };
 
 // necessary class to hook
-class GraphBuilderConsumer : public clang::ASTConsumer {
+class RelationsBuilderConsumer : public clang::ASTConsumer {
 public:
-  explicit GraphBuilderConsumer(clang::ASTContext *Context)
+  explicit RelationsBuilderConsumer(clang::ASTContext *Context)
     : Visitor(Context) {}
 
   virtual void HandleTranslationUnit(clang::ASTContext &Context) {
     Visitor.TraverseDecl(Context.getTranslationUnitDecl());
   }
 private:
-  GraphBuilder Visitor;
+  RelationsBuilder Visitor;
 };
 
-class GraphBuilderAction : public clang::ASTFrontendAction {
+class RelationsBuilderAction : public clang::ASTFrontendAction {
 public:
   virtual std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(
     clang::CompilerInstance &Compiler, llvm::StringRef InFile) {
     return std::unique_ptr<clang::ASTConsumer>(
-        new GraphBuilderConsumer(&Compiler.getASTContext()));
+        new RelationsBuilderConsumer(&Compiler.getASTContext()));
   }
 };
 #endif // ASTWALKER_H

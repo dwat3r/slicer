@@ -57,4 +57,9 @@ while:
 p_while(e,S) = p*(S) . ((VARS(e) x DEFS(S)) U ID)
 
 Computing a slice requires a dummy assignment v' := v
-Then what?
+
+####Program structure:
+ - Get source file, and line no.
+ - Parse AST and gather info to the Statement graph.
+ - Compute slice regarding the input line no.
+ - Print (prettily) the slice.
