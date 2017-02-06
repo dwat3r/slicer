@@ -39,4 +39,5 @@ QMAKE_LIBS+= $$LDFLAGS \
 HEADERS += \
     slicer.h \
     relations.h \
-    relations_builder.h
+    relations_builder.h \
+    relation_ops.h

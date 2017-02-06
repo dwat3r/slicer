@@ -6,6 +6,7 @@ Slicing:
  - aliasing
  - control dependence
  - transitive closure
+ - what if compoundStmt has only 1 element?
 
 ###Aspects of performance:
  - what should be stored
