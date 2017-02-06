@@ -81,9 +81,12 @@ inline std::set<T> operator+(std::set<T> lhs, const std::set<T>& rhs){
  * First insert the reflexive ones
  * and count distinct elements.
  *
- * Then matrix multiplication (power),
+ * Then use matrix multiplication,
+ * which is in this case is raising the
+ * adjacency matrix
  * to the number of distinct elements
- * in the relation.
+ * in the relation,
+ * which can be done by relational composition.
  */
 template <typename T>
 inline std::set< std::pair<T,T> >
@@ -93,8 +96,8 @@ trans_clos(std::set<std::pair<T,T> > s){
   // first insert reflexive ones (and count unique elements)
   std::set<T> uniq_elems;
   for (auto v : s){
-      ret.insert(v.first);
-      ret.insert(v.second);
+      ret.insert({v.first,v.first});
+      ret.insert({v.second,v.second});
       uniq_elems.insert(v.first);
       uniq_elems.insert(v.second);
     }

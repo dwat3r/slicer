@@ -14,6 +14,20 @@ Statement<S>::getDefs() const{
   return ret;
 }
 
+template<SType S>
+std::set<std::pair<cVar,cVar> >
+Statement<S>::id() const{
+  std::set<std::pair<cVar,cVar> > ret;
+  ret.insert({var,var});
+  for (auto& v : evars)
+    ret.insert({v,v});
+  for (auto& s : children){
+      auto tmp = s.id();
+      ret.insert(tmp.begin(),tmp.end());
+    }
+  return ret;
+}
+
 // Statement-specific parts
 // Assignment
 template<>
@@ -25,17 +39,9 @@ Statement<SType::Assign>::getDefs() const{
 template<>
 std::set<std::pair<cVar,cVar> >
 Statement<SType::Assign>::p() const{
-  auto tmp(evars);
-  for(auto it = tmp.begin();it!=tmp.end();){
-      if(*it == var){
-          tmp.erase(it);
-          break;
-        }
-      else
-        it++;
-    }
-  return cart_prod(evars,var)
-      +  cart_prod(tmp,tmp);
+  auto tmp(id());
+  tmp.erase(tmp.find({var,var}));
+  return cart_prod(evars,var) + tmp;
 }
 
 template<>
@@ -89,11 +95,9 @@ Statement<SType::Compound>::u() const{
 template<>
 std::set<std::pair<cVar,cVar> >
 Statement<SType::Branch>::p() const {
-  auto tmp(evars);
-  tmp.insert(var);
   return cart_prod(evars,children[0].getDefs())
          + children[0].p()
-         + cart_prod(tmp,tmp);
+         + id();
 }
 template<>
 std::set<std::pair<cVar,cStmt> >
@@ -139,16 +143,24 @@ Statement<SType::Branch_else>::u() const {
 template<>
 std::set<std::pair<cVar,cVar> >
 Statement<SType::Loop>::p() const {
-
+  return rel_comp(trans_clos(children[0].p()),
+      ( cart_prod(evars,children[0].getDefs())
+      + id()));
 }
 template<>
 std::set<std::pair<cVar,cStmt> >
 Statement<SType::Loop>::lambda() const {
-
+  return rel_comp(trans_clos(children[0].p()),
+      ( cart_prod(evars,expr)
+      + children[0].lambda()));
 }
 template<>
 std::set<std::pair<cStmt,cVar> >
 Statement<SType::Loop>::u() const {
-
+  auto a = children[0];
+  return cart_prod(expr,a.getDefs())
+       + rel_comp(
+            rel_comp(a.u(),trans_clos(a.p()))
+          , (cart_prod(evars,a.getDefs()) + id()));
 }
 

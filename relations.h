@@ -38,6 +38,7 @@ public:
   // Returns variables used in expr.
   std::set<cVar> getEVars() const {return evars;}
   //
+  std::set<std::pair<cVar,cVar> > id() const;
   std::set<std::pair<cVar,cStmt> > lambda() const;
   std::set<std::pair<cStmt,cVar> > u() const;
   std::set<std::pair<cVar,cVar> >  p() const;
