@@ -7,17 +7,14 @@
 /*
  * Information-flow relations:
  * There are Statements
- * parametrized on type SType
  *
  * Every function solves it's task recursively.
  */
 
-enum class SType {Assign, Compound, Branch, Branch_else, Loop};
 
 typedef clang::DeclRefExpr* cVar;
 typedef clang::Stmt* cStmt;
 
-template <SType>
 class Statement
 {
 public:
@@ -31,17 +28,18 @@ public:
     , evars(evars)
     , defs(defs)
   {}
+  virtual ~Statement();
   /* Returns definitions used in the Statement,
    * recursively.
    */
-  std::set<cVar> getDefs() const;
+  virtual std::set<cVar> getDefs() const;
   // Returns variables used in expr.
   std::set<cVar> getEVars() const {return evars;}
   //
   std::set<std::pair<cVar,cVar> > id() const;
-  std::set<std::pair<cVar,cStmt> > lambda() const;
-  std::set<std::pair<cStmt,cVar> > u() const;
-  std::set<std::pair<cVar,cVar> >  p() const;
+  virtual std::set<std::pair<cVar,cStmt> > lambda() const;
+  virtual std::set<std::pair<cStmt,cVar> > u() const;
+  virtual std::set<std::pair<cVar,cVar> >  p() const;
 
   /* Returns the statements which may affect
    * the value of cVar in parameter
@@ -51,7 +49,7 @@ public:
   // Auxilliary functions
   void addChild();
 
-private:
+//attributes
   // sub-statements
   std::vector<Statement> children;
   // Variable and expression exclusive to this Statement.
@@ -62,6 +60,39 @@ private:
   std::set<cVar> defs;
   // Store a reference to the AST
   cStmt astRef;
+};
+
+// Specializations
+class AssignStatement : public Statement{
+public:
+  std::set<cVar> getDefs() const;
+  std::set<std::pair<cVar,cStmt> > lambda() const;
+  std::set<std::pair<cStmt,cVar> > u() const;
+  std::set<std::pair<cVar,cVar> >  p() const;
+};
+class CompoundStatement : public Statement{
+public:
+  std::set<std::pair<cVar,cStmt> > lambda() const;
+  std::set<std::pair<cStmt,cVar> > u() const;
+  std::set<std::pair<cVar,cVar> >  p() const;
+};
+class BranchStatement : public Statement{
+public:
+  std::set<std::pair<cVar,cStmt> > lambda() const;
+  std::set<std::pair<cStmt,cVar> > u() const;
+  std::set<std::pair<cVar,cVar> >  p() const;
+};
+class Branch_elseStatement : public Statement{
+public:
+  std::set<std::pair<cVar,cStmt> > lambda() const;
+  std::set<std::pair<cStmt,cVar> > u() const;
+  std::set<std::pair<cVar,cVar> >  p() const;
+};
+class LoopStatement : public Statement{
+public:
+  std::set<std::pair<cVar,cStmt> > lambda() const;
+  std::set<std::pair<cStmt,cVar> > u() const;
+  std::set<std::pair<cVar,cVar> >  p() const;
 };
 
 #endif // RELATIONS_H

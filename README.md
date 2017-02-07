@@ -47,7 +47,7 @@ u_if(e,S1,S2) = {e} x (DEFS(S1) U DEFS(S2))) U u(S1) U u(S2)
 while:
 u_while(e,S) = ({e} x DEFS(S)) U u(S) . p*(S) . ((VARS(e) x DEFS(S)) U Id)
 
-######the "p" function:
+#####the "p" function:
 
  - (v,v') is in p(S) iff
  - the value of v on entry to S may affect
