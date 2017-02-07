@@ -28,7 +28,7 @@ public:
     , evars(evars)
     , defs(defs)
   {}
-  virtual ~Statement();
+  virtual ~Statement(){}
   /* Returns definitions used in the Statement,
    * recursively.
    */
@@ -36,10 +36,10 @@ public:
   // Returns variables used in expr.
   std::set<cVar> getEVars() const {return evars;}
   //
-  std::set<std::pair<cVar,cVar> > id() const;
-  virtual std::set<std::pair<cVar,cStmt> > lambda() const;
-  virtual std::set<std::pair<cStmt,cVar> > u() const;
-  virtual std::set<std::pair<cVar,cVar> >  p() const;
+  std::set<std::pair<cVar,cVar>> id() const;
+  virtual std::set<std::pair<cVar,cStmt>> lambda() const;
+  virtual std::set<std::pair<cStmt,cVar>> u() const;
+  virtual std::set<std::pair<cVar,cVar>>  p() const;
 
   /* Returns the statements which may affect
    * the value of cVar in parameter
@@ -49,7 +49,7 @@ public:
   // Auxilliary functions
   void addChild();
 
-//attributes
+protected:
   // sub-statements
   std::vector<Statement> children;
   // Variable and expression exclusive to this Statement.
@@ -66,33 +66,33 @@ public:
 class AssignStatement : public Statement{
 public:
   std::set<cVar> getDefs() const;
-  std::set<std::pair<cVar,cStmt> > lambda() const;
-  std::set<std::pair<cStmt,cVar> > u() const;
-  std::set<std::pair<cVar,cVar> >  p() const;
+  std::set<std::pair<cVar,cStmt>> lambda() const;
+  std::set<std::pair<cStmt,cVar>> u() const;
+  std::set<std::pair<cVar,cVar>>  p() const;
 };
 class CompoundStatement : public Statement{
 public:
-  std::set<std::pair<cVar,cStmt> > lambda() const;
-  std::set<std::pair<cStmt,cVar> > u() const;
-  std::set<std::pair<cVar,cVar> >  p() const;
+  std::set<std::pair<cVar,cStmt>> lambda() const;
+  std::set<std::pair<cStmt,cVar>> u() const;
+  std::set<std::pair<cVar,cVar>>  p() const;
 };
 class BranchStatement : public Statement{
 public:
-  std::set<std::pair<cVar,cStmt> > lambda() const;
-  std::set<std::pair<cStmt,cVar> > u() const;
-  std::set<std::pair<cVar,cVar> >  p() const;
+  std::set<std::pair<cVar,cStmt>> lambda() const;
+  std::set<std::pair<cStmt,cVar>> u() const;
+  std::set<std::pair<cVar,cVar>>  p() const;
 };
 class Branch_elseStatement : public Statement{
 public:
-  std::set<std::pair<cVar,cStmt> > lambda() const;
-  std::set<std::pair<cStmt,cVar> > u() const;
-  std::set<std::pair<cVar,cVar> >  p() const;
+  std::set<std::pair<cVar,cStmt>> lambda() const;
+  std::set<std::pair<cStmt,cVar>> u() const;
+  std::set<std::pair<cVar,cVar>>  p() const;
 };
 class LoopStatement : public Statement{
 public:
-  std::set<std::pair<cVar,cStmt> > lambda() const;
-  std::set<std::pair<cStmt,cVar> > u() const;
-  std::set<std::pair<cVar,cVar> >  p() const;
+  std::set<std::pair<cVar,cStmt>> lambda() const;
+  std::set<std::pair<cStmt,cVar>> u() const;
+  std::set<std::pair<cVar,cVar>>  p() const;
 };
 
 #endif // RELATIONS_H

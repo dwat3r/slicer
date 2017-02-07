@@ -25,9 +25,9 @@ public:
   void defs(clang::Stmt *Stmt);
 
   // we process nodes in Visit*
-//  bool VisitGotoStmt(clang::GotoStmt *Stmt);
-//  bool VisitLabelStmt(clang::LabelStmt *Stmt);
-  bool VisitCompoundStmt(clang::CompoundStmt *Stmt);
+  bool VisitGotoStmt(clang::GotoStmt *Stmt);
+  bool VisitLabelStmt(clang::LabelStmt *Stmt);
+  //bool VisitCompoundStmt(clang::CompoundStmt *Stmt);
 
   // we define order of processing in Traverse*
   bool TraverseWhileStmt(clang::WhileStmt *Stmt);
@@ -36,7 +36,7 @@ public:
 
 private:
   clang::ASTContext *Context;
-  Statement<SType::Compound> graph;
+  CompoundStatement graph;
 };
 
 // necessary class to hook

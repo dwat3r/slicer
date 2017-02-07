@@ -103,7 +103,7 @@ trans_clos(std::set<std::pair<T,T> > s){
     }
   auto base(ret);
   auto curr(ret);
-  for(int i=0;i<uniq_elems.size();++i){
+  for(std::size_t i=0;i < uniq_elems.size();++i){
       curr = rel_comp(curr,base);
       ret += curr;
     }

@@ -3,6 +3,16 @@
 #include "relation_ops.h"
 
 // common parts of the Statements
+Statement::Statement()
+  : var()
+  , expr()
+  , evars()
+  , defs()
+{}
+
+std::set<std::pair<cVar,cStmt>> Statement::lambda() const {return {};}
+std::set<std::pair<cStmt,cVar>> Statement::u() const      {return {};}
+std::set<std::pair<cVar,cVar>>  Statement::p() const      {return {};}
 
 std::set<cVar>
 Statement::getDefs() const{
@@ -13,7 +23,6 @@ Statement::getDefs() const{
     }
   return ret;
 }
-
 
 std::set<std::pair<cVar,cVar>>
 Statement::id() const{
