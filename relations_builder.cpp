@@ -9,6 +9,10 @@ bool RelationsBuilder::VisitLabelStmt(clang::LabelStmt *Stmt){
   return true;
 }
 
+bool RelationsBuilder::VisitCompoundStmt(clang::CompoundStmt *Stmt){
+  return true;
+}
+
 bool RelationsBuilder::TraverseWhileStmt(clang::WhileStmt *Stmt){
   clang::RecursiveASTVisitor<RelationsBuilder>::TraverseStmt(Stmt->getBody());
   return true;

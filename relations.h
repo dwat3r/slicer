@@ -1,6 +1,7 @@
 #ifndef RELATIONS_H
 #define RELATIONS_H
 
+#include <cmath>
 #include "clang/AST/AST.h"
 #include <set>
 
@@ -41,11 +42,12 @@ public:
   virtual std::set<std::pair<cStmt,cVar>> u() const;
   virtual std::set<std::pair<cVar,cVar>>  p() const;
 
-  /* Returns the statements which may affect
+  /* Returns the expressions which may affect
    * the value of cVar in parameter
    * recursively
+   * {e `elem` E|e |u| v}
    */
-  std::set<Statement> slice(cVar);
+  std::set<cStmt> slice(cVar var);
   // Auxilliary functions
   void addChild();
 

@@ -37,9 +37,15 @@ Statement::id() const{
   return ret;
 }
 
-std::set<Statement>
-Statement::slice(cVar){
-
+std::set<cStmt>
+Statement::slice(cVar var){
+  auto evs(u());
+  std::set<cStmt> ret;
+  for (auto ev : evs){
+      if(ev.second == var)
+        ret.insert(ev.first);
+    }
+  return ret;
 }
 
 // Statement-specific parts

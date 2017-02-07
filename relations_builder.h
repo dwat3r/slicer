@@ -27,7 +27,7 @@ public:
   // we process nodes in Visit*
   bool VisitGotoStmt(clang::GotoStmt *Stmt);
   bool VisitLabelStmt(clang::LabelStmt *Stmt);
-  //bool VisitCompoundStmt(clang::CompoundStmt *Stmt);
+  bool VisitCompoundStmt(clang::CompoundStmt *Stmt);
 
   // we define order of processing in Traverse*
   bool TraverseWhileStmt(clang::WhileStmt *Stmt);
