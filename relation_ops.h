@@ -10,10 +10,10 @@
 // Cartesian product for
 // N x N
 template<typename LHS,typename RHS>
-inline std::set<std::pair <LHS,RHS> >
-cart_prod(const std::set<LHS> lhs,
-          const std::set<RHS> rhs){
-  std::set<std::pair <LHS,RHS> > ret;
+inline std::set<std::pair <LHS,RHS>>
+cart_prod(const std::set<LHS>& lhs,
+          const std::set<RHS>& rhs){
+  std::set<std::pair <LHS,RHS>> ret;
   for (auto l : lhs){
       for (auto r : rhs){
           ret.insert({l,r});
@@ -24,10 +24,10 @@ cart_prod(const std::set<LHS> lhs,
 
 // 1 x N
 template<typename LHS,typename RHS>
-inline std::set<std::pair<LHS,RHS> >
-cart_prod(const LHS lhs,
-          const std::set<RHS> rhs){
-  std::set<std::pair <LHS,RHS> > ret;
+inline std::set<std::pair<LHS,RHS>>
+cart_prod(const LHS& lhs,
+          const std::set<RHS>& rhs){
+  std::set<std::pair <LHS,RHS>> ret;
   for (auto r : rhs){
       ret.insert({lhs,r});
     }
@@ -36,10 +36,10 @@ cart_prod(const LHS lhs,
 
 // N x 1
 template<typename LHS,typename RHS>
-inline std::set<std::pair<LHS,RHS> >
-cart_prod(const std::set<LHS> lhs,
-          const RHS rhs){
-  std::set<std::pair <LHS,RHS> > ret;
+inline std::set<std::pair<LHS,RHS>>
+cart_prod(const std::set<LHS>& lhs,
+          const RHS& rhs){
+  std::set<std::pair <LHS,RHS>> ret;
   for (auto l : lhs){
       ret.insert({l,rhs});
     }
@@ -48,10 +48,10 @@ cart_prod(const std::set<LHS> lhs,
 
 // relation composition
 template<typename LHS,typename MID,typename RHS>
-inline std::set<std::pair <LHS,RHS> >
-rel_comp(const std::set<std::pair<LHS,MID> > lhs,
-         const std::set<std::pair<MID,RHS> > rhs){
-  std::set<std::pair <LHS,RHS> > ret;
+inline std::set<std::pair <LHS,RHS>>
+rel_comp(const std::set<std::pair<LHS,MID>>& lhs,
+         const std::set<std::pair<MID,RHS>>& rhs){
+  std::set<std::pair <LHS,RHS>> ret;
   for (auto l : lhs){
       for (auto r : rhs){
           if(l.second == r.first)
@@ -89,8 +89,8 @@ inline std::set<T> operator+(std::set<T> lhs, const std::set<T>& rhs){
  * which can be done by relational composition.
  */
 template <typename T>
-inline std::set< std::pair<T,T> >
-trans_clos(std::set<std::pair<T,T> > s){
+inline std::set< std::pair<T,T>>
+trans_clos(std::set<std::pair<T,T>> s){
   auto ret(s);
 
   // first insert reflexive ones (and count unique elements)

@@ -6,7 +6,7 @@
 #include "clang/Frontend/CompilerInstance.h"
 #include "clang/Frontend/FrontendAction.h"
 
-#include <stack>
+#include <map>
 #include <iostream>
 
 #include "relations.h"
@@ -17,7 +17,7 @@ class RelationsBuilder : public clang::RecursiveASTVisitor<RelationsBuilder>
 public:
   explicit RelationsBuilder(clang::ASTContext *Context)
     : Context(Context)
-    , graph()
+    , statements()
   {}
 
   // Query functions
@@ -27,16 +27,17 @@ public:
   // we process nodes in Visit*
   bool VisitGotoStmt(clang::GotoStmt *Stmt);
   bool VisitLabelStmt(clang::LabelStmt *Stmt);
-  bool VisitCompoundStmt(clang::CompoundStmt *Stmt);
 
   // we define order of processing in Traverse*
-  bool TraverseWhileStmt(clang::WhileStmt *Stmt);
+  bool VisitCompoundStmt(clang::CompoundStmt *Stmt);
+  bool VisitWhileStmt(clang::WhileStmt *Stmt);
 //  bool TraverseDoStmt(clang::DoStmt *Stmt);
-  bool TraverseIfStmt(clang::IfStmt *Stmt);
+  bool VisitIfStmt(clang::IfStmt *Stmt);
 
 private:
   clang::ASTContext *Context;
-  CompoundStatement graph;
+  // We store the Statements in a map.
+  std::map<clang::Stmt*,std::shared_ptr<Statement>> statements;
 };
 
 // necessary class to hook

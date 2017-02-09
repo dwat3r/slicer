@@ -49,11 +49,11 @@ public:
    */
   std::set<cStmt> slice(cVar var);
   // Auxilliary functions
-  void addChild();
+  void addChild(std::shared_ptr<Statement> c);
 
 protected:
   // sub-statements
-  std::vector<Statement> children;
+  std::vector<std::shared_ptr<Statement>> children;
   // Variable and expression exclusive to this Statement.
   cVar  var;
   cStmt expr;
