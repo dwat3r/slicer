@@ -1,7 +1,6 @@
 #ifndef RELATIONS_H
 #define RELATIONS_H
 
-#include <cmath>
 #include "clang/AST/AST.h"
 #include <set>
 

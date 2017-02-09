@@ -1,7 +1,7 @@
 #include "relations_builder.h"
 #include <iostream>
 
-bool RelationsBuilder::VisitGotoStmt(clang::GotoStmt *Stmt){
+bool RelationsBuilder::VisitGotoStmt(clang::GotoStmt *Stmt){  
   return true;
 }
 
@@ -9,19 +9,23 @@ bool RelationsBuilder::VisitLabelStmt(clang::LabelStmt *Stmt){
   return true;
 }
 
-bool RelationsBuilder::TraverseCompoundStmt(clang::CompoundStmt *Stmt){
-  clang::RecursiveASTVisitor<RelationsBuilder>::TraverseStmt(Stmt);
+bool RelationsBuilder::VisitCompoundStmt(clang::CompoundStmt *Stmt){
+  for (auto& s : Stmt->body()){
+      addChild(Stmt,s);
+    }
   return true;
 }
 
-bool RelationsBuilder::TraverseWhileStmt(clang::WhileStmt *Stmt){
-  clang::RecursiveASTVisitor<RelationsBuilder>::TraverseStmt(Stmt->getBody());
+bool RelationsBuilder::VisitWhileStmt(clang::WhileStmt *Stmt){
+
   return true;
 }
 
-bool RelationsBuilder::TraverseIfStmt(clang::IfStmt *Stmt){
-  clang::RecursiveASTVisitor<RelationsBuilder>::TraverseStmt(Stmt->getThen());
-  clang::RecursiveASTVisitor<RelationsBuilder>::TraverseStmt(Stmt->getElse());
+bool RelationsBuilder::VisitIfStmt(clang::IfStmt *Stmt){
   return true;
 }
 
+void RelationsBuilder::addChild(clang::Stmt *parent, clang::Stmt *child){
+  //implement switch here
+  switch
+}

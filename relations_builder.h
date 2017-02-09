@@ -34,6 +34,9 @@ public:
 //  bool TraverseDoStmt(clang::DoStmt *Stmt);
   bool VisitIfStmt(clang::IfStmt *Stmt);
 
+  //
+  void addChild(clang::Stmt *parent,clang::Stmt *child);
+
 private:
   clang::ASTContext *Context;
   // We store the Statements in a map.
