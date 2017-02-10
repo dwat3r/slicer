@@ -11,7 +11,8 @@
 
 #include "relations.h"
 
-// main class for processing the AST
+/*! main class for processing the AST
+ */
 class RelationsBuilder : public clang::RecursiveASTVisitor<RelationsBuilder>
 {
 public:
@@ -21,8 +22,8 @@ public:
   {}
 
   // Query functions
-  void vars(clang::Stmt *Stmt);
-  void defs(clang::Stmt *Stmt);
+  std::set<clang::DeclRefExpr*> evars(clang::Stmt *Stmt);
+  std::set<clang::DeclRefExpr*> defs(clang::Stmt *Stmt);
 
   // we process nodes in Visit*
   bool VisitGotoStmt(clang::GotoStmt *Stmt);
@@ -38,6 +39,7 @@ public:
   void addChild(clang::Stmt *parent,clang::Stmt *child);
 
 private:
+  typedef clang::RecursiveASTVisitor<RelationsBuilder> base;
   clang::ASTContext *Context;
   // We store the Statements in a map.
   std::map<clang::Stmt*,std::shared_ptr<Statement>> statements;

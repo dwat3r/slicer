@@ -4,36 +4,40 @@
 #include "clang/AST/AST.h"
 #include <set>
 
-/*
+/*!
  * Information-flow relations:
  * There are Statements
  *
  * Every function solves it's task recursively.
  */
-
-
-typedef clang::DeclRefExpr* cVar;
-typedef clang::Stmt* cStmt;
-
 class Statement
 {
+protected:
+  typedef clang::DeclRefExpr* cVar;
+  typedef clang::Stmt* cStmt;
 public:
-  /* Give it statement-local vars/exps
+  /*! Give it statement-local vars/exps
    */
   Statement();
-  Statement(cVar var,cStmt expr,
+
+  Statement(cStmt astRef)
+    : astRef(astRef)
+  {}
+
+  Statement(cStmt astRef,cVar var,cStmt expr,
             std::set<cVar> evars,std::set<cVar> defs)
     : var(var)
     , expr(expr)
     , evars(evars)
     , defs(defs)
+    , astRef(astRef)
   {}
   virtual ~Statement(){}
-  /* Returns definitions used in the Statement,
-   * recursively.
+  /*! Returns definitions used in the Statement,
+   *  recursively.
    */
   virtual std::set<cVar> getDefs() const;
-  // Returns variables used in expr.
+  //! Returns variables used in expr.
   std::set<cVar> getEVars() const {return evars;}
   //
   std::set<std::pair<cVar,cVar>> id() const;
@@ -41,29 +45,30 @@ public:
   virtual std::set<std::pair<cStmt,cVar>> u() const;
   virtual std::set<std::pair<cVar,cVar>>  p() const;
 
-  /* Returns the expressions which may affect
+  /*! Returns the expressions which may affect
    * the value of cVar in parameter
    * recursively
    * {e `elem` E|e |u| v}
    */
   std::set<cStmt> slice(cVar var);
-  // Auxilliary functions
+  //! Auxilliary functions
   void addChild(std::shared_ptr<Statement> c);
 
 protected:
+
   // sub-statements
   std::vector<std::shared_ptr<Statement>> children;
-  // Variable and expression exclusive to this Statement.
+  //! Variable and expression exclusive to this Statement.
   cVar  var;
   cStmt expr;
-  // evars contain the variables occuring in expr.
+  //! evars contain the variables occuring in expr.
   std::set<cVar> evars;
   std::set<cVar> defs;
-  // Store a reference to the AST
+  //! Store a reference to the AST
   cStmt astRef;
 };
 
-// Specializations
+//! Specializations
 class AssignStatement : public Statement{
 public:
   std::set<cVar> getDefs() const;
