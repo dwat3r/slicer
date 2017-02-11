@@ -48,7 +48,7 @@ Statement::slice(cVar var){
   return ret;
 }
 
-void Statement::addChild(std::unique_ptr<Statement> c){
+void Statement::addChild(std::shared_ptr<Statement> c){
   children.push_back(c);
 }
 

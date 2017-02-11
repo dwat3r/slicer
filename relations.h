@@ -9,29 +9,22 @@
  * There are Statements
  *
  * Every function solves it's task recursively.
+ * TODO: put into a namespace
  */
+
+typedef clang::DeclRefExpr* cVar;
+typedef clang::Stmt* cStmt;
+
 class Statement
 {
-protected:
-  typedef clang::DeclRefExpr* cVar;
-  typedef clang::Stmt* cStmt;
 public:
-  /*! Give it statement-local vars/exps
-   */
+
   Statement();
 
   Statement(cStmt astRef)
     : astRef(astRef)
   {}
 
-  Statement(cStmt astRef,cVar var,cStmt expr,
-            std::set<cVar> evars,std::set<cVar> defs)
-    : var(var)
-    , expr(expr)
-    , evars(evars)
-    , defs(defs)
-    , astRef(astRef)
-  {}
   virtual ~Statement(){}
   /*! Returns definitions used in the Statement,
    *  recursively.
@@ -51,9 +44,10 @@ public:
    * {e `elem` E|e |u| v}
    */
   std::set<cStmt> slice(cVar var);
-  //! Auxilliary functions
-  void addChild(std::shared_ptr<Statement> c);
 
+  //! Setter functions
+  void addChild(std::shared_ptr<Statement> c);
+  void setVar(cVar param){var = param;}
 protected:
 
   // sub-statements

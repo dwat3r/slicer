@@ -21,22 +21,22 @@ public:
     , statements()
   {}
 
-  // Query functions
-  std::set<clang::DeclRefExpr*> evars(clang::Stmt *Stmt);
+  /* Query functions, they does not recurse into
+   * Compound, Loop or Branch, just gets the vars / defs at that level.
+   */
+  std::set<clang::DeclRefExpr*> vars(clang::Stmt *Stmt);
   std::set<clang::DeclRefExpr*> defs(clang::Stmt *Stmt);
 
   // we process nodes in Visit*
-  bool VisitGotoStmt(clang::GotoStmt *Stmt);
-  bool VisitLabelStmt(clang::LabelStmt *Stmt);
 
-  // we define order of processing in Traverse*
+  // Assign
+  bool VisitBinaryOperator(clang::BinaryOperator *Stmt);
+  // Compound
   bool VisitCompoundStmt(clang::CompoundStmt *Stmt);
-  bool VisitWhileStmt(clang::WhileStmt *Stmt);
-//  bool TraverseDoStmt(clang::DoStmt *Stmt);
+  // Branch
   bool VisitIfStmt(clang::IfStmt *Stmt);
-
-  //
-  void addChild(clang::Stmt *parent,clang::Stmt *child);
+  // Loop
+  bool VisitWhileStmt(clang::WhileStmt *Stmt);
 
 private:
   typedef clang::RecursiveASTVisitor<RelationsBuilder> base;

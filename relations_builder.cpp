@@ -2,7 +2,6 @@
 
 #include <llvm/Support/Casting.h>
 
-#include <memory>
 
 
 /*!
@@ -10,13 +9,10 @@
  * We specialize Statement with dyn_cast
  * Then add general children.
  */
+bool RelationsBuilder::VisitBinaryOperator(clang::BinaryOperator *Stmt){
+  statements[Stmt] = std::dynamic_pointer_cast<AssignStatement>(statements[Stmt]);
 
-bool RelationsBuilder::VisitGotoStmt(clang::GotoStmt *Stmt){
-  return true;
-}
-
-bool RelationsBuilder::VisitLabelStmt(clang::LabelStmt *Stmt){
-  return true;
+  return base::VisitBinaryOperator(Stmt);
 }
 
 bool RelationsBuilder::VisitCompoundStmt(clang::CompoundStmt *Stmt){
@@ -31,6 +27,12 @@ bool RelationsBuilder::VisitCompoundStmt(clang::CompoundStmt *Stmt){
   return base::VisitCompoundStmt(Stmt);
 }
 
+bool RelationsBuilder::VisitIfStmt(clang::IfStmt *Stmt){
+  statements[Stmt] = std::dynamic_pointer_cast<BranchStatement>(statements[Stmt]);
+
+  return base::VisitIfStmt(Stmt);
+}
+
 bool RelationsBuilder::VisitWhileStmt(clang::WhileStmt *Stmt){
   statements[Stmt] = std::dynamic_pointer_cast<LoopStatement>(statements[Stmt]);
 
@@ -39,9 +41,6 @@ bool RelationsBuilder::VisitWhileStmt(clang::WhileStmt *Stmt){
   return base::VisitWhileStmt(Stmt);
 }
 
-bool RelationsBuilder::VisitIfStmt(clang::IfStmt *Stmt){
-  return true;
-}
 /*!
  * \brief Gets variables in relation expression recursively
  *        by going down to the DeclRefExpr
@@ -56,15 +55,7 @@ RelationsBuilder::vars(clang::Stmt* Stmt){
     }
   // else go deeper
   std::set<clang::DeclRefExpr*> ret;
-  if (clang::WhileStmt *ws = llvm::dyn_cast<clang::WhileStmt>(Stmt)){
-      auto vs(vars(ws->getCond()));
-      ret.insert(vs.begin(),vs.end());
-    }
-  else if(clang::IfStmt *is = llvm::dyn_cast<clang::IfStmt>(Stmt)){
-      auto vs(vars(is->getCond()));
-      ret.insert(vs.begin(),vs.end());
-    }
-  else if(clang::BinaryOperator *bo = llvm::dyn_cast<clang::BinaryOperator>(Stmt)){
+  if(clang::BinaryOperator *bo = llvm::dyn_cast<clang::BinaryOperator>(Stmt)){
       auto vs(vars(bo->getLHS()));
       ret.insert(vs.begin(),vs.end());
       vs = vars(bo->getRHS());
@@ -77,8 +68,16 @@ RelationsBuilder::vars(clang::Stmt* Stmt){
 
   return ret;
 }
-
+/*!
+ * \brief Gets definitions in expression.
+ *        Only applicable to assignment.
+ */
 std::set<clang::DeclRefExpr*>
 RelationsBuilder::defs(clang::Stmt* Stmt){
   std::set<clang::DeclRefExpr*> ret;
+  if(clang::BinaryOperator *bo = llvm::dyn_cast<clang::BinaryOperator>(Stmt)){
+      auto vs(vars(bo->getLHS()));
+      ret.insert(vs.begin(),vs.end());
+    }
+  return ret;
 }
