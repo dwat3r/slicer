@@ -10,33 +10,58 @@
  * Then add general children.
  */
 bool RelationsBuilder::VisitBinaryOperator(clang::BinaryOperator *Stmt){
-  statements[Stmt] = std::dynamic_pointer_cast<AssignStatement>(statements[Stmt]);
+  if(Stmt->isAssignmentOp()){
+    statements[Stmt] = std::dynamic_pointer_cast<AssignStatement>(statements[Stmt]);
+    clang::ValueDecl* var = nullptr;
+    if(auto *varRef = llvm::dyn_cast<clang::DeclRefExpr>(Stmt->getLHS())){
+        var = varRef->getDecl();
+      }
 
+    statements[Stmt]->fill(var,
+                          Stmt->getRHS(),
+                          vars(Stmt->getRHS()),
+                          {var});
+  }
   return base::VisitBinaryOperator(Stmt);
 }
 
 bool RelationsBuilder::VisitCompoundStmt(clang::CompoundStmt *Stmt){
-
   statements[Stmt] = std::dynamic_pointer_cast<CompoundStatement>(statements[Stmt]);
 
-  for (auto& s : Stmt->body()){
-      auto act = std::make_shared<Statement>(new Statement(s));
+  for (clang::Stmt* s : Stmt->body()){
+      auto act = std::make_shared<Statement>(s);
       statements[Stmt]->addChild(act);
       statements[s] = act;
     }
+
   return base::VisitCompoundStmt(Stmt);
 }
 
 bool RelationsBuilder::VisitIfStmt(clang::IfStmt *Stmt){
   statements[Stmt] = std::dynamic_pointer_cast<BranchStatement>(statements[Stmt]);
+  statements[Stmt]->fill(nullptr,
+                        Stmt->getCond(),
+                        vars(Stmt->getCond()),
+                        {});
+  auto thenExpr = std::make_shared<Statement>(Stmt->getThen());
+  statements[Stmt]->addChild(thenExpr);
+  statements[Stmt->getThen()] = thenExpr;
+  auto elseExpr = std::make_shared<Statement>(Stmt->getElse());
+  statements[Stmt]->addChild(elseExpr);
+  statements[Stmt->getElse()] = elseExpr;
 
   return base::VisitIfStmt(Stmt);
 }
 
 bool RelationsBuilder::VisitWhileStmt(clang::WhileStmt *Stmt){
   statements[Stmt] = std::dynamic_pointer_cast<LoopStatement>(statements[Stmt]);
-
-
+  statements[Stmt]->fill(nullptr,
+                        Stmt->getCond(),
+                        vars(Stmt->getCond()),
+                        {});
+  auto bodyExpr = std::make_shared<Statement>(Stmt->getBody());
+  statements[Stmt]->addChild(bodyExpr);
+  statements[Stmt->getBody()] = bodyExpr;
 
   return base::VisitWhileStmt(Stmt);
 }
@@ -47,37 +72,25 @@ bool RelationsBuilder::VisitWhileStmt(clang::WhileStmt *Stmt){
  * \param Stmt
  * \return Set of variables (DeclRefExprs)
  */
-std::set<clang::DeclRefExpr*>
+std::set<clang::ValueDecl*>
 RelationsBuilder::vars(clang::Stmt* Stmt){
   // If we're at it, return
-  if(clang::DeclRefExpr* var = llvm::dyn_cast<clang::DeclRefExpr>(Stmt)){
-      return {var};
+  if(auto *varRef = llvm::dyn_cast<clang::DeclRefExpr>(Stmt)){
+      return {varRef->getDecl()};
     }
   // else go deeper
-  std::set<clang::DeclRefExpr*> ret;
-  if(clang::BinaryOperator *bo = llvm::dyn_cast<clang::BinaryOperator>(Stmt)){
+  std::set<clang::ValueDecl*> ret;
+  if(auto *bo = llvm::dyn_cast<clang::BinaryOperator>(Stmt)){
       auto vs(vars(bo->getLHS()));
       ret.insert(vs.begin(),vs.end());
       vs = vars(bo->getRHS());
       ret.insert(vs.begin(),vs.end());
     }
-  else if(clang::ImplicitCastExpr *ic = llvm::dyn_cast<clang::ImplicitCastExpr>(Stmt)){
+  else if(auto *ic = llvm::dyn_cast<clang::ImplicitCastExpr>(Stmt)){
       auto vs(vars(ic->getSubExpr()));
       ret.insert(vs.begin(),vs.end());
     }
 
   return ret;
 }
-/*!
- * \brief Gets definitions in expression.
- *        Only applicable to assignment.
- */
-std::set<clang::DeclRefExpr*>
-RelationsBuilder::defs(clang::Stmt* Stmt){
-  std::set<clang::DeclRefExpr*> ret;
-  if(clang::BinaryOperator *bo = llvm::dyn_cast<clang::BinaryOperator>(Stmt)){
-      auto vs(vars(bo->getLHS()));
-      ret.insert(vs.begin(),vs.end());
-    }
-  return ret;
-}
+

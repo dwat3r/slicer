@@ -12,7 +12,7 @@
  * TODO: put into a namespace
  */
 
-typedef clang::DeclRefExpr* cVar;
+typedef clang::ValueDecl* cVar;
 typedef clang::Stmt* cStmt;
 
 class Statement
@@ -21,6 +21,7 @@ public:
 
   Statement();
 
+  explicit
   Statement(cStmt astRef)
     : astRef(astRef)
   {}
@@ -47,7 +48,17 @@ public:
 
   //! Setter functions
   void addChild(std::shared_ptr<Statement> c);
-  void setVar(cVar param){var = param;}
+  //! Bulk setter
+  void fill(cVar varp,
+            cStmt exprp,
+            std::set<cVar> evarsp,
+            std::set<cVar> defsp){
+    var = varp;
+    expr = exprp;
+    evars = evarsp;
+    defs = defsp;
+  }
+
 protected:
 
   // sub-statements

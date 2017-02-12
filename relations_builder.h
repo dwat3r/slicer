@@ -21,11 +21,10 @@ public:
     , statements()
   {}
 
-  /* Query functions, they does not recurse into
-   * Compound, Loop or Branch, just gets the vars / defs at that level.
+  /* Query function, does not recurse into
+   * Compound, Loop or Branch, just gets the vars at that level.
    */
-  std::set<clang::DeclRefExpr*> vars(clang::Stmt *Stmt);
-  std::set<clang::DeclRefExpr*> defs(clang::Stmt *Stmt);
+  std::set<clang::ValueDecl*> vars(clang::Stmt *Stmt);
 
   // we process nodes in Visit*
 
