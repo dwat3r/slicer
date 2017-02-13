@@ -2,8 +2,6 @@
 
 #include <llvm/Support/Casting.h>
 
-
-
 /*!
  * The algorithm for building the relations:
  * We specialize Statement with dyn_cast
@@ -22,7 +20,7 @@ bool RelationsBuilder::VisitBinaryOperator(clang::BinaryOperator *Stmt){
                           vars(Stmt->getRHS()),
                           {var});
   }
-  return base::VisitBinaryOperator(Stmt);
+  return true;
 }
 
 bool RelationsBuilder::VisitCompoundStmt(clang::CompoundStmt *Stmt){
@@ -38,19 +36,28 @@ bool RelationsBuilder::VisitCompoundStmt(clang::CompoundStmt *Stmt){
 }
 
 bool RelationsBuilder::VisitIfStmt(clang::IfStmt *Stmt){
-  statements[Stmt] = std::dynamic_pointer_cast<BranchStatement>(statements[Stmt]);
+  if(Stmt->getElse() != nullptr){
+      statements[Stmt] = std::dynamic_pointer_cast<BranchStatement>(statements[Stmt]);
+    }
+  else
+    statements[Stmt] = std::dynamic_pointer_cast<Branch_elseStatement>(statements[Stmt]);
+
   statements[Stmt]->fill(nullptr,
                         Stmt->getCond(),
                         vars(Stmt->getCond()),
                         {});
+
   auto thenExpr = std::make_shared<Statement>(Stmt->getThen());
   statements[Stmt]->addChild(thenExpr);
   statements[Stmt->getThen()] = thenExpr;
-  auto elseExpr = std::make_shared<Statement>(Stmt->getElse());
-  statements[Stmt]->addChild(elseExpr);
-  statements[Stmt->getElse()] = elseExpr;
 
-  return base::VisitIfStmt(Stmt);
+  if(Stmt->getElse() != nullptr){
+    auto elseExpr = std::make_shared<Statement>(Stmt->getElse());
+    statements[Stmt]->addChild(elseExpr);
+    statements[Stmt->getElse()] = elseExpr;
+    }
+
+  return true;
 }
 
 bool RelationsBuilder::VisitWhileStmt(clang::WhileStmt *Stmt){
@@ -63,7 +70,7 @@ bool RelationsBuilder::VisitWhileStmt(clang::WhileStmt *Stmt){
   statements[Stmt]->addChild(bodyExpr);
   statements[Stmt->getBody()] = bodyExpr;
 
-  return base::VisitWhileStmt(Stmt);
+  return true;
 }
 
 /*!
@@ -93,4 +100,29 @@ RelationsBuilder::vars(clang::Stmt* Stmt){
 
   return ret;
 }
+// We're controlling slicing from here
+bool RelationsBuilder::TraverseFunctionDecl(clang::FunctionDecl *Decl){
+  // Check if we're in the function
+  if (Decl->getNameAsString() == funcName){
+      base::TraverseStmt(Decl->getBody());
+    }
+  return true;
+}
 
+//! Slicing
+std::set<clang::Stmt*> RelationsBuilder::computeSlice(){
+  std::set<clang::Stmt*> ret;
+
+  return ret;
+}
+
+//! misc
+
+RelationsBuilderAction::RelationsBuilderAction(std::vector<std::string> params)
+  : params(params)
+{}
+
+RelationsBuilderConsumer::RelationsBuilderConsumer(clang::ASTContext *Context,
+                                  std::vector<std::string> params)
+  : Visitor(Context,params)
+{}

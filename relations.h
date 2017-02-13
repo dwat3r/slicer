@@ -76,34 +76,34 @@ protected:
 //! Specializations
 class AssignStatement : public Statement{
 public:
-  std::set<cVar> getDefs() const;
-  std::set<std::pair<cVar,cStmt>> lambda() const;
-  std::set<std::pair<cStmt,cVar>> u() const;
-  std::set<std::pair<cVar,cVar>>  p() const;
+  std::set<cVar> getDefs() const override;
+  std::set<std::pair<cVar,cStmt>> lambda() const override;
+  std::set<std::pair<cStmt,cVar>> u() const override;
+  std::set<std::pair<cVar,cVar>>  p() const override;
 };
 class CompoundStatement : public Statement{
 public:
-  std::set<std::pair<cVar,cStmt>> lambda() const;
-  std::set<std::pair<cStmt,cVar>> u() const;
-  std::set<std::pair<cVar,cVar>>  p() const;
+  std::set<std::pair<cVar,cStmt>> lambda() const override;
+  std::set<std::pair<cStmt,cVar>> u() const override;
+  std::set<std::pair<cVar,cVar>>  p() const override;
 };
 class BranchStatement : public Statement{
 public:
-  std::set<std::pair<cVar,cStmt>> lambda() const;
-  std::set<std::pair<cStmt,cVar>> u() const;
-  std::set<std::pair<cVar,cVar>>  p() const;
+  std::set<std::pair<cVar,cStmt>> lambda() const override;
+  std::set<std::pair<cStmt,cVar>> u() const override;
+  std::set<std::pair<cVar,cVar>>  p() const override;
 };
 class Branch_elseStatement : public Statement{
 public:
-  std::set<std::pair<cVar,cStmt>> lambda() const;
-  std::set<std::pair<cStmt,cVar>> u() const;
-  std::set<std::pair<cVar,cVar>>  p() const;
+  std::set<std::pair<cVar,cStmt>> lambda() const override;
+  std::set<std::pair<cStmt,cVar>> u() const override;
+  std::set<std::pair<cVar,cVar>>  p() const override;
 };
 class LoopStatement : public Statement{
 public:
-  std::set<std::pair<cVar,cStmt>> lambda() const;
-  std::set<std::pair<cStmt,cVar>> u() const;
-  std::set<std::pair<cVar,cVar>>  p() const;
+  std::set<std::pair<cVar,cStmt>> lambda() const override;
+  std::set<std::pair<cStmt,cVar>> u() const override;
+  std::set<std::pair<cVar,cVar>>  p() const override;
 };
 
 #endif // RELATIONS_H
