@@ -43,7 +43,7 @@ public:
   bool VisitWhileStmt(clang::WhileStmt *Stmt);
 
   // determine pointed variable by the location parameters
-  bool VisitDeclRefExpr(clang::DeclRefExpr *Stmt);
+  clang::Stmt* ma(clang:: *Stmt);
   // restrict traversal to function only
   bool TraverseFunctionDecl(clang::FunctionDecl *Decl);
   // Compute slice
@@ -52,9 +52,12 @@ public:
 private:
   typedef clang::RecursiveASTVisitor<RelationsBuilder> base;
   clang::ASTContext *Context;
+  //! Slicing informations: function name
   std::string funcName;
+  //! The position and the reference to the statement asked for slicing
   int column;
   int row;
+  clang::Stmt* var;
   // We store the Statements in a map.
   std::map<clang::Stmt*,std::shared_ptr<Statement>> statements;
 };

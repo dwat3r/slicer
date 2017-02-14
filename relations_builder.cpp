@@ -100,12 +100,22 @@ RelationsBuilder::vars(clang::Stmt* Stmt){
 
   return ret;
 }
+bool RelationsBuilder::VisitDeclRefExpr(clang::DeclRefExpr *Stmt){
+  clang::FullSourceLoc loc = Context->getFullLoc(Stmt->getLocStart());
+  if(loc.getSpellingLineNumber() == row &&
+     loc.getSpellingColumnNumber() == column){
+      var = Stmt;
+    }
+  return true;
+}
+
 // We're controlling slicing from here
 bool RelationsBuilder::TraverseFunctionDecl(clang::FunctionDecl *Decl){
   // Check if we're in the function
   if (Decl->getNameAsString() == funcName){
       base::TraverseStmt(Decl->getBody());
     }
+
   return true;
 }
 
