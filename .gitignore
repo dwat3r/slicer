@@ -49,16 +49,13 @@ Thumbs.db
 *.idb
 *.ilk
 *.pdb
-*.sln
 *.suo
 *.vcproj
 *vcproj.*.*.user
 *.ncb
 *.sdf
 *.opensdf
-*.vcxproj
-*vcxproj.*
-
+*.opendb
 # MinGW generated files
 *.Debug
 *.Release
