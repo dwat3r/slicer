@@ -43,7 +43,7 @@ public:
   bool VisitWhileStmt(clang::WhileStmt *Stmt);
 
   // determine pointed variable by the location parameters
-  clang::Stmt* ma(clang:: *Stmt);
+  //clang::Stmt* ma(clang:: *Stmt);
   // restrict traversal to function only
   bool TraverseFunctionDecl(clang::FunctionDecl *Decl);
   // Compute slice
