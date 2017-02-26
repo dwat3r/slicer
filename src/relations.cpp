@@ -1,5 +1,6 @@
 #include <numeric>
 #include <memory>
+#include <algorithm>
 #include <llvm/Support/Casting.h>
 #include "relations.h"
 #include "relation_ops.h"
@@ -57,11 +58,16 @@ void Statement::addChild(std::shared_ptr<Statement> c){
 
 std::shared_ptr<Statement> Statement::create(cStmt astref)
 {
+  // Assignment
   if (auto bs = llvm::dyn_cast<clang::BinaryOperator>(astref)) {
     if (bs->isAssignmentOp()) {
       return std::make_shared<AssignStatement>(astref);
     }
   }
+  else if (llvm::isa<clang::DeclStmt>(astref)) {
+    return std::make_shared<AssignStatement>(astref);
+  }
+  // Branch
   else if (auto is = llvm::dyn_cast<clang::IfStmt>(astref)) {
     if (is->getElse() == nullptr) {
       return std::make_shared<BranchStatement>(astref);
@@ -70,12 +76,11 @@ std::shared_ptr<Statement> Statement::create(cStmt astref)
       return std::make_shared<Branch_elseStatement>(astref);
     }
   }
+  // Compound
   else if (llvm::isa<clang::CompoundStmt>(astref)) {
     return std::make_shared<CompoundStatement>(astref);
   }
-  else {
-    return std::make_shared<Statement>(astref);
-  }
+  return std::make_shared<Statement>(astref);
 }
 
 // Statement-specific parts

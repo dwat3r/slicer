@@ -7,6 +7,14 @@
  * We specialize Statement with dyn_cast
  * Then add general children.
  */
+bool RelationsBuilder::VisitDeclStmt(clang::DeclStmt *Stmt) {
+    statements[Stmt] = Statement::create(Stmt);
+    auto var = Stmt->getSingleDecl();
+    std::cout << "declaration stmt init:\n";
+    //TODO
+    statements[Stmt]->fill(var,
+      Stmt->getInit());
+}
 bool RelationsBuilder::VisitBinaryOperator(clang::BinaryOperator *Stmt){
   if (Stmt->isAssignmentOp()) {
     if(auto *varRef = llvm::dyn_cast<clang::DeclRefExpr>(Stmt->getLHS())) {
@@ -102,12 +110,33 @@ bool RelationsBuilder::VisitDeclRefExpr(clang::DeclRefExpr *Stmt){
 bool RelationsBuilder::TraverseFunctionDecl(clang::FunctionDecl *Decl){
   // Check if we're in the function
   if (Decl->getNameAsString() == funcName){
-	  statements[Decl->getBody()] = Statement::create(Decl->getBody());
-	  base::TraverseStmt(Decl->getBody());
+    auto root = Decl->getBody();
+    root->dumpColor();
+	  statements[root] = Statement::create(root);
+	  base::TraverseStmt(root);
+    for (auto stmt : statements) {
+      std::cout << "---\n";
+      stmt.first->dumpColor();
+      auto tmp = stmt.second->u();
+      std::cout << "--\n";
+      for (auto tmpp : tmp) {
+        std::cout << "-\n";
+        tmpp.first->dumpColor();
+        tmpp.second->dumpColor();
+      }
+      
     }
-  auto stmts = statements[Decl->getBody()]->slice(var->getDecl());
-  for (auto stmt : stmts) {
-	  stmt->dump();
+    auto stmts = statements[root]->slice(var->getDecl());
+    //debug u
+    auto tmp = statements[root]->u();
+    for (auto pair : tmp) {
+      pair.first->dumpColor();
+      pair.second->dumpColor();
+      std::cout << std::endl;
+    }
+    for (auto stmt : stmts) {
+	    stmt->dumpColor();
+    }
   }
   return true;
 }

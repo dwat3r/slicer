@@ -34,6 +34,7 @@ public:
   // we process nodes in Visit*
 
   // Assign
+  bool VisitDeclStmt(clang::DeclStmt *Stmt);
   bool VisitBinaryOperator(clang::BinaryOperator *Stmt);
   // Compound
   bool VisitCompoundStmt(clang::CompoundStmt *Stmt);

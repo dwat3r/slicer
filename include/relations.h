@@ -9,7 +9,6 @@
  * There are Statements
  *
  * Every function solves it's task recursively.
- * TODO: put into a namespace
  */
 namespace {
 	typedef clang::ValueDecl* cVar;
