@@ -1,5 +1,5 @@
 #include "relations_builder.h"
-
+#include <exception>
 #include <llvm/Support/Casting.h>
 
 /*!
@@ -8,51 +8,40 @@
  * Then add general children.
  */
 bool RelationsBuilder::VisitBinaryOperator(clang::BinaryOperator *Stmt){
-  if(Stmt->isAssignmentOp()){
-    statements[Stmt] = std::dynamic_pointer_cast<AssignStatement>(statements[Stmt]);
-    clang::ValueDecl* var = nullptr;
-    if(auto *varRef = llvm::dyn_cast<clang::DeclRefExpr>(Stmt->getLHS())){
-        var = varRef->getDecl();
-      }
-
+  if (Stmt->isAssignmentOp()) {
+    if(auto *varRef = llvm::dyn_cast<clang::DeclRefExpr>(Stmt->getLHS())) {
+    auto var = varRef->getDecl();
     statements[Stmt]->fill(var,
-                          Stmt->getRHS(),
-                          vars(Stmt->getRHS()),
-                          {var});
+      Stmt->getRHS(),
+      vars(Stmt->getRHS()),
+      { var });
+    }
   }
   return true;
 }
 
 bool RelationsBuilder::VisitCompoundStmt(clang::CompoundStmt *Stmt){
-  statements[Stmt] = std::dynamic_pointer_cast<CompoundStatement>(statements[Stmt]);
-
   for (clang::Stmt* s : Stmt->body()){
-      auto act = std::make_shared<Statement>(s);
+      auto act = Statement::create(s);
       statements[Stmt]->addChild(act);
       statements[s] = act;
     }
 
-  return base::VisitCompoundStmt(Stmt);
+  return true;
 }
 
 bool RelationsBuilder::VisitIfStmt(clang::IfStmt *Stmt){
-  if(Stmt->getElse() != nullptr){
-      statements[Stmt] = std::dynamic_pointer_cast<BranchStatement>(statements[Stmt]);
-    }
-  else
-    statements[Stmt] = std::dynamic_pointer_cast<Branch_elseStatement>(statements[Stmt]);
-
   statements[Stmt]->fill(nullptr,
                         Stmt->getCond(),
                         vars(Stmt->getCond()),
                         {});
 
-  auto thenExpr = std::make_shared<Statement>(Stmt->getThen());
+  auto thenExpr = Statement::create(Stmt->getThen());
   statements[Stmt]->addChild(thenExpr);
   statements[Stmt->getThen()] = thenExpr;
 
   if(Stmt->getElse() != nullptr){
-    auto elseExpr = std::make_shared<Statement>(Stmt->getElse());
+    auto elseExpr = Statement::create(Stmt->getElse());
     statements[Stmt]->addChild(elseExpr);
     statements[Stmt->getElse()] = elseExpr;
     }
@@ -61,12 +50,11 @@ bool RelationsBuilder::VisitIfStmt(clang::IfStmt *Stmt){
 }
 
 bool RelationsBuilder::VisitWhileStmt(clang::WhileStmt *Stmt){
-  statements[Stmt] = std::dynamic_pointer_cast<LoopStatement>(statements[Stmt]);
   statements[Stmt]->fill(nullptr,
                         Stmt->getCond(),
                         vars(Stmt->getCond()),
                         {});
-  auto bodyExpr = std::make_shared<Statement>(Stmt->getBody());
+  auto bodyExpr = Statement::create(Stmt->getBody());
   statements[Stmt]->addChild(bodyExpr);
   statements[Stmt->getBody()] = bodyExpr;
 
@@ -100,22 +88,27 @@ RelationsBuilder::vars(clang::Stmt* Stmt){
 
   return ret;
 }
-//bool RelationsBuilder::VisitDeclRefExpr(clang::DeclRefExpr *Stmt){
-//  clang::FullSourceLoc loc = Context->getFullLoc(Stmt->getLocStart());
-//  if(loc.getSpellingLineNumber() == row &&
-//     loc.getSpellingColumnNumber() == column){
-//      var = Stmt;
-//    }
-//  return true;
-//}
+bool RelationsBuilder::VisitDeclRefExpr(clang::DeclRefExpr *Stmt){
+  clang::FullSourceLoc loc = Context->getFullLoc(Stmt->getLocStart());
+  std::cout << Stmt->getDecl()->getNameAsString() << ": " << loc.getSpellingLineNumber() << ", " << loc.getSpellingColumnNumber() << std::endl;
+  if(loc.getSpellingLineNumber() == row &&
+     loc.getSpellingColumnNumber() == column){
+      var = Stmt;
+    }
+  return true;
+}
 
 // We're controlling slicing from here
 bool RelationsBuilder::TraverseFunctionDecl(clang::FunctionDecl *Decl){
   // Check if we're in the function
   if (Decl->getNameAsString() == funcName){
-      base::TraverseStmt(Decl->getBody());
+	  statements[Decl->getBody()] = Statement::create(Decl->getBody());
+	  base::TraverseStmt(Decl->getBody());
     }
-
+  auto stmts = statements[Decl->getBody()]->slice(var->getDecl());
+  for (auto stmt : stmts) {
+	  stmt->dump();
+  }
   return true;
 }
 

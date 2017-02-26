@@ -21,8 +21,8 @@ public:
                             std::vector<std::string> params)
     : Context(Context)
     , funcName(params[0])
-    , column(std::stoi(params[1]))
-    , row(std::stoi(params[2]))
+    , row(std::stoi(params[1]))
+    , column(std::stoi(params[2]))
     , statements()
   {}
   //bool shouldTraversePostOrder() const {return true;}
@@ -43,7 +43,8 @@ public:
   bool VisitWhileStmt(clang::WhileStmt *Stmt);
 
   // determine pointed variable by the location parameters
-  //clang::Stmt* ma(clang:: *Stmt);
+  bool VisitDeclRefExpr(clang::DeclRefExpr *Stmt);
+  
   // restrict traversal to function only
   bool TraverseFunctionDecl(clang::FunctionDecl *Decl);
   // Compute slice
@@ -57,7 +58,7 @@ private:
   //! The position and the reference to the statement asked for slicing
   int column;
   int row;
-  clang::Stmt* var;
+  clang::DeclRefExpr* var;
   // We store the Statements in a map.
   std::map<clang::Stmt*,std::shared_ptr<Statement>> statements;
 };

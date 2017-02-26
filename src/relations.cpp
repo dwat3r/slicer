@@ -1,4 +1,6 @@
 #include <numeric>
+#include <memory>
+#include <llvm/Support/Casting.h>
 #include "relations.h"
 #include "relation_ops.h"
 
@@ -8,6 +10,7 @@ Statement::Statement()
   , expr()
   , evars()
   , defs()
+  , children()
 {}
 
 std::set<std::pair<cVar,cStmt>> Statement::lambda() const {return {};}
@@ -50,6 +53,29 @@ Statement::slice(cVar var){
 
 void Statement::addChild(std::shared_ptr<Statement> c){
   children.push_back(c);
+}
+
+std::shared_ptr<Statement> Statement::create(cStmt astref)
+{
+  if (auto bs = llvm::dyn_cast<clang::BinaryOperator>(astref)) {
+    if (bs->isAssignmentOp()) {
+      return std::make_shared<AssignStatement>(astref);
+    }
+  }
+  else if (auto is = llvm::dyn_cast<clang::IfStmt>(astref)) {
+    if (is->getElse() == nullptr) {
+      return std::make_shared<BranchStatement>(astref);
+    }
+    else {
+      return std::make_shared<Branch_elseStatement>(astref);
+    }
+  }
+  else if (llvm::isa<clang::CompoundStmt>(astref)) {
+    return std::make_shared<CompoundStatement>(astref);
+  }
+  else {
+    return std::make_shared<Statement>(astref);
+  }
 }
 
 // Statement-specific parts

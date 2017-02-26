@@ -11,10 +11,10 @@
  * Every function solves it's task recursively.
  * TODO: put into a namespace
  */
-
-typedef clang::ValueDecl* cVar;
-typedef clang::Stmt* cStmt;
-
+namespace {
+	typedef clang::ValueDecl* cVar;
+	typedef clang::Stmt* cStmt;
+}
 class Statement
 {
 public:
@@ -24,8 +24,13 @@ public:
   explicit
   Statement(cStmt astRef)
     : astRef(astRef)
+	, children()
+	, var()
+	, expr()
+	, evars()
+	, defs()
   {}
-
+  
   virtual ~Statement(){}
   /*! Returns definitions used in the Statement,
    *  recursively.
@@ -58,7 +63,8 @@ public:
     evars = evarsp;
     defs = defsp;
   }
-
+  // Factory method
+  static std::shared_ptr<Statement> create(cStmt astref);
 protected:
 
   // sub-statements
@@ -76,6 +82,7 @@ protected:
 //! Specializations
 class AssignStatement : public Statement{
 public:
+  using Statement::Statement;
   std::set<cVar> getDefs() const override;
   std::set<std::pair<cVar,cStmt>> lambda() const override;
   std::set<std::pair<cStmt,cVar>> u() const override;
@@ -83,24 +90,28 @@ public:
 };
 class CompoundStatement : public Statement{
 public:
+  using Statement::Statement;
   std::set<std::pair<cVar,cStmt>> lambda() const override;
   std::set<std::pair<cStmt,cVar>> u() const override;
   std::set<std::pair<cVar,cVar>>  p() const override;
 };
 class BranchStatement : public Statement{
 public:
+  using Statement::Statement;
   std::set<std::pair<cVar,cStmt>> lambda() const override;
   std::set<std::pair<cStmt,cVar>> u() const override;
   std::set<std::pair<cVar,cVar>>  p() const override;
 };
 class Branch_elseStatement : public Statement{
 public:
+  using Statement::Statement;
   std::set<std::pair<cVar,cStmt>> lambda() const override;
   std::set<std::pair<cStmt,cVar>> u() const override;
   std::set<std::pair<cVar,cVar>>  p() const override;
 };
 class LoopStatement : public Statement{
 public:
+  using Statement::Statement;
   std::set<std::pair<cVar,cStmt>> lambda() const override;
   std::set<std::pair<cStmt,cVar>> u() const override;
   std::set<std::pair<cVar,cVar>>  p() const override;
