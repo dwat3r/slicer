@@ -34,6 +34,7 @@ public:
   // we process nodes in Visit*
 
   // Assign
+  bool VisitReturnStmt(clang::ReturnStmt *Stmt);
   bool VisitDeclStmt(clang::DeclStmt *Stmt);
   bool VisitBinaryOperator(clang::BinaryOperator *Stmt);
   // Compound
@@ -48,8 +49,6 @@ public:
   
   // restrict traversal to function only
   bool TraverseFunctionDecl(clang::FunctionDecl *Decl);
-  // Compute slice
-  std::set<clang::Stmt*> computeSlice();
 
 private:
   typedef clang::RecursiveASTVisitor<RelationsBuilder> base;
@@ -59,7 +58,7 @@ private:
   //! The position and the reference to the statement asked for slicing
   int column;
   int row;
-  clang::DeclRefExpr* var;
+  clang::ValueDecl* var;
   // We store the Statements in a map.
   std::map<clang::Stmt*,std::shared_ptr<Statement>> statements;
 };

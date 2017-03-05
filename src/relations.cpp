@@ -4,6 +4,7 @@
 #include <llvm/Support/Casting.h>
 #include "relations.h"
 #include "relation_ops.h"
+#include <iostream>
 
 // common parts of the Statements
 Statement::Statement()
@@ -45,7 +46,13 @@ std::set<cStmt>
 Statement::slice(cVar var){
   auto evs(u());
   std::set<cStmt> ret;
+  std::cout << "we're slicing:\n";
+  std::cout << "want to check if this:\n";
+  var->dump();
   for (auto ev : evs){
+    std::cout << "matches this:\n";
+    ev.second->dumpColor();
+    
       if(ev.second == var)
         ret.insert(ev.first);
     }
@@ -67,6 +74,9 @@ std::shared_ptr<Statement> Statement::create(cStmt astref)
   else if (llvm::isa<clang::DeclStmt>(astref)) {
     return std::make_shared<AssignStatement>(astref);
   }
+  else if (llvm::isa<clang::ReturnStmt>(astref)) {
+    return std::make_shared <AssignStatement>(astref);
+  }
   // Branch
   else if (auto is = llvm::dyn_cast<clang::IfStmt>(astref)) {
     if (is->getElse() == nullptr) {
@@ -79,6 +89,10 @@ std::shared_ptr<Statement> Statement::create(cStmt astref)
   // Compound
   else if (llvm::isa<clang::CompoundStmt>(astref)) {
     return std::make_shared<CompoundStatement>(astref);
+  }
+  // Loop
+  else if (llvm::isa<clang::WhileStmt>(astref)) {
+    return std::make_shared<LoopStatement>(astref);
   }
   return std::make_shared<Statement>(astref);
 }

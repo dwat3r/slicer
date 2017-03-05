@@ -5,12 +5,11 @@ Slicing:
  - flow dependence
  - aliasing
  - control dependence
- - transitive closure
  - what if compoundStmt has only 1 element?
 
 ###Aspects of performance:
  - what should be stored
- - how should it be stored
+ - how should it be stored (maybe JSON)
  - when should parsing happen
     - (can we do multiple slices with one parse)
 
@@ -28,6 +27,8 @@ slicing-survey-tip.pdf page 10.
  - "*" is transitive closure.
  - v is variable, e is expression, S is statement.
 
+We will treat return statement as an assignment to self.
+
 ####for backward-slicing:
 #####the "u" function:
 
@@ -37,6 +38,9 @@ slicing-survey-tip.pdf page 10.
 
 sequence:
 u_seq(S1,S2) = (u(S1) . p(S2)) U u(S2)
+
+sequence generalized:
+u_seq(u_seq(S1,S2),S3) = (((u(S1) . p(S2)) U u(S2)) . p(S3)) U u(S3)
 
 assignment:
 u_assign(v,e) = {(e,v)}
