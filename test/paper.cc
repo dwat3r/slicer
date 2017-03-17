@@ -1,14 +1,14 @@
-void f(int n,int i,int sum,int product)
-{
-  n = 2;
-  i = 1;
-  sum = 0;
-  while (i <= n)
-  {
-    sum += i;
-    product *= i;
-    i++;
-  }
-  sum;
-  product;
+#include <iostream>
+
+int main(){
+	int n;
+	std::cin >> n;
+	int sum = 0;
+	int prod = 1;
+	for (int i = 1; i <= n; i++){
+		sum += i;
+		prod *= i;
+	}
+	std::cout << sum << std::endl;
+	std::cout << prod << std::endl;
 }

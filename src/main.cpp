@@ -1,33 +1,30 @@
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include "slicer.h"
-#include "relations_builder.h"
+// Declares clang::SyntaxOnlyAction.
+#include "clang/Frontend/FrontendActions.h"
+#include "clang/Tooling/CommonOptionsParser.h"
 #include "clang/Tooling/Tooling.h"
+// Declares llvm::cl::extrahelp.
+#include "llvm/Support/CommandLine.h"
 
-int main(int argc, char *argv[]){
-  if(argc < 5){
-      std::cout
-          << "usage: ./slicer source-file function row column"
-          << std::endl;
-      return 1;
-    }
-  std::string filename(argv[1]);
-  std::ifstream file(filename);
-  std::vector<std::string> params{argv[2],argv[3],argv[4]};
-  if (!file.is_open()) {
-	  std::cout
-		  << "could not open file: " << filename << std::endl;
-	  return 1;
-  }else
-  {
-      std::stringstream buffer;
-	  buffer << file.rdbuf();
-	  std::cout << buffer.str() << std::endl;
-      clang::tooling::runToolOnCode(
-            new RelationsBuilderAction(params),
-            buffer.str());
-  }
-  file.close();
-  return 0;
+#include "pdg_builder.h"
+
+using namespace clang::tooling;
+using namespace llvm;
+// todo params
+// Apply a custom category to all command-line options so that they are the
+// only ones displayed.
+static llvm::cl::OptionCategory MyToolCategory("my-tool options");
+
+// CommonOptionsParser declares HelpMessage with a description of the common
+// command-line options related to the compilation database and input files.
+// It's nice to have this help message in all tools.
+static cl::extrahelp CommonHelp(CommonOptionsParser::HelpMessage);
+
+// A help message for this specific tool can be added afterwards.
+static cl::extrahelp MoreHelp("\nMore help text...");
+
+int main(int argc, const char **argv) {
+  CommonOptionsParser OptionsParser(argc, argv, MyToolCategory);
+  ClangTool Tool(OptionsParser.getCompilations(),
+    OptionsParser.getSourcePathList());
+  return Tool.run(newFrontendActionFactory<clang::SyntaxOnlyAction>().get());
 }
