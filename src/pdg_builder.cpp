@@ -13,7 +13,7 @@ namespace clang {
 void PDGBuilder::registerMatchers(MatchFinder *MatchFinder) {
   // first define matchers
   // assign
-  auto decls = varDecl().bind("decl");
+  auto decls = declStmt(hasDescendant(varDecl().bind("decl"))).bind("declStmt");
   auto assigns = binaryOperator(hasOperatorName("="),
                                 hasOperatorName("+="),
                                 hasOperatorName("-="),
@@ -24,7 +24,8 @@ void PDGBuilder::registerMatchers(MatchFinder *MatchFinder) {
                                 hasOperatorName(">>="), 
                                 hasOperatorName("&="),
                                 hasOperatorName("^="),
-                                hasOperatorName("|=")).bind("binop");
+                                hasOperatorName("|="),
+                                forEachDescendant(varDecl().bind("binopRhsVar"))).bind("binop");
   // branch
   auto ifs = ifStmt().bind("if");
   // loop
@@ -44,14 +45,14 @@ void PDGBuilder::registerMatchers(MatchFinder *MatchFinder) {
 }
 void PDGBuilder::run(const ast_matchers::MatchFinder::MatchResult &result) {
   // process the match results
-  if (auto decl = result.Nodes.getNodeAs<VarDecl>("decl")) {
-        stmt_map[decl] = std::make_shared<AssignStatement>(decl,
-                                                           decl,
-                                                           { decl });
-      
+  if (auto ds = result.Nodes.getNodeAs<DeclStmt>("declStmt")) {
+    if (auto d = result.Nodes.getNodeAs<VarDecl>("decl")) {
+      stmt_map[ds] = new AssignStatement(ds, d, { d });
+    }
   }
   else if (auto bo = result.Nodes.getNodeAs<BinaryOperator>("binop")) {
-    stmt_map[bo] = Statement::create(bo);
+    if()
+    stmt_map[bo] = new AssignStatement(bo,bo->getLHS(),
 
   }
   else if (auto is = result.Nodes.getNodeAs<IfStmt>("if")) {

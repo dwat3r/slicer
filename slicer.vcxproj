@@ -136,16 +136,13 @@ psapi.lib shell32.lib ole32.lib uuid.lib
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="include\relations.h" />
-    <ClInclude Include="include\relations_builder.h" />
-    <ClInclude Include="include\relation_ops.h" />
-    <ClInclude Include="include\slicer.h" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\pdg.cpp" />
+    <ClCompile Include="src\pdg_builder.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\relations.cpp" />
-    <ClCompile Include="src\relations_builder.cpp" />
-    <ClCompile Include="src\slicer.cpp" />
+    <ClInclude Include="include\pdg.h" />
+    <ClInclude Include="include\pdg_builder.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -35,7 +35,7 @@ private:
   data params;
   clang::ValueDecl* var;
   // We store the Statements in a map.
-  std::map<const clang::Stmt*, std::shared_ptr<Statement>> stmt_map;
+  std::map<const clang::Stmt*, Statement*> stmt_map;
 };
 
 } // namespace clang

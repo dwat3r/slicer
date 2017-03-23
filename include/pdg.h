@@ -39,7 +39,6 @@ protected:
 //! Specializations
 class AssignStatement : public Statement{
 public:
-  using Statement::Statement;
   AssignStatement(const clang::Stmt* astref,
                   const clang::ValueDecl* _define,
                   std::vector<const clang::ValueDecl*> _use)
