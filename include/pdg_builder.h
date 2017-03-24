@@ -1,5 +1,5 @@
-#ifndef ASTWALKER_H
-#define ASTWALKER_H
+#ifndef PDG_BUILDER_H
+#define PDG_BUILDER_H
 
 #include "clang/ASTMatchers/ASTMatchFinder.h"
 #include <string>
@@ -36,7 +36,9 @@ private:
   clang::ValueDecl* var;
   // We store the Statements in a map.
   std::map<const clang::Stmt*, Statement*> stmt_map;
+  // We store the def variables in another map
+  std::map<const clang::ValueDecl*, std::vector<Statement*>> def_map;
 };
 
 } // namespace clang
-#endif // ASTWALKER_H
+#endif // PDG_BUILDER_H

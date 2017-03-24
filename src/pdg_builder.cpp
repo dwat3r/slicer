@@ -25,7 +25,10 @@ void PDGBuilder::registerMatchers(MatchFinder *MatchFinder) {
                                 hasOperatorName("&="),
                                 hasOperatorName("^="),
                                 hasOperatorName("|="),
-                                forEachDescendant(varDecl().bind("binopRhsVar"))).bind("binop");
+	  hasLHS(ignoringImpCasts(declRefExpr(to(varDecl().bind("lval"))))),
+	  hasRHS(ignoringImpCasts(
+		  forEachDescendant(expr(declRefExpr().bind("rval")))))).bind("binop");
+
   // branch
   auto ifs = ifStmt().bind("if");
   // loop
@@ -45,27 +48,31 @@ void PDGBuilder::registerMatchers(MatchFinder *MatchFinder) {
 }
 void PDGBuilder::run(const ast_matchers::MatchFinder::MatchResult &result) {
   // process the match results
+  // todo find out how matching works, then ensure every entry added once
   if (auto ds = result.Nodes.getNodeAs<DeclStmt>("declStmt")) {
     if (auto d = result.Nodes.getNodeAs<VarDecl>("decl")) {
-      stmt_map[ds] = new AssignStatement(ds, d, { d });
+      stmt_map[ds] = new AssignStatement(ds,d);
+	  def_map[d].push_back(stmt_map[ds]);
     }
   }
   else if (auto bo = result.Nodes.getNodeAs<BinaryOperator>("binop")) {
-    if()
-    stmt_map[bo] = new AssignStatement(bo,bo->getLHS(),
-
+	  auto lhs = result.Nodes.getNodeAs<VarDecl>("lval");
+	  auto rhs = result.Nodes.getNodeAs<DeclRefExpr>("rval");
+	  stmt_map[bo] = new AssignStatement(bo, lhs);
+	  def_map[lhs].push_back(stmt_map[bo]);
   }
   else if (auto is = result.Nodes.getNodeAs<IfStmt>("if")) {
-    stmt_map[is] = Statement::create(is);
+    stmt_map[is] = new BranchStatement()
   }
   else if (auto ws = result.Nodes.getNodeAs<WhileStmt>("while")){
-    stmt_map[ws] = Statement::create(ws);
+    stmt_map[ws] = new LoopStatement()
   }
   else if (auto cs = result.Nodes.getNodeAs<CompoundStmt>("compound")) {
-    stmt_map[cs] = Statement::create(cs);
+    stmt_map[cs] = new CompoundStatement()
   }
   else if (auto f = result.Nodes.getNodeAs<FunctionDecl>("f")) {
-    stmt_map[f->getBody()] = Statement::create(f->getBody());
+    //root
+	stmt_map[f->getBody()] = new CompoundStatement()
   }
 }
 

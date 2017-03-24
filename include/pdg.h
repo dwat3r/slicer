@@ -1,5 +1,5 @@
-#ifndef RELATIONS_H
-#define RELATIONS_H
+#ifndef PDG_H
+#define PDG_H
 
 #include "clang/AST/AST.h"
 #include <vector>
@@ -17,34 +17,42 @@ public:
   explicit
   Statement(const clang::Stmt* astRef)
     : astRef(astRef)
-    , controlDeps()
-    , dataDeps()
   {}
   
   virtual ~Statement(){}
 
   // Edge adders
-  void addControlDep(std::shared_ptr<Statement> s, bool edge) { controlDeps.push_back({ s,edge }); }
-  void addDataDep(std::shared_ptr<Statement> s) { dataDeps.push_back(s); }
+  void addControlChild(Statement* s, bool edge) { controlChildren.push_back({ s,edge }); }
+  void addDataEdge(Statement* s) { dataEdges.push_back(s); }
+  void setControlParent(std::pair<Statement*, bool> parent) { controlParent = parent; }
+
+  // getters
+  std::pair<Statement*,bool> getControlParent() { return controlParent; }
+  std::vector<std::pair<Statement*, bool>> getControlChildren() { return controlChildren; }
+  std::vector<Statement*> getDataEdges() { return dataEdges; }
+  // returns if source has path to dest in graph.
+  bool isControlReachableUpwards(Statement* source, Statement* dest);
+
+  // returns true if branch
+  virtual bool isBranchStatement() { return false; }
 protected:
 
   // dependences
-  std::vector<std::pair<std::shared_ptr<Statement>,bool>> controlDeps;
-  std::vector<std::shared_ptr<Statement>> dataDeps;
+  std::vector<std::pair<Statement*,bool>> controlChildren;
+  std::vector<Statement*> dataEdges;
+  std::pair<Statement*,bool> controlParent;
 
-  //! Store a reference to the AST
+  // Store a reference to the AST
   const clang::Stmt* astRef;
 };
 
-//! Specializations
+// Specializations
 class AssignStatement : public Statement{
 public:
   AssignStatement(const clang::Stmt* astref,
-                  const clang::ValueDecl* _define,
-                  std::vector<const clang::ValueDecl*> _use)
+                  const clang::ValueDecl* _define)
     : Statement(astref)
     , define(_define)
-    , use(_use)
   {}
   void setDefine(clang::ValueDecl* _define) { define = _define; }
   void addUse(clang::ValueDecl* _use) { use.push_back(_use); }
@@ -59,6 +67,7 @@ public:
   using Statement::Statement;
   void setCondRef(clang::Stmt* _condRef) { condRef = _condRef; }
   void addCondVar(clang::ValueDecl* _condVar) { condVars.push_back(_condVar); }
+  virtual bool isBranchStatement() override { return true; } 
 private:
   // We store the condition reference and the variables used in this condition
   clang::Stmt* condRef;
@@ -81,4 +90,4 @@ public:
   using Statement::Statement;
 
 };
-#endif // RELATIONS_H
+#endif // PDG_H
