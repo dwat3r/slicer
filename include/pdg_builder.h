@@ -7,6 +7,7 @@
 #include <map>
 #include <iostream>
 #include <string>
+#include <set>
 
 #include "pdg.h"
 namespace clang {
@@ -21,8 +22,13 @@ struct data {
 
 class PDGBuilder : public ast_matchers::MatchFinder::MatchCallback {
 public:
-  explicit PDGBuilder(data _params)
-    : params(_params) 
+  explicit PDGBuilder() {}
+  explicit PDGBuilder(llvm::StringRef _funcName,
+                      int _lineNo,
+                      int _colNo)
+    : funcName(_funcName)
+    , lineNo(_lineNo)
+    , colNo(_colNo)
   {}
 
   void registerMatchers(ast_matchers::MatchFinder *MatchFinder);
@@ -32,12 +38,14 @@ public:
   void onEndOfTranslationUnit() override;
 
 private:
-  data params;
+  llvm::StringRef funcName;
+  int lineNo;
+  int colNo;
   clang::ValueDecl* var;
   // We store the Statements in a map.
   std::map<const clang::Stmt*, Statement*> stmt_map;
   // We store the def variables in another map
-  std::map<const clang::ValueDecl*, std::vector<Statement*>> def_map;
+  std::map<const clang::ValueDecl*, std::set<Statement*>> def_map;
 };
 
 } // namespace clang

@@ -139,10 +139,12 @@ psapi.lib shell32.lib ole32.lib uuid.lib
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\pdg.cpp" />
     <ClCompile Include="src\pdg_builder.cpp" />
+    <ClCompile Include="src\pdg_builderAction.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\pdg.h" />
     <ClInclude Include="include\pdg_builder.h" />
+    <ClInclude Include="include\pdg_builderAction.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

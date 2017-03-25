@@ -5,14 +5,14 @@
 // Declares llvm::cl::extrahelp.
 #include "llvm/Support/CommandLine.h"
 
-#include "pdg_builder.h"
-
+#include "pdg_builderAction.h"
 using namespace clang::tooling;
+using namespace clang::ast_matchers;
 using namespace llvm;
 // todo params
 // Apply a custom category to all command-line options so that they are the
 // only ones displayed.
-static llvm::cl::OptionCategory MyToolCategory("my-tool options");
+static llvm::cl::OptionCategory Slicer("slicer options");
 
 // CommonOptionsParser declares HelpMessage with a description of the common
 // command-line options related to the compilation database and input files.
@@ -22,9 +22,28 @@ static cl::extrahelp CommonHelp(CommonOptionsParser::HelpMessage);
 // A help message for this specific tool can be added afterwards.
 static cl::extrahelp MoreHelp("\nMore help text...");
 
+static cl::opt<std::string> FuncName("function-name", cl::desc(R"(
+                          The name of the function to slice.)"),
+                          cl::init("main"),
+                          cl::cat(Slicer));
+static cl::opt<int> LineNo("line-number", cl::desc(R"(
+                          The line number of the statement to slice.)"),
+                           cl::init(0),
+                           cl::cat(Slicer));
+
+static cl::opt<int> ColNo("column-number", cl::desc(R"(
+                          The column number of the statement to slice.)"),
+                           cl::init(0),
+                           cl::cat(Slicer));
+
 int main(int argc, const char **argv) {
-  CommonOptionsParser OptionsParser(argc, argv, MyToolCategory);
+  CommonOptionsParser OptionsParser(argc, argv, Slicer);
   ClangTool Tool(OptionsParser.getCompilations(),
-    OptionsParser.getSourcePathList());
-  return Tool.run(newFrontendActionFactory<clang::SyntaxOnlyAction>().get());
+                 OptionsParser.getSourcePathList());
+
+
+  auto Factory =
+    llvm::make_unique<clang::PDGBuilderActionFactory>(
+      FuncName,LineNo,ColNo);
+  return Tool.run(Factory.get());
 }

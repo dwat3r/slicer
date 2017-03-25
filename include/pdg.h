@@ -15,17 +15,34 @@ class Statement
 public:
 
   explicit
-  Statement(const clang::Stmt* astRef)
-    : astRef(astRef)
+    Statement(const clang::Stmt* _astRef)
+    : astRef(_astRef)
   {}
-  
+
+  explicit
+  Statement(const clang::Stmt* _astRef,
+            std::vector<std::pair<Statement*,bool>> _cChildren)
+    : astRef(_astRef)
+    , controlChildren(_cChildren)
+  {}
+
+  explicit
+    Statement(const clang::Stmt* _astRef,
+              const clang::ValueDecl* _define)
+    : astRef(_astRef)
+    , define(_define)
+  {}
+
   virtual ~Statement(){}
 
   // Edge adders
-  void addControlChild(Statement* s, bool edge) { controlChildren.push_back({ s,edge }); }
+  void addControlChild(std::pair<Statement*,bool> edge) { controlChildren.push_back(edge); }
   void addDataEdge(Statement* s) { dataEdges.push_back(s); }
   void setControlParent(std::pair<Statement*, bool> parent) { controlParent = parent; }
 
+  // define/use
+  void addUse(const clang::ValueDecl* _use) { use.push_back(_use); }
+  void setDefine(const clang::ValueDecl* _define) { define = _define; }
   // getters
   std::pair<Statement*,bool> getControlParent() { return controlParent; }
   std::vector<std::pair<Statement*, bool>> getControlChildren() { return controlChildren; }
@@ -35,13 +52,17 @@ public:
 
   // returns true if branch
   virtual bool isBranchStatement() { return false; }
-protected:
 
-  // dependences
+  // factory method
+  static Statement* create(const clang::Stmt* astref);
+protected:
   std::vector<std::pair<Statement*,bool>> controlChildren;
   std::vector<Statement*> dataEdges;
   std::pair<Statement*,bool> controlParent;
-
+  // These store the variables that are defined / used in this statement
+  const clang::ValueDecl* define;
+  std::vector<const clang::ValueDecl*> use;
+  
   // Store a reference to the AST
   const clang::Stmt* astRef;
 };
@@ -49,40 +70,18 @@ protected:
 // Specializations
 class AssignStatement : public Statement{
 public:
-  AssignStatement(const clang::Stmt* astref,
-                  const clang::ValueDecl* _define)
-    : Statement(astref)
-    , define(_define)
-  {}
-  void setDefine(clang::ValueDecl* _define) { define = _define; }
-  void addUse(clang::ValueDecl* _use) { use.push_back(_use); }
-private:
-  // These store the variables that are defined / used in this assignment
-  const clang::ValueDecl* define;
-  std::vector<const clang::ValueDecl*> use;
+  using Statement::Statement;
 };
 
 class BranchStatement : public Statement{
 public:
   using Statement::Statement;
-  void setCondRef(clang::Stmt* _condRef) { condRef = _condRef; }
-  void addCondVar(clang::ValueDecl* _condVar) { condVars.push_back(_condVar); }
   virtual bool isBranchStatement() override { return true; } 
-private:
-  // We store the condition reference and the variables used in this condition
-  clang::Stmt* condRef;
-  std::vector<clang::ValueDecl*> condVars;
 };
 // Loop and Branch almost the same, but they differ in the data dependence edge creations.
 class LoopStatement : public Statement{
 public:
   using Statement::Statement;
-  void setCondRef(clang::Stmt* _condRef) { condRef = _condRef; }
-  void addCondVar(clang::ValueDecl* _condVar) { condVars.push_back(_condVar); }
-private:
-  // We store the condition reference and the variables used in this condition
-  clang::Stmt* condRef;
-  std::vector<clang::ValueDecl*> condVars;
 };
 
 class CompoundStatement : public Statement {

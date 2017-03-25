@@ -24,12 +24,18 @@
     <ClCompile Include="src\pdg_builder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\pdg_builderAction.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\pdg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\pdg_builder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\pdg_builderAction.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
