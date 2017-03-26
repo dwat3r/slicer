@@ -21,10 +21,10 @@
     <ClCompile Include="src\pdg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\pdg_builder.cpp">
+    <ClCompile Include="src\pdgBuilder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\pdg_builderAction.cpp">
+    <ClCompile Include="src\pdgBuilderAction.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -32,10 +32,10 @@
     <ClInclude Include="include\pdg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\pdg_builder.h">
+    <ClInclude Include="include\pdgBuilder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\pdg_builderAction.h">
+    <ClInclude Include="include\pdgBuilderAction.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

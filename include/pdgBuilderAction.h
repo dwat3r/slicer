@@ -1,7 +1,7 @@
 #ifndef PDG_BUILDER_ACTION_H
 #define PDG_BUILDER_ACTION_H
 
-#include "pdg_builder.h"
+#include "pdgBuilder.h"
 #include "clang/ASTMatchers/ASTMatchFinder.h"
 #include "clang/Frontend/CompilerInstance.h"
 #include "clang/Frontend/FrontendAction.h"
@@ -10,19 +10,19 @@
 #include <memory>
 
 namespace clang {
-
+namespace slicer {
 
 class PDGBuilderAction : public clang::ASTFrontendAction {
 public:
-  explicit PDGBuilderAction(llvm::StringRef _funcName,
+  explicit PDGBuilderAction(std::string _funcName,
                             int _lineNo,
                             int _colNo);
   std::unique_ptr<clang::ASTConsumer>
-  CreateASTConsumer(clang::CompilerInstance &Compiler,
-                    StringRef InFile) override;
+    CreateASTConsumer(clang::CompilerInstance &Compiler,
+                      StringRef InFile) override;
 
 private:
-  llvm::StringRef funcName;
+  std::string funcName;
   int lineNo;
   int colNo;
   clang::ast_matchers::MatchFinder MatchFinder;
@@ -31,25 +31,25 @@ private:
 
 class PDGBuilderActionFactory : public tooling::FrontendActionFactory {
 public:
-  PDGBuilderActionFactory(llvm::StringRef _funcName,
-    int _lineNo,
-    int _colNo)
+  PDGBuilderActionFactory(std::string _funcName,
+                          int _lineNo,
+                          int _colNo)
     : funcName(_funcName)
     , lineNo(_lineNo)
     , colNo(_colNo)
   {}
 
   clang::FrontendAction *create() override {
-    return new PDGBuilderAction(funcName,lineNo,colNo);
+    return new PDGBuilderAction(funcName, lineNo, colNo);
   }
 
 private:
-  llvm::StringRef funcName;
+  std::string funcName;
   int lineNo;
   int colNo;
 };
 
-
+} // namespace slicer
 } // namespace clang
 
 #endif // PDG_BUILDER_ACTION_H

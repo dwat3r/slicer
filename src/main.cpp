@@ -4,8 +4,10 @@
 #include "clang/Tooling/Tooling.h"
 // Declares llvm::cl::extrahelp.
 #include "llvm/Support/CommandLine.h"
+#include "clang/ASTMatchers/ASTMatchFinder.h"
+#include "clang/ASTMatchers/ASTMatchers.h"
 
-#include "pdg_builderAction.h"
+#include "pdgBuilderAction.h"
 using namespace clang::tooling;
 using namespace clang::ast_matchers;
 using namespace llvm;
@@ -22,28 +24,27 @@ static cl::extrahelp CommonHelp(CommonOptionsParser::HelpMessage);
 // A help message for this specific tool can be added afterwards.
 static cl::extrahelp MoreHelp("\nMore help text...");
 
-static cl::opt<std::string> FuncName("function-name", cl::desc(R"(
-                          The name of the function to slice.)"),
-                          cl::init("main"),
-                          cl::cat(Slicer));
-static cl::opt<int> LineNo("line-number", cl::desc(R"(
-                          The line number of the statement to slice.)"),
+static cl::opt<std::string> FuncName("function-name", 
+                                     cl::desc(R"(The name of the function to slice.)"),
+                                     cl::init("main"),
+                                     cl::cat(Slicer));
+static cl::opt<int> LineNo("line-number", 
+                           cl::desc(R"(The line number of the statement to slice.)"),
                            cl::init(0),
                            cl::cat(Slicer));
 
-static cl::opt<int> ColNo("column-number", cl::desc(R"(
-                          The column number of the statement to slice.)"),
-                           cl::init(0),
-                           cl::cat(Slicer));
+static cl::opt<int> ColNo("column-number", 
+                          cl::desc(R"(The column number of the statement to slice.)"),
+                          cl::init(0),
+                          cl::cat(Slicer));
 
 int main(int argc, const char **argv) {
   CommonOptionsParser OptionsParser(argc, argv, Slicer);
   ClangTool Tool(OptionsParser.getCompilations(),
                  OptionsParser.getSourcePathList());
 
-
   auto Factory =
-    llvm::make_unique<clang::PDGBuilderActionFactory>(
+    llvm::make_unique<clang::slicer::PDGBuilderActionFactory>(
       FuncName,LineNo,ColNo);
   return Tool.run(Factory.get());
 }

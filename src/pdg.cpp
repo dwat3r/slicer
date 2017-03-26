@@ -44,3 +44,19 @@ Statement* Statement::create(const clang::Stmt* astref)
   }
   return new Statement(astref);
 }
+std::string Statement::dump() {
+  return dumpLevel(1);
+}
+std::string Statement::dumpLevel(int level) {
+  std::string tab(level, ' ');
+  std::string defs = define == nullptr ? "" : define->getNameAsString();
+  std::string uses;
+  for (auto& var : use) {
+    uses += var->getNameAsString() + ", ";
+  }
+  std::string ret = name() + ": defines: " + defs + ", uses: " + uses + "\n";
+  for (auto& child : controlChildren) {
+    ret += tab + child.first->dumpLevel(level + 1);
+  }
+  return ret;
+}

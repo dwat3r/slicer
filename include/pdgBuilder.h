@@ -11,7 +11,7 @@
 
 #include "pdg.h"
 namespace clang {
-
+namespace slicer {
 /*! main class for processing the AST
   */
 struct data {
@@ -23,7 +23,7 @@ struct data {
 class PDGBuilder : public ast_matchers::MatchFinder::MatchCallback {
 public:
   explicit PDGBuilder() {}
-  explicit PDGBuilder(llvm::StringRef _funcName,
+  explicit PDGBuilder(std::string _funcName,
                       int _lineNo,
                       int _colNo)
     : funcName(_funcName)
@@ -34,19 +34,22 @@ public:
   void registerMatchers(ast_matchers::MatchFinder *MatchFinder);
 
   void run(const ast_matchers::MatchFinder::MatchResult &result) override;
-  
+
   void onEndOfTranslationUnit() override;
 
 private:
-  llvm::StringRef funcName;
-  int lineNo;
-  int colNo;
-  clang::ValueDecl* var;
+  inline bool hasStmt(const clang::Stmt* value) {
+    return stmt_map.find(value) != stmt_map.end();
+  }
+  const std::string funcName;
+  int lineNo = 0;
+  int colNo = 0;
+  clang::ValueDecl* var = nullptr;
+  // the function
+  clang::Stmt* root = nullptr;
   // We store the Statements in a map.
   std::map<const clang::Stmt*, Statement*> stmt_map;
-  // We store the def variables in another map
-  std::map<const clang::ValueDecl*, std::set<Statement*>> def_map;
 };
-
+}
 } // namespace clang
 #endif // PDG_BUILDER_H
