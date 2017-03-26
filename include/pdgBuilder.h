@@ -41,10 +41,14 @@ private:
   inline bool hasStmt(const clang::Stmt* value) {
     return stmt_map.find(value) != stmt_map.end();
   }
+  static clang::FullSourceLoc 
+    getLoc(const ast_matchers::MatchFinder::MatchResult &result, const clang::Stmt* astRef) {
+    return result.Context->getFullLoc(astRef->getLocStart());
+  }
   const std::string funcName;
   int lineNo = 0;
   int colNo = 0;
-  clang::ValueDecl* var = nullptr;
+  const clang::ValueDecl* slicingVar = nullptr;
   // the function
   clang::Stmt* root = nullptr;
   // We store the Statements in a map.
