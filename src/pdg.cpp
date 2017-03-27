@@ -1,5 +1,8 @@
 #include "pdg.h"
 #include "llvm/Support/Casting.h"
+#include "clang/Lex/Lexer.h"
+#include "clang/Basic/SourceLocation.h"
+#include "clang/Basic/LangOptions.h"
 
 Statement* Statement::create(const clang::Stmt* astref,clang::FullSourceLoc loc)
 {
@@ -29,34 +32,7 @@ Statement* Statement::create(const clang::Stmt* astref,clang::FullSourceLoc loc)
   }
   return new Statement(astref, loc);
 }
-std::string Statement::dump() {
-  return dumpLevel(1);
 
-}
-std::string Statement::dumpLevel(int level) {
-  std::string tab(level, ' ');
-  std::string nodeId = ": id: " + std::to_string(id);
-  std::string defs = ", def: ";
-  for (auto& var : define) {
-	  defs += var->getNameAsString() + ", ";
-  }
-  std::string uses = ", use: ";
-  for (auto& var : use) {
-    uses += var->getNameAsString() + ", ";
-  }
-  std::string dataDeps = ", data deps: ";
-  for (auto& stmt : dataEdges) {
-    dataDeps += std::to_string(stmt->getId()) + ", ";
-  }
-  std::string locs = ", loc: ("
-    + std::to_string(loc.getSpellingLineNumber()) + ","
-    + std::to_string(loc.getSpellingColumnNumber()) + ")";
-  std::string ret = nameAsString() + nodeId + defs + uses + locs + dataDeps + "\n";
-  for (auto& child : controlChildren) {
-    ret += tab + child.first->dumpLevel(level + 1);
-  }
-  return ret;
-}
 void Statement::setDataEdges() {
 	// initialize initial def_map from this node's defines
   std::map <const clang::ValueDecl*, std::pair<Statement*, Statement::Edge>> def_map;
@@ -152,4 +128,69 @@ void Statement::setDataEdgesRec(std::map <const clang::ValueDecl*,
 	}
 	else break; // if we're not in a loop, don't visit twice
   }
+}
+// print out graph structure
+std::string Statement::dump() {
+  return dumpLevel(1);
+
+}
+std::string Statement::dumpLevel(int level) {
+  std::string tab(level, ' ');
+  std::string nodeId = ": id: " + std::to_string(id);
+  std::string defs = ", def: ";
+  for (auto& var : define) {
+    defs += var->getNameAsString() + ", ";
+  }
+  std::string uses = ", use: ";
+  for (auto& var : use) {
+    uses += var->getNameAsString() + ", ";
+  }
+  std::string dataDeps = ", data deps: ";
+  for (auto& stmt : dataEdges) {
+    dataDeps += std::to_string(stmt->getId()) + ", ";
+  }
+  std::string locs = ", loc: ("
+    + std::to_string(loc.getSpellingLineNumber()) + ","
+    + std::to_string(loc.getSpellingColumnNumber()) + ")";
+  std::string ret = nameAsString() + nodeId + defs + uses + locs + dataDeps + "\n";
+  for (auto& child : controlChildren) {
+    ret += tab + child.first->dumpLevel(level + 1);
+  }
+  return ret;
+}
+std::string stmt2str(const clang::Stmt *s, clang::SourceManager &sm) {
+  // (T, U) => "T,,"
+  std::string text = clang::Lexer::getSourceText(clang::CharSourceRange::getTokenRange(s->getSourceRange()), sm, clang::LangOptions(), 0);
+  if (text.at(text.size() - 1) == ',')
+    return clang::Lexer::getSourceText(clang::CharSourceRange::getCharRange(s->getSourceRange()), sm, clang::LangOptions(), 0);
+  return text;
+}
+std::string Statement::EdgeToStr(Statement::Edge e) {
+  switch (e) {
+  case Statement::Edge::None:  return "";
+  case Statement::Edge::False: return "F";
+  case Statement::Edge::True:  return "T";
+  default: return "";
+  }
+}
+// digraph {
+// a -> b[label="0.2",weight="0.2"]; }
+std::string Statement::dumpDot(clang::SourceManager &sm) {
+  std::string ret = "digraph {\n";
+  ret += dumpDotRec(sm) + "\n}";
+  return ret;
+}
+std::string Statement::dumpDotRec(clang::SourceManager &sm) {
+  std::string sid = std::to_string(id);
+  std::string ret = sid + "[label=\"" + stmt2str(astRef, sm) + "\",style=bold];\n";
+  for (auto& c : controlChildren) {
+    ret += sid + " -> " + std::to_string(c.first->getId()) + ";\n";
+    if (!c.first->getControlChildren().empty()) {
+      ret += c.first->dumpDotRec(sm);
+    }
+  }
+  for (auto& e : dataEdges) {
+    ret += sid + " -> " + std::to_string(e->getId()) + ";\n";
+  }
+  return ret;
 }

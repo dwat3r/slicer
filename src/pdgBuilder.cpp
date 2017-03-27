@@ -169,6 +169,7 @@ void PDGBuilder::run(const ast_matchers::MatchFinder::MatchResult &result) {
     if (loc.getSpellingLineNumber() == lineNo &&
         loc.getSpellingColumnNumber() == colNo) {
       slicingVar = sv->getDecl();
+      sm = result.SourceManager;
     }
   }
 }
@@ -182,6 +183,7 @@ void PDGBuilder::onEndOfTranslationUnit() {
   stmt_map[root]->setDataEdges();
   llvm::errs() << "With data dependence edges too:\n";
   llvm::errs() << stmt_map[root]->dump();
+  llvm::errs() << stmt_map[root]->dumpDot(*sm);
 
 }
 } // namespace slicer

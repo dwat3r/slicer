@@ -25,6 +25,7 @@ public:
 	  False,
 	  True,
   };
+  std::string EdgeToStr(Edge e);
 
   struct StatementLocCmp {
     bool operator()(const std::pair<Statement*, Statement::Edge>& lhs, 
@@ -92,8 +93,7 @@ public:
 
   // factory method
   static Statement* create(const clang::Stmt* astref,clang::FullSourceLoc loc);
-  // print structure
-  std::string dump();
+  
   // this draws in the data dependence edges to the graph
   // caller and initializer
   void setDataEdges();
@@ -101,8 +101,12 @@ public:
   void setDataEdgesRec(std::map <const clang::ValueDecl*, std::pair<Statement*,Edge>> parent_def_map);
 
   int getId() { return id; }
+  // print structure
+  std::string dump();
+  std::string dumpDot(clang::SourceManager &sm);
 protected:
   std::string dumpLevel(int level);
+  std::string dumpDotRec(clang::SourceManager &sm);
   void setId() { static int _id = 0; id = _id++; }
   
   std::set<std::pair<Statement*,Edge>, StatementLocCmp> controlChildren;

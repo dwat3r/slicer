@@ -49,6 +49,7 @@ private:
   int lineNo = 0;
   int colNo = 0;
   const clang::ValueDecl* slicingVar = nullptr;
+  clang::SourceManager* sm = nullptr;
   // the function
   clang::Stmt* root = nullptr;
   // We store the Statements in a map.
