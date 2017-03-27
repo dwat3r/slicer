@@ -4,4 +4,8 @@
     <LocalDebuggerCommandArguments>"$(TargetDir)\..\..\test\horwitz.cc" -line-number=6 -column-number=5 -function-name=main   --</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LocalDebuggerCommandArguments>$(ProjectDir)test\cica.cc -function-name=main -line=6 -column=5 --</LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
 </Project>

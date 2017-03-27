@@ -1,4 +1,4 @@
-int cica(int p1, int p2){
+int main(int p1, int p2){
 	int local = 0;
 	int local3 = 0;
 	if(local){

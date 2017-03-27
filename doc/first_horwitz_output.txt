@@ -1,0 +1,27 @@
+horwitz.cc
+slicing variable is: i
+
+Compound: id: 1, defines: , uses: , loc: (1,11), data dependence edges:
+ Assign: id: 0, defines: sum, uses: , loc: (2,3), data dependence edges: 3,
+ Assign: id: 2, defines: i, uses: , loc: (3,3), data dependence edges: 4, 3,
+ Loop: id: 6, defines: , uses: i, , loc: (4,3), data dependence edges:
+  Compound: id: 5, defines: , uses: , loc: (4,17), data dependence edges:
+   Assign: id: 3, defines: sum, uses: i, , loc: (5,5), data dependence edges: 3,
+   Assign: id: 4, defines: i, uses: i, , loc: (6,5), data dependence edges: 4, 6, 3,
+
+cica.cc
+
+Compound: id: 1, def: p1, p2, , use: , loc: (1,25), data deps: 5, 4, 6, 12,
+ Assign: id: 0, def: local, , use: , loc: (2,2), data deps: 5, 10, 7,
+ Assign: id: 2, def: local3, , use: , loc: (3,2), data deps: 6, 7,
+ Branch: id: 10, def: , use: local, , loc: (4,2), data deps:
+  Compound: id: 8, def: , use: , loc: (4,11), data deps:
+   Assign: id: 3, def: local2, , use: , loc: (5,3), data deps: 4,
+   Assign: id: 4, def: p1, , use: local2, , loc: (6,3), data deps:
+  Compound: id: 9, def: , use: , loc: (8,6), data deps:
+   Assign: id: 5, def: p2, , use: local, , loc: (9,3), data deps:
+ Loop: id: 12, def: , use: p2, , loc: (11,2), data deps:
+  Compound: id: 11, def: , use: , loc: (11,15), data deps:
+   Assign: id: 6, def: p1, , use: local3, , loc: (12,3), data deps: 6,
+   Assign: id: 7, def: local, , use: local3, , loc: (13,3), data deps: 7,
+ Assign: id: 13, def: , use: , loc: (15,2), data deps:

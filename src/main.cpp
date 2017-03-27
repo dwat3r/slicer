@@ -28,12 +28,12 @@ static cl::opt<std::string> FuncName("function-name",
                                      cl::desc(R"(The name of the function to slice.)"),
                                      cl::init("main"),
                                      cl::cat(Slicer));
-static cl::opt<int> LineNo("line-number", 
+static cl::opt<int> LineNo("line", 
                            cl::desc(R"(The line number of the statement to slice.)"),
                            cl::init(0),
                            cl::cat(Slicer));
 
-static cl::opt<int> ColNo("column-number", 
+static cl::opt<int> ColNo("column", 
                           cl::desc(R"(The column number of the statement to slice.)"),
                           cl::init(0),
                           cl::cat(Slicer));

@@ -1,0 +1,55 @@
+// assignment
+m declRefExpr(to(varDecl()),hasAncestor(functionDecl(hasName("main"))))
+m declStmt()
+m binaryOperator(anyOf(hasOperatorName("="),
+                       hasOperatorName("+="), // see if these can be replaced by: isAssignmentOp(), 
+                       hasOperatorName("-="), // isCompoundAssignmentOp()
+                       hasOperatorName("+=")))
+
+// branch
+m ifStmt()
+m switchStmt()
+//loop
+m whileStmt()
+
+//compound
+m compoundStmt()
+
+// composition of matchers:
+let d declStmt().bind("decl")
+let b binaryOperator(hasOperatorName("=")).bind("b")
+let i ifStmt().bind("if")
+let w whileStmt().bind("while")
+m functionDecl(forEachDescendant(anyOf(w,d,i,b)))
+
+
+refs:
+http://clang.llvm.org/doxygen/ASTMatchers_8h_source.html
+http://llvm.org/docs/YamlIO.html
+
+use stack for putting def-use relationships:
+
+when building the pdg, and entering an assignment:
+do it like in the state pattern:
+there should be a map which stores ALL the definitions of ALL variables,
+so: <var, defs>
+and when adding uses to the current assignStatement, -> 
+compute which variable matches which definition, based on:
+variable matches closest definition before statement AND
+is control reachable.
+
+Control reachability:
+definition statement is either:
+  sibling 
+  sibling of parent 
+
+to cover IF branching:
+We should only check siblings on every level 
+with the same edge label, which could either be True or False.
+
+tasks:
+make slicing work
+improve pdg
+write thesis
+make sdg
+make slicing on it work
