@@ -88,6 +88,7 @@ public:
   // name
   virtual Type name() { return Type::Base; }
   virtual std::string nameAsString() { return "Statement"; }
+  virtual std::string sourceString(clang::SourceManager &sm);
   // returns true if branch
   virtual bool isBranchStatement() { return false; }
 
@@ -103,12 +104,15 @@ public:
   int getId() { return id; }
   // print structure
   std::string dump();
+  // graphviz output
   std::string dumpDot(clang::SourceManager &sm);
 protected:
   std::string dumpLevel(int level);
   std::string dumpDotRec(clang::SourceManager &sm);
   void setId() { static int _id = 0; id = _id++; }
-  
+  static std::string stmt2str(const clang::Stmt *s, clang::SourceManager &sm);
+  static std::string firstOnly(const clang::Stmt *s, const clang::Stmt *s2, clang::SourceManager &sm);
+  // graph
   std::set<std::pair<Statement*,Edge>, StatementLocCmp> controlChildren;
   std::set<Statement*> dataEdges;
   // These store the variables that are defined / used in this statement
@@ -136,6 +140,7 @@ public:
   virtual bool isBranchStatement() override { return true; } 
   virtual Type name() { return Type::Branch; }
   virtual std::string nameAsString() { return "Branch"; }
+  virtual std::string sourceString(clang::SourceManager &sm);
 };
 // Loop and Branch almost the same, but they differ in the data dependence edge creations.
 class LoopStatement : public Statement{
@@ -143,6 +148,7 @@ public:
   using Statement::Statement;
   virtual Type name() { return Type::Loop; }
   virtual std::string nameAsString() { return "Loop"; }
+  virtual std::string sourceString(clang::SourceManager &sm);
 };
 
 class CompoundStatement : public Statement {
@@ -150,5 +156,6 @@ public:
   using Statement::Statement;
   virtual Type name() { return Type::Compound; }
   virtual std::string nameAsString() { return "Compound"; }
+  virtual std::string sourceString(clang::SourceManager &sm);
 };
 #endif // PDG_H

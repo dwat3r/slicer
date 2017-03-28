@@ -158,13 +158,7 @@ std::string Statement::dumpLevel(int level) {
   }
   return ret;
 }
-std::string stmt2str(const clang::Stmt *s, clang::SourceManager &sm) {
-  // (T, U) => "T,,"
-  std::string text = clang::Lexer::getSourceText(clang::CharSourceRange::getTokenRange(s->getSourceRange()), sm, clang::LangOptions(), 0);
-  if (text.at(text.size() - 1) == ',')
-    return clang::Lexer::getSourceText(clang::CharSourceRange::getCharRange(s->getSourceRange()), sm, clang::LangOptions(), 0);
-  return text;
-}
+
 std::string Statement::EdgeToStr(Statement::Edge e) {
   switch (e) {
   case Statement::Edge::None:  return "";
@@ -173,24 +167,66 @@ std::string Statement::EdgeToStr(Statement::Edge e) {
   default: return "";
   }
 }
-// digraph {
-// a -> b[label="0.2",weight="0.2"]; }
+std::string Statement::stmt2str(const clang::Stmt *s, clang::SourceManager &sm) {
+  // (T, U) => "T,,"
+  std::string text = clang::Lexer::getSourceText(clang::CharSourceRange::getTokenRange(s->getSourceRange()), 
+    sm, clang::LangOptions(), 0);
+  if (text.at(text.size() - 1) == ',')
+    return clang::Lexer::getSourceText(clang::CharSourceRange::getCharRange(s->getSourceRange()), 
+      sm, clang::LangOptions(), 0);
+  return text;
+}
+std::string Statement::firstOnly(const clang::Stmt *s, const clang::Stmt *s2, clang::SourceManager &sm) {
+  std::string first = stmt2str(s, sm);
+  std::string second = stmt2str(s2, sm);
+  if (first.size() > second.size())
+  {
+    // if so then strip them off
+    first = first.substr(0, first.size() - second.size());
+    return first;
+  }
+  else return "";
+}
+std::string Statement::sourceString(clang::SourceManager &sm) {
+  return stmt2str(astRef, sm);
+}
+std::string BranchStatement::sourceString(clang::SourceManager &sm) {
+  return firstOnly(astRef, (*controlChildren.begin()).first->getAstRef(),sm);
+}
+std::string LoopStatement::sourceString(clang::SourceManager &sm) {
+  return firstOnly(astRef, (*controlChildren.begin()).first->getAstRef(), sm);
+}
+std::string CompoundStatement::sourceString(clang::SourceManager &sm) {
+  return "{}";
+}
+
 std::string Statement::dumpDot(clang::SourceManager &sm) {
-  std::string ret = "digraph {\n";
+  std::string ret = "digraph {\nrankdir=TD;\n";
   ret += dumpDotRec(sm) + "\n}";
   return ret;
 }
 std::string Statement::dumpDotRec(clang::SourceManager &sm) {
-  std::string sid = std::to_string(id);
-  std::string ret = sid + "[label=\"" + stmt2str(astRef, sm) + "\",style=bold];\n";
+  std::string ranklist = "{ rank=same";
+  std::string ret = std::to_string(id) + "[label=\"" + sourceString(sm) + "\"];\n";
   for (auto& c : controlChildren) {
-    ret += sid + " -> " + std::to_string(c.first->getId()) + ";\n";
+    ret += std::to_string(id) + " -> " + std::to_string(c.first->getId())
+      + "[label=\"" + EdgeToStr(c.second) + "\",style=bold];\n";
     if (!c.first->getControlChildren().empty()) {
       ret += c.first->dumpDotRec(sm);
     }
+    else {
+      ret += std::to_string(c.first->getId())
+        + "[label=\"" + c.first->sourceString(sm) + "\"];\n";
+      for (auto& e : c.first->getDataEdges()) {
+        ret += std::to_string(c.first->getId()) + " -> " + std::to_string(e->getId()) + ";\n";
+      }
+    }
+    ranklist += " " + std::to_string(c.first->getId());
   }
+  ranklist += " }\n";
+  ret += ranklist;
   for (auto& e : dataEdges) {
-    ret += sid + " -> " + std::to_string(e->getId()) + ";\n";
+    ret += std::to_string(id) + " -> " + std::to_string(e->getId()) + ";\n";
   }
   return ret;
 }
