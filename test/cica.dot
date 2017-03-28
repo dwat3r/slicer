@@ -1,0 +1,51 @@
+digraph {
+rankdir=TD;
+1[label="{}"];
+1 -> 0[label="T",style=bold];
+0[label="int local = 0;"];
+0 -> 5;
+0 -> 7;
+0 -> 8;
+0 -> 11;
+1 -> 2[label="T",style=bold];
+2[label="int local3 = 0;"];
+2 -> 6;
+2 -> 7;
+1 -> 11[label="T",style=bold];
+11[label="if(local)"];
+11 -> 9[label="T",style=bold];
+9[label="{}"];
+9 -> 3[label="T",style=bold];
+3[label="int local2 = 1;"];
+3 -> 4;
+9 -> 4[label="T",style=bold];
+4[label="p1 = local2"];
+{ rank=same 3 4 }
+11 -> 10[label="F",style=bold];
+10[label="{}"];
+10 -> 5[label="T",style=bold];
+5[label="p2 = local"];
+{ rank=same 5 }
+{ rank=same 9 10 }
+1 -> 13[label="T",style=bold];
+13[label="while(p2 > 0)"];
+13 -> 12[label="T",style=bold];
+12[label="{}"];
+12 -> 6[label="T",style=bold];
+6[label="p1 = local3"];
+6 -> 6;
+12 -> 7[label="T",style=bold];
+7[label="local = local3"];
+7 -> 7;
+{ rank=same 6 7 }
+{ rank=same 12 }
+1 -> 8[label="T",style=bold];
+8[label="return p1 + local"];
+{ rank=same 0 2 11 13 8 }
+1 -> 5;
+1 -> 6;
+1 -> 4;
+1 -> 8;
+1 -> 13;
+
+}

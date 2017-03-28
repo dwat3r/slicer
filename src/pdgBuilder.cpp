@@ -1,10 +1,6 @@
 #include "pdgBuilder.h"
 #include "clang/ASTMatchers/ASTMatchers.h"
-/*!
- * The algorithm for building the relations:
- * We specialize Statement with dyn_cast
- * Then add general children.
- */
+
 using namespace clang::ast_matchers;
 
 namespace clang {
@@ -17,7 +13,27 @@ AST_MATCHER(UnaryOperator, isIncrementDecrementOp) {
   return Node.isIncrementDecrementOp();
 }
 }
-
+bool PDGBuilder::slicingStmtPos::refined(int sl, int sc, int el, int ec) {
+  bool ret = false;
+  if (sl > sline) { sline = sl;ret = true;}
+  if (sc > scol)  { scol  = sc;ret = true;}
+  if (el < eline) { eline = el;ret = true;}
+  if (ec < ecol)  { ecol  = ec;ret = true;}
+  return ret;
+}
+void PDGBuilder::setSlicingStmt(const ast_matchers::MatchFinder::MatchResult &result, const clang::Stmt* astRef) {
+  clang::FullSourceLoc start = result.Context->getFullLoc(astRef->getLocStart());
+  clang::FullSourceLoc end = result.Context->getFullLoc(astRef->getLocEnd());
+  
+  if (start.getSpellingLineNumber()   <= lineNo &&
+      start.getSpellingColumnNumber() <= colNo  &&
+      lineNo <= end.getSpellingLineNumber()     &&
+      colNo  <= end.getSpellingColumnNumber()   &&
+      slicePos.refined(start.getSpellingLineNumber(), start.getSpellingColumnNumber(),
+                         end.getSpellingLineNumber(),   end.getSpellingColumnNumber())) {
+    slicingStmt = astRef;
+  }
+}
 void PDGBuilder::registerMatchers(MatchFinder *MatchFinder) {
   // first define matchers
   // assign
@@ -34,9 +50,11 @@ void PDGBuilder::registerMatchers(MatchFinder *MatchFinder) {
   
   auto bopLit = binaryOperator(isAssignmentOp(),
 	  hasLHS(ignoringImpCasts(declRefExpr(to(varDecl().bind("lval")))))).bind("binopLit");
-
+  //fixme do something with unary ops which are embedded in statements like: int x = a++;
   auto uop = unaryOperator(isIncrementDecrementOp(),
                            hasDescendant(declRefExpr(to(varDecl().bind("uval"))))).bind("unop");
+
+  auto ret = returnStmt(forEachDescendant(declRefExpr(to(varDecl().bind("retVar"))))).bind("ret");
   // branch
   //fixme it won't match for "if(0)"
   auto ifs = ifStmt(hasCondition(
@@ -46,8 +64,6 @@ void PDGBuilder::registerMatchers(MatchFinder *MatchFinder) {
     forEachDescendant(declRefExpr(to(varDecl().bind("whileCondVar")))))).bind("while");
   // compound
   auto compounds = compoundStmt().bind("comp");
-  // find slicing variable
-  auto slicingVar = declRefExpr().bind("slicingVar");
 
   // then add them to MatchFinder
   MatchFinder->addMatcher(functionDecl(hasName(funcName), forEachDescendant(decls)).bind("f"), this);
@@ -55,10 +71,10 @@ void PDGBuilder::registerMatchers(MatchFinder *MatchFinder) {
   MatchFinder->addMatcher(functionDecl(hasName(funcName), forEachDescendant(bop)).bind("f"), this);
   MatchFinder->addMatcher(functionDecl(hasName(funcName), forEachDescendant(bopLit)).bind("f"), this);
   MatchFinder->addMatcher(functionDecl(hasName(funcName), forEachDescendant(uop)).bind("f"), this);
+  MatchFinder->addMatcher(functionDecl(hasName(funcName), forEachDescendant(ret)).bind("f"), this);
   MatchFinder->addMatcher(functionDecl(hasName(funcName), forEachDescendant(ifs)).bind("f"), this);
   MatchFinder->addMatcher(functionDecl(hasName(funcName), forEachDescendant(whiles)).bind("f"), this);
   MatchFinder->addMatcher(functionDecl(hasName(funcName), forEachDescendant(compounds)).bind("f"), this);
-  MatchFinder->addMatcher(functionDecl(hasName(funcName), forEachDescendant(slicingVar)).bind("f"), this);
 }
 void PDGBuilder::run(const ast_matchers::MatchFinder::MatchResult &result) {
   // process the match results
@@ -73,6 +89,7 @@ void PDGBuilder::run(const ast_matchers::MatchFinder::MatchResult &result) {
     else {
       stmt_map[ds]->addDefine(d);
     }
+    setSlicingStmt(result, ds);
   }
   if (auto ds = result.Nodes.getNodeAs<DeclStmt>("declStmtWithInit")) {
     //todo multiple decl...
@@ -84,9 +101,10 @@ void PDGBuilder::run(const ast_matchers::MatchFinder::MatchResult &result) {
       stmt_map[ds]->addDefine(d);
     }
     stmt_map[ds]->addUse(result.Nodes.getNodeAs<VarDecl>("declInit"));
+    setSlicingStmt(result, ds);
   }
   if (auto bo = result.Nodes.getNodeAs<BinaryOperator>("binop")) {
-	auto lhs = result.Nodes.getNodeAs<VarDecl>("lval");
+	  auto lhs = result.Nodes.getNodeAs<VarDecl>("lval");
     if (!hasStmt(bo)) {
 		stmt_map[bo] = new AssignStatement(bo, getLoc(result, bo), { lhs });
     }
@@ -94,6 +112,7 @@ void PDGBuilder::run(const ast_matchers::MatchFinder::MatchResult &result) {
       stmt_map[bo]->addDefine(lhs);
     }
       stmt_map[bo]->addUse(result.Nodes.getNodeAs<VarDecl>("rval"));
+      setSlicingStmt(result, bo);
   }
   if (auto boL = result.Nodes.getNodeAs<BinaryOperator>("binopLit")) {
 	  auto lhs = result.Nodes.getNodeAs<VarDecl>("lval");
@@ -103,6 +122,7 @@ void PDGBuilder::run(const ast_matchers::MatchFinder::MatchResult &result) {
 	  else {
 		  stmt_map[boL]->addDefine(lhs);
 	  }
+    setSlicingStmt(result, boL);
   }
   if (auto uo = result.Nodes.getNodeAs<UnaryOperator>("unop")) {
     auto var = result.Nodes.getNodeAs<VarDecl>("uval");
@@ -113,6 +133,15 @@ void PDGBuilder::run(const ast_matchers::MatchFinder::MatchResult &result) {
       stmt_map[uo]->addDefine(var);
     }
     stmt_map[uo]->addUse(var);
+    setSlicingStmt(result, uo);
+  }
+  if (auto ret = result.Nodes.getNodeAs<ReturnStmt>("ret")) {
+    auto var = result.Nodes.getNodeAs<VarDecl>("retVar");
+    if (!hasStmt(ret)) {
+      stmt_map[ret] = new AssignStatement(ret, getLoc(result, ret));
+    }
+    stmt_map[ret]->addUse(var);
+    setSlicingStmt(result, ret);
   }
   // branch
   if (auto is = result.Nodes.getNodeAs<IfStmt>("if")) {
@@ -125,8 +154,8 @@ void PDGBuilder::run(const ast_matchers::MatchFinder::MatchResult &result) {
 	  else {
 		  stmt_map[is->getElse()] = Statement::create(is->getElse(), getLoc(result, is->getElse()));
 		  stmt_map[is] = new BranchStatement(is, getLoc(result, is),
-												  { { stmt_map[is->getThen()],Statement::Edge::True },
-												  { stmt_map[is->getElse()],Statement::Edge::True } });
+												  { { stmt_map[is->getThen()],Statement::Edge::True  },
+												    { stmt_map[is->getElse()],Statement::Edge::False } });
 	  }
     }
       stmt_map[is]->addUse(result.Nodes.getNodeAs<VarDecl>("ifCondVar"));
@@ -164,26 +193,22 @@ void PDGBuilder::run(const ast_matchers::MatchFinder::MatchResult &result) {
       }
     }
   }
-  if (auto sv = result.Nodes.getNodeAs<DeclRefExpr>("slicingVar")) {
-    clang::FullSourceLoc loc = getLoc(result, sv);
-    if (loc.getSpellingLineNumber() == lineNo &&
-        loc.getSpellingColumnNumber() == colNo) {
-      slicingVar = sv->getDecl();
-      sm = result.SourceManager;
-    }
-  }
+  // save sourcemanager, we'll need it later for dot creation.
+  sm = result.SourceManager;
 }
 
 void PDGBuilder::onEndOfTranslationUnit() {
   // slice here
-  if (slicingVar) { llvm::errs() << "slicing variable is: " + slicingVar->getNameAsString() + "\n\n"; }
+  if (slicingStmt) { llvm::errs() << "slicing statement is:\n";slicingStmt->dump(); }
   else { llvm::errs() << "You've given invalid location for slicing var, since I've found no variable there.\n"; }
   llvm::errs() << "With control edges, but no data dependence edges:\n";
   llvm::errs() << stmt_map[root]->dump();
   stmt_map[root]->setDataEdges();
   llvm::errs() << "With data dependence edges too:\n";
   llvm::errs() << stmt_map[root]->dump();
-  llvm::errs() << stmt_map[root]->dumpDot(*sm);
+  //std::ofstream file("out.txt"); <- todo give the tool as a parameter to write dot to file
+  //file << stmt_map[root]->dumpDot(*sm);
+  //file.close();
 
 }
 } // namespace slicer

@@ -12,5 +12,5 @@ int main(int p1, int p2){
 		p1 = local3;
 		local = local3;
 	}
-	return p1;
+	return p1 + local;
 }

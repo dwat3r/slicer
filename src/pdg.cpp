@@ -4,6 +4,8 @@
 #include "clang/Basic/SourceLocation.h"
 #include "clang/Basic/LangOptions.h"
 
+#include <queue>
+
 Statement* Statement::create(const clang::Stmt* astref,clang::FullSourceLoc loc)
 {
   // Assignment
@@ -179,13 +181,10 @@ std::string Statement::stmt2str(const clang::Stmt *s, clang::SourceManager &sm) 
 std::string Statement::firstOnly(const clang::Stmt *s, const clang::Stmt *s2, clang::SourceManager &sm) {
   std::string first = stmt2str(s, sm);
   std::string second = stmt2str(s2, sm);
-  if (first.size() > second.size())
-  {
-    // if so then strip them off
-    first = first.substr(0, first.size() - second.size());
+  assert(first.size() > second.size());
+  assert(first.find(second) != std::string::npos);
+    first = first.substr(0, first.find(second));
     return first;
-  }
-  else return "";
 }
 std::string Statement::sourceString(clang::SourceManager &sm) {
   return stmt2str(astRef, sm);
@@ -229,4 +228,56 @@ std::string Statement::dumpDotRec(clang::SourceManager &sm) {
     ret += std::to_string(id) + " -> " + std::to_string(e->getId()) + ";\n";
   }
   return ret;
+}
+
+// s.l.i.c.e
+void Statement::BFS(Statement* slicingStmt) {
+/*
+Breadth-First-Search(Graph, root):
+    
+  create empty set S
+  create empty queue Q      
+
+  root.parent = NIL
+  add root to S
+  Q.enqueue(root)                      
+
+  while Q is not empty:
+      current = Q.dequeue()
+      if current is the goal:
+          return current
+      for each node n that is adjacent to current:
+          if n is not in S:
+              add n to S
+              n.parent = current
+              Q.enqueue(n)
+*/
+  std::set<Statement*> S;
+  std::queue<Statement*> Q;
+  S.insert(this);
+  Statement* current = nullptr;
+  Q.emplace(this);
+  while (!Q.empty()) {
+    current = Q.front(); Q.pop();
+    if (current == slicingStmt) {
+      // do the magic
+    }
+    else {
+      for (auto& c : current->getControlChildren()) {
+        if (S.find(c.first) == S.end()) {
+          S.insert(c.first);
+          c.first->parent = current;
+          Q.emplace(c.first);
+        }
+      }
+      for (auto& c : current->getDataEdges()) {
+        if (S.find(c) == S.end()) {
+          S.insert(c);
+          c->parent = current;
+          Q.emplace(c);
+        }
+      }
+    }
+  }
+
 }

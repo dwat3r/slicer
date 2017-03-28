@@ -10,18 +10,25 @@
 #include <set>
 
 #include "pdg.h"
-namespace clang {
-namespace slicer {
 /*! main class for processing the AST
   */
-struct data {
-  std::string funcName;
-  int line;
-  int col;
-};
+namespace clang {
+namespace slicer {
 
 class PDGBuilder : public ast_matchers::MatchFinder::MatchCallback {
 public:
+  struct slicingStmtPos {
+    slicingStmtPos()
+      : sline(0), scol(0), eline(INT_MAX), ecol(INT_MAX) {}
+    slicingStmtPos(int _sline, int _scol, int _eline, int _ecol)
+      : sline(_sline), scol(_scol), eline(_eline), ecol(_ecol) {}
+    int sline;
+    int scol;
+    int eline;
+    int ecol;
+    bool refined(int sl, int sc, int el, int ec);
+  };
+
   explicit PDGBuilder() {}
   explicit PDGBuilder(std::string _funcName,
                       int _lineNo,
@@ -45,10 +52,12 @@ private:
     getLoc(const ast_matchers::MatchFinder::MatchResult &result, const clang::Stmt* astRef) {
     return result.Context->getFullLoc(astRef->getLocStart());
   }
+  void setSlicingStmt(const ast_matchers::MatchFinder::MatchResult &result, const clang::Stmt* astRef);
   const std::string funcName;
   int lineNo = 0;
   int colNo = 0;
-  const clang::ValueDecl* slicingVar = nullptr;
+  const clang::Stmt* slicingStmt = nullptr;
+  slicingStmtPos slicePos;
   clang::SourceManager* sm = nullptr;
   // the function
   clang::Stmt* root = nullptr;
