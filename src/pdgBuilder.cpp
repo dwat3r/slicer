@@ -89,95 +89,30 @@ void PDGBuilder::registerMatchers(MatchFinder *MatchFinder) {
 void PDGBuilder::run(const ast_matchers::MatchFinder::MatchResult &result) {
   // process the match results
   // ensure every entry added once
-  // assign
-  if (auto ds = result.Nodes.getNodeAs<DeclStmt>("declStmt")) {
-    //todo multiple decl...
-    auto d = result.Nodes.getNodeAs<VarDecl>("decl");
-    if (!hasStmt(ds)) {
-		stmt_map[ds] = new AssignStatement(ds, getLoc(result, ds), { d });
-    }
-    else {
-      stmt_map[ds]->addDefine(d);
-    }
-    setSlicingStmt(result, ds);
-  }
-  if (auto ds = result.Nodes.getNodeAs<DeclStmt>("declStmtWithInit")) {
-    //todo multiple decl...
-    auto d = result.Nodes.getNodeAs<VarDecl>("declWithInit");
-    if (!hasStmt(ds)) {
-		stmt_map[ds] = new AssignStatement(ds, getLoc(result, ds), { d });
-    }
-    else {
-      stmt_map[ds]->addDefine(d);
-    }
-    stmt_map[ds]->addUse(result.Nodes.getNodeAs<VarDecl>("declInit"));
-    setSlicingStmt(result, ds);
-  }
-  if (auto bo = result.Nodes.getNodeAs<BinaryOperator>("binop")) {
-	  auto lhs = result.Nodes.getNodeAs<VarDecl>("lval");
-    if (!hasStmt(bo)) {
-		stmt_map[bo] = new AssignStatement(bo, getLoc(result, bo), { lhs });
-    }
-    else {
-      stmt_map[bo]->addDefine(lhs);
-    }
-      stmt_map[bo]->addUse(result.Nodes.getNodeAs<VarDecl>("rval"));
-      setSlicingStmt(result, bo);
-  }
-  if (auto boL = result.Nodes.getNodeAs<BinaryOperator>("binopLit")) {
-	  auto lhs = result.Nodes.getNodeAs<VarDecl>("lval");
-	  if (!hasStmt(boL)) {
-		  stmt_map[boL] = new AssignStatement(boL, getLoc(result, boL), { lhs });
-	  }
-	  else {
-		  stmt_map[boL]->addDefine(lhs);
-	  }
-    setSlicingStmt(result, boL);
-  }
-  if (auto uo = result.Nodes.getNodeAs<UnaryOperator>("unop")) {
-    auto var = result.Nodes.getNodeAs<VarDecl>("uval");
-    if (!hasStmt(uo)) {
-		stmt_map[uo] = new AssignStatement(uo, getLoc(result, uo), { var });
-    }
-    else {
-      stmt_map[uo]->addDefine(var);
-    }
-    stmt_map[uo]->addUse(var);
-    setSlicingStmt(result, uo);
-  }
-  if (auto ret = result.Nodes.getNodeAs<ReturnStmt>("ret")) {
-    auto var = result.Nodes.getNodeAs<VarDecl>("retVar");
-    if (!hasStmt(ret)) {
-      stmt_map[ret] = new AssignStatement(ret, getLoc(result, ret));
-    }
-    stmt_map[ret]->addUse(var);
-    setSlicingStmt(result, ret);
-  }
   // branch
+  // todo add parent references
   if (auto is = result.Nodes.getNodeAs<IfStmt>("if")) {
     if (!hasStmt(is)) {
-      stmt_map[is->getThen()] = Statement::create(is->getThen(),getLoc(result,is->getThen()));
-	  if (is->getElse() == nullptr) {
-		stmt_map[is] = new BranchStatement(is, getLoc(result,is) ,
-                                               { {stmt_map[is->getThen()],Statement::Edge::True} });
-	  }
-	  else {
-		  stmt_map[is->getElse()] = Statement::create(is->getElse(), getLoc(result, is->getElse()));
-		  stmt_map[is] = new BranchStatement(is, getLoc(result, is),
-												  { { stmt_map[is->getThen()],Statement::Edge::True  },
-												    { stmt_map[is->getElse()],Statement::Edge::False } });
-	  }
+      stmt_map[is] = new BranchStatement(is, getLoc(result, is));
     }
-      stmt_map[is]->addUse(result.Nodes.getNodeAs<VarDecl>("ifCondVar"));
+    stmt_map[is->getThen()] = Statement::create(is->getThen(), getLoc(result, is->getThen()));
+    stmt_map[is]->addControlChild({ stmt_map[is->getThen()],Statement::Edge::True });
+	  if (is->getElse() != nullptr) {
+		  stmt_map[is->getElse()] = Statement::create(is->getElse(), getLoc(result, is->getElse()));
+      stmt_map[is]->addControlChild({ stmt_map[is->getElse()],Statement::Edge::False });
+	  }
+    stmt_map[is]->addUse(result.Nodes.getNodeAs<VarDecl>("ifCondVar"));
 
   }
   // loop
   if (auto ws = result.Nodes.getNodeAs<WhileStmt>("while")) {
     if (!hasStmt(ws)) {
-      stmt_map[ws->getBody()] = Statement::create(ws->getBody(),getLoc(result,ws->getBody()));
-      stmt_map[ws] = new LoopStatement(ws, getLoc(result,ws),{ {stmt_map[ws->getBody()],Statement::Edge::True} });
+      stmt_map[ws] = new LoopStatement(ws, getLoc(result,ws));
     }
-      stmt_map[ws]->addUse(result.Nodes.getNodeAs<VarDecl>("whileCondVar"));
+    stmt_map[ws->getBody()] = Statement::create(ws->getBody(),getLoc(result,ws->getBody()));
+    stmt_map[ws]->addControlChild({ stmt_map[ws->getBody()],Statement::Edge::True });
+    
+    stmt_map[ws]->addUse(result.Nodes.getNodeAs<VarDecl>("whileCondVar"));
   }
   // compound
   if (auto cs = result.Nodes.getNodeAs<CompoundStmt>("comp")) {
@@ -202,6 +137,78 @@ void PDGBuilder::run(const ast_matchers::MatchFinder::MatchResult &result) {
         stmt_map[root]->addDefine(var);
       }
     }
+    if (stmt_map[root]->getControlChildren().empty()) {
+      for (auto c : root->children()) {
+        if (stmt_map.find(c) == stmt_map.end()) {
+          stmt_map[c] = Statement::create(c, getLoc(result, c));
+        }
+        stmt_map[root]->addControlChild({ stmt_map[c],Statement::Edge::True });
+      }
+    }
+  }
+  // assign
+  if (auto ds = result.Nodes.getNodeAs<DeclStmt>("declStmt")) {
+    //todo multiple decl...
+    auto d = result.Nodes.getNodeAs<VarDecl>("decl");
+    if (!hasStmt(ds)) {
+      stmt_map[ds] = new AssignStatement(ds, getLoc(result, ds), { d });
+    }
+    else {
+      stmt_map[ds]->addDefine(d);
+    }
+    setSlicingStmt(result, ds);
+  }
+  if (auto ds = result.Nodes.getNodeAs<DeclStmt>("declStmtWithInit")) {
+    //todo multiple decl...
+    auto d = result.Nodes.getNodeAs<VarDecl>("declWithInit");
+    if (!hasStmt(ds)) {
+      stmt_map[ds] = new AssignStatement(ds, getLoc(result, ds), { d });
+    }
+    else {
+      stmt_map[ds]->addDefine(d);
+    }
+    stmt_map[ds]->addUse(result.Nodes.getNodeAs<VarDecl>("declInit"));
+    setSlicingStmt(result, ds);
+  }
+  if (auto bo = result.Nodes.getNodeAs<BinaryOperator>("binop")) {
+    auto lhs = result.Nodes.getNodeAs<VarDecl>("lval");
+    if (!hasStmt(bo)) {
+      stmt_map[bo] = new AssignStatement(bo, getLoc(result, bo), { lhs });
+    }
+    else {
+      stmt_map[bo]->addDefine(lhs);
+    }
+    stmt_map[bo]->addUse(result.Nodes.getNodeAs<VarDecl>("rval"));
+    setSlicingStmt(result, bo);
+  }
+  if (auto boL = result.Nodes.getNodeAs<BinaryOperator>("binopLit")) {
+    auto lhs = result.Nodes.getNodeAs<VarDecl>("lval");
+    if (!hasStmt(boL)) {
+      stmt_map[boL] = new AssignStatement(boL, getLoc(result, boL), { lhs });
+    }
+    else {
+      stmt_map[boL]->addDefine(lhs);
+    }
+    setSlicingStmt(result, boL);
+  }
+  if (auto uo = result.Nodes.getNodeAs<UnaryOperator>("unop")) {
+    auto var = result.Nodes.getNodeAs<VarDecl>("uval");
+    if (!hasStmt(uo)) {
+      stmt_map[uo] = new AssignStatement(uo, getLoc(result, uo), { var });
+    }
+    else {
+      stmt_map[uo]->addDefine(var);
+    }
+    stmt_map[uo]->addUse(var);
+    setSlicingStmt(result, uo);
+  }
+  if (auto ret = result.Nodes.getNodeAs<ReturnStmt>("ret")) {
+    auto var = result.Nodes.getNodeAs<VarDecl>("retVar");
+    if (!hasStmt(ret)) {
+      stmt_map[ret] = new AssignStatement(ret, getLoc(result, ret));
+    }
+    stmt_map[ret]->addUse(var);
+    setSlicingStmt(result, ret);
   }
   // save sourcemanager, we'll need it later for dot creation.
   sm = result.SourceManager;
@@ -223,7 +230,7 @@ void PDGBuilder::onEndOfTranslationUnit() {
     file.close();
   }
   // slice here
-  stmt_map[root]->BFS(stmt_map[slicingStmt]);
+  stmt_map[root]->DFS(stmt_map[slicingStmt]);
 }
 } // namespace slicer
 } // namespace clang

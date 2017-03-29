@@ -4,7 +4,18 @@
 #include "clang/Basic/SourceLocation.h"
 #include "clang/Basic/LangOptions.h"
 #include <iostream>
-#include <queue>
+#include <stack>
+
+// make graph bidirectional
+void Statement::addControlChild(std::pair<Statement*, Edge> child) {
+  controlChildren.insert(child);
+  child.first->controlParents.insert({this, child.second});
+}
+
+void Statement::addDataEdge(Statement* s){
+  dataEdges.insert(s);
+  s->dataParents.insert(this);
+}
 
 Statement* Statement::create(const clang::Stmt* astref,clang::FullSourceLoc loc)
 {
@@ -136,25 +147,34 @@ std::string Statement::dump() {
   return dumpLevel(1);
 
 }
+// todo make it nicer
 std::string Statement::dumpLevel(int level) {
   std::string tab(level, ' ');
   std::string nodeId = ": id: " + std::to_string(id);
   std::string defs = ", def: ";
   for (auto& var : define) {
-    defs += var->getNameAsString() + ", ";
+    defs += ", " + var->getNameAsString();
   }
   std::string uses = ", use: ";
   for (auto& var : use) {
-    uses += var->getNameAsString() + ", ";
+    uses += ", " + var->getNameAsString();
   }
   std::string dataDeps = ", data deps: ";
   for (auto& stmt : dataEdges) {
-    dataDeps += std::to_string(stmt->getId()) + ", ";
+    dataDeps += ", " + std::to_string(stmt->getId());
+  }
+  std::string cparents = ", control parents: ";
+  for (auto& p : controlParents) {
+    cparents += ", " + std::to_string(p.first->getId());
+  }
+  std::string dparents = ", data parents: ";
+  for (auto& p : dataParents) {
+    dparents += ", " + std::to_string(p->getId());
   }
   std::string locs = ", loc: ("
     + std::to_string(loc.getSpellingLineNumber()) + ","
     + std::to_string(loc.getSpellingColumnNumber()) + ")";
-  std::string ret = nameAsString() + nodeId + defs + uses + locs + dataDeps + "\n";
+  std::string ret = nameAsString() + nodeId + defs + uses + locs + dataDeps + cparents + dparents + "\n";
   for (auto& child : controlChildren) {
     ret += tab + child.first->dumpLevel(level + 1);
   }
@@ -232,32 +252,45 @@ std::string Statement::dumpDotRec(clang::SourceManager &sm) {
 
 // s.l.i.c.e
 // todo refactor we need a DFS dear Oliver
-void Statement::BFS(Statement* slicingStmt) {
+void Statement::DFS(Statement* slicingStmt) {
   // this contains the backwards slice edges like: {node -> parent}
+  /*
+    procedure DFS-iterative(G,v):
+      let S be a stack
+      S.push(v)
+      while S is not empty
+          v = S.pop()
+          if v is not labeled as discovered:
+              label v as discovered
+              for all edges from v to w in G.adjacentEdges(v) do 
+                  S.push(w)
+  */
   std::map<Statement*, Statement*> parent;
-  std::set<Statement*> S;
-  std::queue<Statement*> Q;
-  S.insert(this);
+  std::stack<Statement*> S;
+  std::set<Statement*> discovered;
+  S.push(this);
   parent[this] = nullptr;
-  Statement* current = nullptr;
-  Q.emplace(this);
-  while (!Q.empty()) {
-    current = Q.front(); Q.pop();
-    for (auto& c : current->getControlChildren()) {
-      if (S.find(c.first) == S.end()) {
-        S.insert(c.first);
-        parent[c.first] = current;
-        Q.emplace(c.first);
-      }
-    }
-    for (auto& c : current->getDataEdges()) {
-      if (S.find(c) == S.end()) {
-        S.insert(c);
-        parent[c] = current;
-        Q.emplace(c);
-      }
-    }
-  }
+  Statement* current = this;
+  //while (!S.empty()) {
+  //  current = S.top(); S.pop();
+  //  if (discovered.find(current) == discovered.end()) {
+
+  //  }
+  //  for (auto& c : current->getControlChildren()) {
+  //    if (S.find(c.first) == S.end()) {
+  //      S.insert(c.first);
+  //      parent[c.first] = current;
+  //      Q.emplace(c.first);
+  //    }
+  //  }
+  //  for (auto& c : current->getDataEdges()) {
+  //    if (S.find(c) == S.end()) {
+  //      S.insert(c);
+  //      parent[c] = current;
+  //      Q.emplace(c);
+  //    }
+  //  }
+  //}
   current = slicingStmt;
   for (auto& kv : parent) {
     if(kv.second != nullptr) std::cout << kv.first->getId() << " -> " << kv.second->getId() << "\n";

@@ -41,18 +41,6 @@ public:
   {
     setId();
   }
-
-  explicit
-  Statement(const clang::Stmt* _astRef,
-            clang::FullSourceLoc _loc,
-            std::set<std::pair<Statement*,Edge>, StatementLocCmp> _cChildren)
-    : astRef(_astRef)
-    , loc(_loc)
-    , controlChildren(_cChildren)
-  {
-    setId();
-  }
-
   explicit
     Statement(const clang::Stmt* _astRef,
               clang::FullSourceLoc _loc,
@@ -66,9 +54,9 @@ public:
 
   virtual ~Statement(){}
 
-  // Edge adders
-  void addControlChild(std::pair<Statement*,Edge> child) { controlChildren.insert(child); }
-  void addDataEdge(Statement* s) { dataEdges.insert(s); }
+  // graph
+  void addControlChild(std::pair<Statement*, Edge> child);
+  void addDataEdge(Statement* s);
 
   // define/use
   void addUse(const clang::ValueDecl* _use) { use.insert(_use); }
@@ -101,7 +89,7 @@ public:
   // recursive function
   void setDataEdgesRec(std::map <const clang::ValueDecl*, std::pair<Statement*,Edge>> parent_def_map);
   //s.l.i.c.e
-  void BFS(Statement* slicingStmt);
+  void DFS(Statement* slicingStmt);
 
   int getId() { return id; }
   // print structure
@@ -117,6 +105,9 @@ protected:
   // graph
   std::set<std::pair<Statement*,Edge>, StatementLocCmp> controlChildren;
   std::set<Statement*> dataEdges;
+  std::set < std::pair<Statement*, Edge>,StatementLocCmp> controlParents;
+  std::set<Statement*> dataParents;
+
   // These store the variables that are defined / used in this statement
   std::set<const clang::ValueDecl*> define;
   std::set<const clang::ValueDecl*> use;
