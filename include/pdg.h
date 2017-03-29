@@ -67,7 +67,9 @@ public:
 
   // getters
   std::set<std::pair<Statement*, Edge>, StatementLocCmp> getControlChildren() { return controlChildren; }
+  std::set<std::pair<Statement*, Edge>, StatementLocCmp> getControlParents() { return controlParents; }
   std::set<Statement*> getDataEdges() { return dataEdges; }
+  std::set<Statement*> getDataParents() { return dataParents; }
   std::set<const clang::ValueDecl*> getDefine() { return define; }
   std::set<const clang::ValueDecl*> getUses() { return use; }
   const clang::Stmt* getAstRef() { return astRef; }
@@ -89,8 +91,8 @@ public:
   // recursive function
   void setDataEdgesRec(std::map <const clang::ValueDecl*, std::pair<Statement*,Edge>> parent_def_map);
   //s.l.i.c.e
-  void DFS(Statement* slicingStmt);
-
+  std::map<Statement*,Statement*> slice(Statement* slicingStmt,bool backwards);
+  static std::string dumpSliceDot(std::map<Statement*, Statement*> edges, clang::SourceManager &sm);
   int getId() { return id; }
   // print structure
   std::string dump();

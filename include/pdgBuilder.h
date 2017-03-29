@@ -55,6 +55,7 @@ private:
     return result.Context->getFullLoc(astRef->getLocStart());
   }
   void setSlicingStmt(const ast_matchers::MatchFinder::MatchResult &result, const clang::Stmt* astRef);
+  void dumpDots();
   // tool params
   const std::string funcName;
   unsigned int lineNo = 0;

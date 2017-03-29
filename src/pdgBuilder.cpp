@@ -14,7 +14,7 @@ AST_MATCHER(UnaryOperator, isIncrementDecrementOp) {
   return Node.isIncrementDecrementOp();
 }
 std::string getFile(const clang::Stmt* stmt, clang::SourceManager* sm) {
-  assert(stmt == nullptr || sm == nullptr);
+  assert(!(stmt == nullptr || sm == nullptr));
   clang::FileID fileID = sm->getFileID(stmt->getLocStart());
   const clang::FileEntry* fileEntry = sm->getFileEntryForID(fileID);
   if (!fileEntry) {
@@ -22,6 +22,21 @@ std::string getFile(const clang::Stmt* stmt, clang::SourceManager* sm) {
   }
   return fileEntry->getName();  
 }
+}
+void PDGBuilder::dumpDots() {
+  std::string srcFileName = getFile(root, sm);
+  std::string out = srcFileName + "_" + funcName + ".dot";
+  std::ofstream file(out);
+  file << stmt_map[root]->dumpDot(*sm);
+  file.close();
+  out = srcFileName + "_" + funcName + "_backward_slice.dot";
+  std::ofstream file2(out);
+  file2 << Statement::dumpSliceDot(stmt_map[root]->slice(stmt_map[slicingStmt], false), *sm);
+  file2.close();
+  out = srcFileName + "_" + funcName + "_forward_slice.dot";
+  std::ofstream file3(out);
+  file2 << Statement::dumpSliceDot(stmt_map[root]->slice(stmt_map[slicingStmt], false), *sm);
+  file3.close();
 }
 bool PDGBuilder::slicingStmtPos::refined(unsigned int sl,unsigned int sc,unsigned int el,unsigned int ec) {
   bool ret = false;
@@ -217,20 +232,17 @@ void PDGBuilder::run(const ast_matchers::MatchFinder::MatchResult &result) {
 void PDGBuilder::onEndOfTranslationUnit() {
   // dump useful info
   if (slicingStmt) { llvm::errs() << "slicing statement is:\n";slicingStmt->dumpColor(); }
-  else { llvm::errs() << "You've given invalid location for slicing var, since I've found no variable there.\n"; }
+  else { llvm::errs() << "You've given invalid location for slicing var, since I've found no variable there.\n"; return; }
   llvm::errs() << "With control edges, but no data dependence edges:\n";
   llvm::errs() << stmt_map[root]->dump();
   stmt_map[root]->setDataEdges();
   llvm::errs() << "With data dependence edges too:\n";
   llvm::errs() << stmt_map[root]->dump();
-  if (dumpDot) {
-    std::string out = getFile(root, sm) + "_" + funcName + ".dot";
-    std::ofstream file(out);
-    file << stmt_map[root]->dumpDot(*sm);
-    file.close();
-  }
+  if (dumpDot) dumpDots();
   // slice here
-  stmt_map[root]->DFS(stmt_map[slicingStmt]);
+  //for (auto& kv : stmt_map[root]->slice(stmt_map[slicingStmt], true)) {
+
+  //}
 }
 } // namespace slicer
 } // namespace clang

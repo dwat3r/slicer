@@ -4,7 +4,7 @@
 #include "clang/Basic/SourceLocation.h"
 #include "clang/Basic/LangOptions.h"
 #include <iostream>
-#include <stack>
+#include <queue>
 
 // make graph bidirectional
 void Statement::addControlChild(std::pair<Statement*, Edge> child) {
@@ -249,51 +249,56 @@ std::string Statement::dumpDotRec(clang::SourceManager &sm) {
   }
   return ret;
 }
-
+std::string Statement::dumpSliceDot(std::map<Statement*, Statement*> edges, clang::SourceManager &sm) {
+  std::string ret = "digraph {\nrankdir=TD;\n";
+  std::set<Statement*> defined;
+  for (auto& kv : edges) {
+    if (defined.find(kv.first) == defined.end()) {
+      ret += std::to_string(kv.first->getId())
+          + "[label=\"" + kv.first->sourceString(sm) + "\"];\n";
+    }
+    if (defined.find(kv.second) == defined.end()) {
+      ret += std::to_string(kv.second->getId())
+          + "[label=\"" + kv.second->sourceString(sm) + "\"];\n";
+    }
+    ret += std::to_string(kv.first->getId()) + " -> " + std::to_string(kv.second->getId()) + ";\n";
+  }
+  return ret;
+}
 // s.l.i.c.e
 // todo refactor we need a DFS dear Oliver
-void Statement::DFS(Statement* slicingStmt) {
-  // this contains the backwards slice edges like: {node -> parent}
-  /*
-    procedure DFS-iterative(G,v):
-      let S be a stack
-      S.push(v)
-      while S is not empty
-          v = S.pop()
-          if v is not labeled as discovered:
-              label v as discovered
-              for all edges from v to w in G.adjacentEdges(v) do 
-                  S.push(w)
-  */
-  std::map<Statement*, Statement*> parent;
-  std::stack<Statement*> S;
-  std::set<Statement*> discovered;
-  S.push(this);
-  parent[this] = nullptr;
-  Statement* current = this;
-  //while (!S.empty()) {
-  //  current = S.top(); S.pop();
-  //  if (discovered.find(current) == discovered.end()) {
-
-  //  }
-  //  for (auto& c : current->getControlChildren()) {
-  //    if (S.find(c.first) == S.end()) {
-  //      S.insert(c.first);
-  //      parent[c.first] = current;
-  //      Q.emplace(c.first);
-  //    }
-  //  }
-  //  for (auto& c : current->getDataEdges()) {
-  //    if (S.find(c) == S.end()) {
-  //      S.insert(c);
-  //      parent[c] = current;
-  //      Q.emplace(c);
-  //    }
-  //  }
-  //}
-  current = slicingStmt;
-  for (auto& kv : parent) {
+// nono we need more lemon senor Oliver
+// we need a BFS, but from the almighty slicingStmt.
+// WE"RE SLICING CURRENTLY
+std::map<Statement*,Statement*> Statement::slice(Statement* slicingStmt,bool backwards) {
+  std::map<Statement*, Statement*> child;
+  std::queue<Statement*> Q;
+  std::set<Statement*> S;
+  Q.emplace(slicingStmt);
+  child[slicingStmt] = nullptr;
+  Statement* current = slicingStmt;
+  while (!Q.empty()) {
+    current = Q.front(); Q.pop();
+    std::set<Statement*> toVisit;
+    if (backwards) {
+      for (auto& e : current->getControlParents()){ toVisit.insert(e.first); }
+      toVisit.insert(current->getDataParents().begin(), current->getDataParents().end());
+    }
+    else {
+      for (auto& e : current->getControlChildren()) { toVisit.insert(e.first); }
+      toVisit.insert(current->getDataEdges().begin(), current->getDataEdges().end());
+    }
+    for (auto& node : toVisit) {
+      if (S.find(node) == S.end()) {
+        S.insert(node);
+        child[node] = current;
+        Q.emplace(node);
+      }
+    }
+  }
+  for (auto& kv : child) {
     if(kv.second != nullptr) std::cout << kv.first->getId() << " -> " << kv.second->getId() << "\n";
     else std::cout << kv.first->getId() << "\n";
   }
+  return child;
 }
