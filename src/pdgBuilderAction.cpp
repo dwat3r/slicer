@@ -6,13 +6,11 @@
 namespace clang {
 namespace slicer {
 PDGBuilderAction::PDGBuilderAction(
-  std::string _funcName,
-  int _lineNo,
-  int _colNo)
-  : funcName(_funcName)
-  , lineNo(_lineNo)
-  , colNo(_colNo)
-  , Matcher(funcName, lineNo, colNo) {
+  std::string funcName,
+  int lineNo,
+  int colNo,
+  bool dumpDot)
+  : Matcher(funcName, lineNo, colNo, dumpDot) {
   Matcher.registerMatchers(&MatchFinder);
 }
 

@@ -102,7 +102,6 @@ public:
   void setDataEdgesRec(std::map <const clang::ValueDecl*, std::pair<Statement*,Edge>> parent_def_map);
   //s.l.i.c.e
   void BFS(Statement* slicingStmt);
-  Statement* parent = nullptr;
 
   int getId() { return id; }
   // print structure

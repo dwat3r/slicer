@@ -3,7 +3,7 @@
 #include "clang/Lex/Lexer.h"
 #include "clang/Basic/SourceLocation.h"
 #include "clang/Basic/LangOptions.h"
-
+#include <iostream>
 #include <queue>
 
 Statement* Statement::create(const clang::Stmt* astref,clang::FullSourceLoc loc)
@@ -231,53 +231,36 @@ std::string Statement::dumpDotRec(clang::SourceManager &sm) {
 }
 
 // s.l.i.c.e
+// todo refactor we need a DFS dear Oliver
 void Statement::BFS(Statement* slicingStmt) {
-/*
-Breadth-First-Search(Graph, root):
-    
-  create empty set S
-  create empty queue Q      
-
-  root.parent = NIL
-  add root to S
-  Q.enqueue(root)                      
-
-  while Q is not empty:
-      current = Q.dequeue()
-      if current is the goal:
-          return current
-      for each node n that is adjacent to current:
-          if n is not in S:
-              add n to S
-              n.parent = current
-              Q.enqueue(n)
-*/
+  // this contains the backwards slice edges like: {node -> parent}
+  std::map<Statement*, Statement*> parent;
   std::set<Statement*> S;
   std::queue<Statement*> Q;
   S.insert(this);
+  parent[this] = nullptr;
   Statement* current = nullptr;
   Q.emplace(this);
   while (!Q.empty()) {
     current = Q.front(); Q.pop();
-    if (current == slicingStmt) {
-      // do the magic
-    }
-    else {
-      for (auto& c : current->getControlChildren()) {
-        if (S.find(c.first) == S.end()) {
-          S.insert(c.first);
-          c.first->parent = current;
-          Q.emplace(c.first);
-        }
+    for (auto& c : current->getControlChildren()) {
+      if (S.find(c.first) == S.end()) {
+        S.insert(c.first);
+        parent[c.first] = current;
+        Q.emplace(c.first);
       }
-      for (auto& c : current->getDataEdges()) {
-        if (S.find(c) == S.end()) {
-          S.insert(c);
-          c->parent = current;
-          Q.emplace(c);
-        }
+    }
+    for (auto& c : current->getDataEdges()) {
+      if (S.find(c) == S.end()) {
+        S.insert(c);
+        parent[c] = current;
+        Q.emplace(c);
       }
     }
   }
-
+  current = slicingStmt;
+  for (auto& kv : parent) {
+    if(kv.second != nullptr) std::cout << kv.first->getId() << " -> " << kv.second->getId() << "\n";
+    else std::cout << kv.first->getId() << "\n";
+  }
 }

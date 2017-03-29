@@ -22,20 +22,22 @@ public:
       : sline(0), scol(0), eline(INT_MAX), ecol(INT_MAX) {}
     slicingStmtPos(int _sline, int _scol, int _eline, int _ecol)
       : sline(_sline), scol(_scol), eline(_eline), ecol(_ecol) {}
-    int sline;
-    int scol;
-    int eline;
-    int ecol;
-    bool refined(int sl, int sc, int el, int ec);
+    unsigned int sline;
+    unsigned int scol;
+    unsigned int eline;
+    unsigned int ecol;
+    bool refined(unsigned int sl,unsigned int sc,unsigned int el,unsigned int ec);
   };
 
   explicit PDGBuilder() {}
   explicit PDGBuilder(std::string _funcName,
                       int _lineNo,
-                      int _colNo)
+                      int _colNo,
+                      bool _dumpDot)
     : funcName(_funcName)
     , lineNo(_lineNo)
     , colNo(_colNo)
+    , dumpDot(_dumpDot)
   {}
 
   void registerMatchers(ast_matchers::MatchFinder *MatchFinder);
@@ -53,9 +55,11 @@ private:
     return result.Context->getFullLoc(astRef->getLocStart());
   }
   void setSlicingStmt(const ast_matchers::MatchFinder::MatchResult &result, const clang::Stmt* astRef);
+  // tool params
   const std::string funcName;
-  int lineNo = 0;
-  int colNo = 0;
+  unsigned int lineNo = 0;
+  unsigned int colNo = 0;
+  bool dumpDot = false;
   const clang::Stmt* slicingStmt = nullptr;
   slicingStmtPos slicePos;
   clang::SourceManager* sm = nullptr;

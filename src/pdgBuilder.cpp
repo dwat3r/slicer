@@ -1,5 +1,6 @@
 #include "pdgBuilder.h"
 #include "clang/ASTMatchers/ASTMatchers.h"
+#include <fstream>
 
 using namespace clang::ast_matchers;
 
@@ -12,8 +13,17 @@ AST_MATCHER(BinaryOperator, isAssignmentOp) {
 AST_MATCHER(UnaryOperator, isIncrementDecrementOp) {
   return Node.isIncrementDecrementOp();
 }
+std::string getFile(const clang::Stmt* stmt, clang::SourceManager* sm) {
+  assert(stmt == nullptr || sm == nullptr);
+  clang::FileID fileID = sm->getFileID(stmt->getLocStart());
+  const clang::FileEntry* fileEntry = sm->getFileEntryForID(fileID);
+  if (!fileEntry) {
+    return "";
+  }
+  return fileEntry->getName();  
 }
-bool PDGBuilder::slicingStmtPos::refined(int sl, int sc, int el, int ec) {
+}
+bool PDGBuilder::slicingStmtPos::refined(unsigned int sl,unsigned int sc,unsigned int el,unsigned int ec) {
   bool ret = false;
   if (sl > sline) { sline = sl;ret = true;}
   if (sc > scol)  { scol  = sc;ret = true;}
@@ -198,18 +208,22 @@ void PDGBuilder::run(const ast_matchers::MatchFinder::MatchResult &result) {
 }
 
 void PDGBuilder::onEndOfTranslationUnit() {
-  // slice here
-  if (slicingStmt) { llvm::errs() << "slicing statement is:\n";slicingStmt->dump(); }
+  // dump useful info
+  if (slicingStmt) { llvm::errs() << "slicing statement is:\n";slicingStmt->dumpColor(); }
   else { llvm::errs() << "You've given invalid location for slicing var, since I've found no variable there.\n"; }
   llvm::errs() << "With control edges, but no data dependence edges:\n";
   llvm::errs() << stmt_map[root]->dump();
   stmt_map[root]->setDataEdges();
   llvm::errs() << "With data dependence edges too:\n";
   llvm::errs() << stmt_map[root]->dump();
-  //std::ofstream file("out.txt"); <- todo give the tool as a parameter to write dot to file
-  //file << stmt_map[root]->dumpDot(*sm);
-  //file.close();
-
+  if (dumpDot) {
+    std::string out = getFile(root, sm) + "_" + funcName + ".dot";
+    std::ofstream file(out);
+    file << stmt_map[root]->dumpDot(*sm);
+    file.close();
+  }
+  // slice here
+  stmt_map[root]->BFS(stmt_map[slicingStmt]);
 }
 } // namespace slicer
 } // namespace clang

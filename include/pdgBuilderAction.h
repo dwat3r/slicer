@@ -16,15 +16,13 @@ class PDGBuilderAction : public clang::ASTFrontendAction {
 public:
   explicit PDGBuilderAction(std::string _funcName,
                             int _lineNo,
-                            int _colNo);
+                            int _colNo,
+                            bool _dumpDot);
   std::unique_ptr<clang::ASTConsumer>
     CreateASTConsumer(clang::CompilerInstance &Compiler,
                       StringRef InFile) override;
 
 private:
-  std::string funcName;
-  int lineNo;
-  int colNo;
   clang::ast_matchers::MatchFinder MatchFinder;
   PDGBuilder Matcher;
 };
@@ -33,20 +31,23 @@ class PDGBuilderActionFactory : public tooling::FrontendActionFactory {
 public:
   PDGBuilderActionFactory(std::string _funcName,
                           int _lineNo,
-                          int _colNo)
+                          int _colNo,
+                          bool _dumpDot)
     : funcName(_funcName)
     , lineNo(_lineNo)
     , colNo(_colNo)
+    , dumpDot(_dumpDot)
   {}
 
   clang::FrontendAction *create() override {
-    return new PDGBuilderAction(funcName, lineNo, colNo);
+    return new PDGBuilderAction(funcName, lineNo, colNo, dumpDot);
   }
 
 private:
   std::string funcName;
   int lineNo;
   int colNo;
+  bool dumpDot;
 };
 
 } // namespace slicer

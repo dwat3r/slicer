@@ -38,6 +38,11 @@ static cl::opt<int> ColNo("column",
                           cl::init(0),
                           cl::cat(Slicer));
 
+static cl::opt<bool> DumpDot("dump-dot",
+                             cl::desc(R"(Specifies whether tool should dump dot.)"),
+                             cl::init(false),
+                             cl::cat(Slicer));
+
 int main(int argc, const char **argv) {
   CommonOptionsParser OptionsParser(argc, argv, Slicer);
   ClangTool Tool(OptionsParser.getCompilations(),
@@ -45,6 +50,6 @@ int main(int argc, const char **argv) {
 
   auto Factory =
     llvm::make_unique<clang::slicer::PDGBuilderActionFactory>(
-      FuncName,LineNo,ColNo);
+      FuncName,LineNo,ColNo,DumpDot);
   return Tool.run(Factory.get());
 }
