@@ -1,21 +1,29 @@
 digraph {
 rankdir=TD;
-0[label="{}"];
-2[label="int i = sum;"];
-0 -> 2;
-3[label="while (i < 11)"];
-6[label="{}"];
-3 -> 6;
-1[label="int sum = 0;"];
-2[label="int i = sum;"];
-1 -> 2;
-2[label="int i = sum;"];
-5[label="i++"];
-2 -> 5;
-5[label="i++"];
-5[label="i++"];
-5 -> 5;
-6[label="{}"];
-5[label="i++"];
-6 -> 5;
+0[label="{}",color=red]; 
+0 -> 1[label="T",style=bold,color=red];
+1[label="int sum = 0;",color=red]; 
+1 -> 2[color=red];
+1 -> 4;
+0 -> 2[label="T",style=bold,color=red];
+2[label="int i = sum;",color=red]; 
+2 -> 3[color=red];
+2 -> 4;
+2 -> 5[color=red];
+0 -> 3[label="T",style=bold,color=red];
+3[label="while (i < 11)",color=red]; 
+3 -> 6[label="T",style=bold,color=red];
+6[label="{}",color=red]; 
+6 -> 4[label="T",style=bold];
+4[label="sum += i"]; 
+4 -> 4;
+6 -> 5[label="T",style=bold,color=red];
+5[label="i++",color=red]; 
+5 -> 3[color=red];
+5 -> 4;
+5 -> 5[color=red];
+{ rank=same 4 5 }
+{ rank=same 6 }
+{ rank=same 1 2 3 }
+
 }

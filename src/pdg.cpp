@@ -219,25 +219,37 @@ std::string CompoundStatement::sourceString(clang::SourceManager &sm) {
   return "{}";
 }
 
-std::string Statement::dumpDot(clang::SourceManager &sm) {
+std::string Statement::dumpDot(clang::SourceManager &sm,bool markSliced) {
   std::string ret = "digraph {\nrankdir=TD;\n";
-  ret += dumpDotRec(sm) + "\n}";
+  ret += dumpDotRec(sm, markSliced) + "\n}";
   return ret;
 }
-std::string Statement::dumpDotRec(clang::SourceManager &sm) {
+// todo make it nicer
+std::string Statement::dumpDotRec(clang::SourceManager &sm,bool markSliced) {
   std::string ranklist = "{ rank=same";
-  std::string ret = std::to_string(id) + "[label=\"" + sourceString(sm) + "\"];\n";
+  std::string ret = std::to_string(id) + "[label=\"" + sourceString(sm) + "\"";
+  if (markSliced && isInSlice()) { ret += ",color=red]; \n"; }
+  else { ret += "]; \n"; }
+
   for (auto& c : controlChildren) {
     ret += std::to_string(id) + " -> " + std::to_string(c.first->getId())
-      + "[label=\"" + EdgeToStr(c.second) + "\",style=bold];\n";
+      + "[label=\"" + EdgeToStr(c.second) + "\",style=bold";
+    if (markSliced && isInSlice() && c.first->isInSlice()) { ret += ",color=red];\n"; }
+    else { ret += "];\n"; }
+
     if (!c.first->getControlChildren().empty()) {
-      ret += c.first->dumpDotRec(sm);
+      ret += c.first->dumpDotRec(sm, markSliced);
     }
     else {
-      ret += std::to_string(c.first->getId())
-        + "[label=\"" + c.first->sourceString(sm) + "\"];\n";
+      // edge case of recursion
+      ret += std::to_string(c.first->getId()) + "[label=\"" + c.first->sourceString(sm) + "\"";
+      if (markSliced && c.first->isInSlice()) { ret += ",color=red]; \n"; }
+      else { ret += "]; \n"; }
+
       for (auto& e : c.first->getDataEdges()) {
-        ret += std::to_string(c.first->getId()) + " -> " + std::to_string(e->getId()) + ";\n";
+        ret += std::to_string(c.first->getId()) + " -> " + std::to_string(e->getId());
+        if (markSliced && c.first->isInSlice() && e->isInSlice()) { ret += "[color=red];\n"; }
+        else { ret += ";\n"; }
       }
     }
     ranklist += " " + std::to_string(c.first->getId());
@@ -249,29 +261,10 @@ std::string Statement::dumpDotRec(clang::SourceManager &sm) {
   }
   return ret;
 }
-std::string Statement::dumpSliceDot(std::map<Statement*, Statement*> edges, clang::SourceManager &sm) {
-  std::string ret = "digraph {\nrankdir=TD;\n";
-  std::set<Statement*> defined;
-  for (auto& kv : edges) {
-    if (defined.find(kv.first) == defined.end()) {
-      ret += std::to_string(kv.first->getId())
-          + "[label=\"" + kv.first->sourceString(sm) + "\"];\n";
-    }
-    if (defined.find(kv.second) == defined.end()) {
-      ret += std::to_string(kv.second->getId())
-          + "[label=\"" + kv.second->sourceString(sm) + "\"];\n";
-    }
-    ret += std::to_string(kv.first->getId()) + " -> " + std::to_string(kv.second->getId()) + ";\n";
-  }
-  ret += "}";
-  return ret;
-}
+
 // s.l.i.c.e
-// todo refactor we need a DFS dear Oliver
-// nono we need more lemon senor Oliver
-// we need a BFS, but from the almighty slicingStmt.
-// WE"RE SLICING CURRENTLY
-std::map<Statement*,Statement*> Statement::slice(Statement* slicingStmt,bool backwards) {
+// slicing sets a flag on the affected nodes so they can be visualized.
+void Statement::slice(Statement* slicingStmt,bool backwards) {
   std::map<Statement*, Statement*> child;
   std::queue<Statement*> Q;
   std::set<Statement*> S;
@@ -297,9 +290,22 @@ std::map<Statement*,Statement*> Statement::slice(Statement* slicingStmt,bool bac
       }
     }
   }
+  // mark edges
+  for (auto& kv : child) {
+    kv.first->markSliced();
+    if (kv.second != nullptr)
+      kv.second->markSliced();
+  }
+  // debug
   for (auto& kv : child) {
     if(kv.second != nullptr) std::cout << kv.first->getId() << " -> " << kv.second->getId() << "\n";
     else std::cout << kv.first->getId() << "\n";
   }
-  return child;
+}
+
+void Statement::resetSlice() {
+  unmarkSliced();
+  for (auto& c : controlChildren) {
+    c.first->resetSlice();
+  }
 }

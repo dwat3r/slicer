@@ -5,7 +5,7 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LocalDebuggerCommandArguments>$(ProjectDir)test\cica.cc -function-name=main -line=6 -column=5 --</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>$(ProjectDir)test\cica.cc -function-name=main -line=6 -column=5 -dump-dot=true --</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
 </Project>
