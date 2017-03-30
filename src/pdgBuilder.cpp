@@ -31,11 +31,11 @@ void PDGBuilder::dumpDots() {
   file.close();
   out = srcFileName + "_" + funcName + "_backward_slice.dot";
   std::ofstream file2(out);
-  file2 << Statement::dumpSliceDot(stmt_map[root]->slice(stmt_map[slicingStmt], false), *sm);
+  file2 << Statement::dumpSliceDot(stmt_map[root]->slice(stmt_map[slicingStmt], true), *sm);
   file2.close();
   out = srcFileName + "_" + funcName + "_forward_slice.dot";
   std::ofstream file3(out);
-  file2 << Statement::dumpSliceDot(stmt_map[root]->slice(stmt_map[slicingStmt], false), *sm);
+  file3 << Statement::dumpSliceDot(stmt_map[root]->slice(stmt_map[slicingStmt], false), *sm);
   file3.close();
 }
 bool PDGBuilder::slicingStmtPos::refined(unsigned int sl,unsigned int sc,unsigned int el,unsigned int ec) {
@@ -239,10 +239,6 @@ void PDGBuilder::onEndOfTranslationUnit() {
   llvm::errs() << "With data dependence edges too:\n";
   llvm::errs() << stmt_map[root]->dump();
   if (dumpDot) dumpDots();
-  // slice here
-  //for (auto& kv : stmt_map[root]->slice(stmt_map[slicingStmt], true)) {
-
-  //}
 }
 } // namespace slicer
 } // namespace clang

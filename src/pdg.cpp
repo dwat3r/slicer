@@ -263,6 +263,7 @@ std::string Statement::dumpSliceDot(std::map<Statement*, Statement*> edges, clan
     }
     ret += std::to_string(kv.first->getId()) + " -> " + std::to_string(kv.second->getId()) + ";\n";
   }
+  ret += "}";
   return ret;
 }
 // s.l.i.c.e
@@ -282,11 +283,11 @@ std::map<Statement*,Statement*> Statement::slice(Statement* slicingStmt,bool bac
     std::set<Statement*> toVisit;
     if (backwards) {
       for (auto& e : current->getControlParents()){ toVisit.insert(e.first); }
-      toVisit.insert(current->getDataParents().begin(), current->getDataParents().end());
+      for (auto& e : current->getDataParents()) { toVisit.insert(e); }
     }
     else {
       for (auto& e : current->getControlChildren()) { toVisit.insert(e.first); }
-      toVisit.insert(current->getDataEdges().begin(), current->getDataEdges().end());
+      for (auto& e : current->getDataEdges()) { toVisit.insert(e); }
     }
     for (auto& node : toVisit) {
       if (S.find(node) == S.end()) {

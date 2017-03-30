@@ -1,0 +1,21 @@
+digraph {
+rankdir=TD;
+0[label="{}"];
+2[label="int i = sum;"];
+0 -> 2;
+3[label="while (i < 11)"];
+6[label="{}"];
+3 -> 6;
+1[label="int sum = 0;"];
+2[label="int i = sum;"];
+1 -> 2;
+2[label="int i = sum;"];
+5[label="i++"];
+2 -> 5;
+5[label="i++"];
+5[label="i++"];
+5 -> 5;
+6[label="{}"];
+5[label="i++"];
+6 -> 5;
+}
