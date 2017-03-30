@@ -1,0 +1,1 @@
+for %%v in (*.dot) do dot -Tpng "%%v" -o "%%~nv.png"

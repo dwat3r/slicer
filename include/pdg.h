@@ -91,16 +91,20 @@ public:
   // recursive function
   void setDataEdgesRec(std::map <const clang::ValueDecl*, std::pair<Statement*,Edge>> parent_def_map);
   //s.l.i.c.e
-  std::map<Statement*,Statement*> slice(Statement* slicingStmt,bool backwards);
-  static std::string dumpSliceDot(std::map<Statement*, Statement*> edges, clang::SourceManager &sm);
+  void slice(Statement* slicingStmt,bool backwards);
+  void resetSlice();
+  void markSliced() { inSlice = true; }
+  void unmarkSliced() { inSlice = false; }
+  bool isInSlice() { return inSlice; }
+
   int getId() { return id; }
   // print structure
   std::string dump();
   // graphviz output
-  std::string dumpDot(clang::SourceManager &sm);
+  std::string dumpDot(clang::SourceManager &sm,bool markSliced);
 protected:
   std::string dumpLevel(int level);
-  std::string dumpDotRec(clang::SourceManager &sm);
+  std::string dumpDotRec(clang::SourceManager &sm,bool markSliced);
   void setId() { static int _id = 0; id = _id++; }
   static std::string stmt2str(const clang::Stmt *s, clang::SourceManager &sm);
   static std::string firstOnly(const clang::Stmt *s, const clang::Stmt *s2, clang::SourceManager &sm);
@@ -116,7 +120,7 @@ protected:
   
   clang::FullSourceLoc loc;
   int id;
-
+  bool inSlice = false;
   // Store a reference to the AST
   const clang::Stmt* astRef = nullptr;
 };

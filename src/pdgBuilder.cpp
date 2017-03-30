@@ -27,15 +27,20 @@ void PDGBuilder::dumpDots() {
   std::string srcFileName = getFile(root, sm);
   std::string out = srcFileName + "_" + funcName + ".dot";
   std::ofstream file(out);
-  file << stmt_map[root]->dumpDot(*sm);
+  file << stmt_map[root]->dumpDot(*sm,false);
   file.close();
+
   out = srcFileName + "_" + funcName + "_backward_slice.dot";
   std::ofstream file2(out);
-  file2 << Statement::dumpSliceDot(stmt_map[root]->slice(stmt_map[slicingStmt], false), *sm);
+  stmt_map[root]->slice(stmt_map[slicingStmt], true);
+  file2 << stmt_map[root]->dumpDot(*sm,true);
   file2.close();
+  stmt_map[root]->resetSlice();
+
   out = srcFileName + "_" + funcName + "_forward_slice.dot";
   std::ofstream file3(out);
-  file2 << Statement::dumpSliceDot(stmt_map[root]->slice(stmt_map[slicingStmt], false), *sm);
+  stmt_map[root]->slice(stmt_map[slicingStmt], false);
+  file3 << stmt_map[root]->dumpDot(*sm,true);
   file3.close();
 }
 bool PDGBuilder::slicingStmtPos::refined(unsigned int sl,unsigned int sc,unsigned int el,unsigned int ec) {
