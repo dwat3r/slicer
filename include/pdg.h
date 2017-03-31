@@ -79,8 +79,6 @@ public:
   virtual Type name() { return Type::Base; }
   virtual std::string nameAsString() { return "Statement"; }
   virtual std::string sourceString(clang::SourceManager &sm);
-  // returns true if branch
-  virtual bool isBranchStatement() { return false; }
 
   // factory method
   static Statement* create(const clang::Stmt* astref,clang::FullSourceLoc loc);
@@ -88,8 +86,7 @@ public:
   // this draws in the data dependence edges to the graph
   // caller and initializer
   void setDataEdges();
-  // recursive function
-  void setDataEdgesRec(std::map <const clang::ValueDecl*, std::pair<Statement*,Edge>> parent_def_map);
+
   //s.l.i.c.e
   void slice(Statement* slicingStmt,bool backwards);
   void resetSlice();
@@ -104,7 +101,12 @@ public:
   std::string dumpDot(clang::SourceManager &sm,bool markSliced);
 protected:
   std::string dumpLevel(int level);
-  std::string dumpDotRec(clang::SourceManager &sm,bool markSliced);
+  std::string dumpDotRec(clang::SourceManager &sm,bool markSliced,
+	                     std::map<int, std::vector<int>>& rank_map,int depth);
+
+  std::map<const clang::ValueDecl*, std::pair<Statement*, Statement::Edge>>
+  setDataEdgesRec(std::map <const clang::ValueDecl*, std::pair<Statement*, Edge>> parent_def_map);
+  
   void setId() { static int _id = 0; id = _id++; }
   static std::string stmt2str(const clang::Stmt *s, clang::SourceManager &sm);
   static std::string firstOnly(const clang::Stmt *s, const clang::Stmt *s2, clang::SourceManager &sm);
@@ -136,7 +138,6 @@ public:
 class BranchStatement : public Statement{
 public:
   using Statement::Statement;
-  virtual bool isBranchStatement() override { return true; } 
   virtual Type name() { return Type::Branch; }
   virtual std::string nameAsString() { return "Branch"; }
   virtual std::string sourceString(clang::SourceManager &sm);

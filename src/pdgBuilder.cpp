@@ -90,6 +90,7 @@ void PDGBuilder::registerMatchers(MatchFinder *MatchFinder) {
   auto ifs = ifStmt(hasCondition(
     forEachDescendant(declRefExpr(to(varDecl().bind("ifCondVar")))))).bind("if");
   // loop
+  // todo detect and handle continue/break statements
   auto whiles = whileStmt(hasCondition(
     forEachDescendant(declRefExpr(to(varDecl().bind("whileCondVar")))))).bind("while");
   // compound
@@ -110,7 +111,6 @@ void PDGBuilder::run(const ast_matchers::MatchFinder::MatchResult &result) {
   // process the match results
   // ensure every entry added once
   // branch
-  // todo add parent references
   if (auto is = result.Nodes.getNodeAs<IfStmt>("if")) {
     if (!hasStmt(is)) {
       stmt_map[is] = new BranchStatement(is, getLoc(result, is));
@@ -244,10 +244,7 @@ void PDGBuilder::onEndOfTranslationUnit() {
   llvm::errs() << "With data dependence edges too:\n";
   llvm::errs() << stmt_map[root]->dump();
   if (dumpDot) dumpDots();
-  // slice here
-  //for (auto& kv : stmt_map[root]->slice(stmt_map[slicingStmt], true)) {
-
-  //}
+  
 }
 } // namespace slicer
 } // namespace clang

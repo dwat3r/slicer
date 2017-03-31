@@ -11,7 +11,6 @@
 using namespace clang::tooling;
 using namespace clang::ast_matchers;
 using namespace llvm;
-// todo params
 // Apply a custom category to all command-line options so that they are the
 // only ones displayed.
 static llvm::cl::OptionCategory Slicer("slicer options");

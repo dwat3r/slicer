@@ -46,18 +46,21 @@ Statement* Statement::create(const clang::Stmt* astref,clang::FullSourceLoc loc)
   return new Statement(astref, loc);
 }
 
+// making the PDG
 void Statement::setDataEdges() {
 	// initialize initial def_map from this node's defines
   std::map <const clang::ValueDecl*, std::pair<Statement*, Statement::Edge>> def_map;
   for (auto& def : define) {
     def_map.insert({ def,{this,Statement::Edge::None} });
   }
+  // we're using DFS for visiting every statement in execution order.
   setDataEdgesRec(def_map);
 }
 
-void Statement::setDataEdgesRec(std::map <const clang::ValueDecl*, 
+std::map<const clang::ValueDecl*, std::pair<Statement*, Statement::Edge>>
+Statement::setDataEdgesRec(std::map <const clang::ValueDecl*, 
 	                                   std::pair<Statement*,Statement::Edge>> parent_def_map) {
-  std::map <const clang::ValueDecl*, std::pair<Statement*,Statement::Edge>> def_map;
+  std::map <const clang::ValueDecl*, std::pair<Statement*, Statement::Edge>> def_map;
   // make every parent definition edge true.
   for (auto& d : parent_def_map) {
 	  def_map.insert({ d.first, { d.second.first,Statement::Edge::None } });
@@ -116,16 +119,20 @@ void Statement::setDataEdgesRec(std::map <const clang::ValueDecl*,
         if (name() == Type::Branch) {
           // erase defs from the other branch
           for (auto& def : def_map) {
-			  if (def.second.second == Statement::Edge::None ||
-				  def.second.second == stmt.second) {
-				  child_def_map.insert(def);
-			  }
+			      if (def.second.second == Statement::Edge::None ||
+				      def.second.second == stmt.second) {
+				      child_def_map.insert(def);
+			      }
           }
         }
         else {
           child_def_map.insert(def_map.begin(), def_map.end());
         }
-        stmt.first->setDataEdgesRec(child_def_map);
+        auto child_new_defs(stmt.first->setDataEdgesRec(child_def_map));
+        // merge new definitions from child to our def_map todo fix this shit
+		for (auto& kv : child_new_defs) {
+			def_map[kv.first] = kv.second;
+		}
       }
     }
 	// create loop-carried dependences by 
@@ -141,13 +148,21 @@ void Statement::setDataEdgesRec(std::map <const clang::ValueDecl*,
 	}
 	else break; // if we're not in a loop, don't visit twice
   }
+  // return our defs to caller parent, erasing local defs.
+  for (auto it = def_map.begin(); it != def_map.end();)
+  {
+    if (llvm::isa<clang::DeclStmt>(it->second.first->getAstRef())
+      && it->second.second != Statement::Edge::None) def_map.erase(it++);
+    else ++it;
+  }
+  return def_map;
 }
 // print out graph structure
 std::string Statement::dump() {
   return dumpLevel(1);
 
 }
-// todo make it nicer
+// todo make it nicer 
 std::string Statement::dumpLevel(int level) {
   std::string tab(level, ' ');
   std::string nodeId = ": id: " + std::to_string(id);
@@ -221,12 +236,23 @@ std::string CompoundStatement::sourceString(clang::SourceManager &sm) {
 
 std::string Statement::dumpDot(clang::SourceManager &sm,bool markSliced) {
   std::string ret = "digraph {\nrankdir=TD;\n";
-  ret += dumpDotRec(sm, markSliced) + "\n}";
+  std::map<int, std::vector<int>> rank_map;
+  ret += dumpDotRec(sm, markSliced,rank_map,0);
+  // insert ranks
+  for (auto& kv : rank_map) {
+	  ret += "{ rank=same ";
+	  for (auto& i : kv.second) {
+		  ret += std::to_string(i) + " ";
+	  }
+	  ret += "}\n";
+  }
+
+  ret += "\n}";
   return ret;
 }
-// todo make it nicer
-std::string Statement::dumpDotRec(clang::SourceManager &sm,bool markSliced) {
-  std::string ranklist = "{ rank=same";
+// todo make it nicer + make left-to-right ordering of nodes correct.
+std::string Statement::dumpDotRec(clang::SourceManager &sm,bool markSliced,
+	                              std::map<int, std::vector<int>>& rank_map,int depth) {
   std::string ret = std::to_string(id) + "[label=\"" + sourceString(sm) + "\"";
   if (markSliced && isInSlice()) { ret += ",color=red]; \n"; }
   else { ret += "]; \n"; }
@@ -238,26 +264,26 @@ std::string Statement::dumpDotRec(clang::SourceManager &sm,bool markSliced) {
     else { ret += "];\n"; }
 
     if (!c.first->getControlChildren().empty()) {
-      ret += c.first->dumpDotRec(sm, markSliced);
+      ret += c.first->dumpDotRec(sm, markSliced,rank_map,depth+1);
     }
     else {
       // edge case of recursion
       ret += std::to_string(c.first->getId()) + "[label=\"" + c.first->sourceString(sm) + "\"";
-      if (markSliced && c.first->isInSlice()) { ret += ",color=red]; \n"; }
-      else { ret += "]; \n"; }
+      if (markSliced && c.first->isInSlice()) { ret += ",color=red];\n"; }
+      else { ret += "];\n"; }
 
       for (auto& e : c.first->getDataEdges()) {
-        ret += std::to_string(c.first->getId()) + " -> " + std::to_string(e->getId());
+		  ret += std::to_string(c.first->getId()) + " -> " + std::to_string(e->getId());
         if (markSliced && c.first->isInSlice() && e->isInSlice()) { ret += "[color=red];\n"; }
         else { ret += ";\n"; }
       }
     }
-    ranklist += " " + std::to_string(c.first->getId());
+    rank_map[depth].push_back(c.first->getId());
   }
-  ranklist += " }\n";
-  ret += ranklist;
   for (auto& e : dataEdges) {
-    ret += std::to_string(id) + " -> " + std::to_string(e->getId()) + ";\n";
+    ret += std::to_string(id) + " -> " + std::to_string(e->getId());
+	if (markSliced && isInSlice() && e->isInSlice()) { ret += "[color=red];\n"; }
+	else { ret += ";\n"; }
   }
   return ret;
 }

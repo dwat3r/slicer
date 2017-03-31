@@ -1,0 +1,42 @@
+digraph {
+rankdir=TD;
+0[label="{}"]; 
+0 -> 1[label="T",style=bold];
+1[label="int x = 0;"];
+1 -> 3;
+1 -> 4;
+1 -> 7;
+1 -> 6;
+0 -> 2[label="T",style=bold];
+2[label="int y = 1;"];
+2 -> 4;
+0 -> 3[label="T",style=bold];
+3[label="while(x < 0)"]; 
+3 -> 10[label="T",style=bold];
+10[label="{}"]; 
+10 -> 7[label="T",style=bold];
+7[label="if (x > 0)"]; 
+7 -> 8[label="T",style=bold];
+8[label="{}"]; 
+8 -> 4[label="T",style=bold];
+4[label="y = x",color=red];
+7 -> 9[label="F",style=bold];
+9[label="{}"]; 
+9 -> 5[label="T",style=bold];
+5[label="y = 3"];
+5 -> 4;
+10 -> 6[label="T",style=bold];
+6[label="x = 2"];
+6 -> 3;
+6 -> 4;
+6 -> 7;
+6 -> 6;
+10 -> 11[label="T",style=bold];
+11[label="std::cout << x << "\n""];
+{ rank=same 1 2 3 }
+{ rank=same 10 }
+{ rank=same 7 6 11 }
+{ rank=same 8 9 }
+{ rank=same 4 5 }
+
+}
