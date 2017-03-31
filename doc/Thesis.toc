@@ -1,2 +1,5 @@
 \select@language {english} \contentsline {chapter}{\numberline {1}Introduction}{2}
-\select@language {english} \contentsline {chapter}{Glossary}{2}
+\select@language {english} \contentsline {chapter}{\numberline {2}slicing, methods and efficiency}{3}
+\select@language {english} \contentsline {chapter}{\numberline {3}LLVM/Clang infrastructure}{4}
+\select@language {english} \contentsline {chapter}{\numberline {4}Implementation and algorithm}{5}
+\select@language {english} \contentsline {chapter}{Glossary}{5}
