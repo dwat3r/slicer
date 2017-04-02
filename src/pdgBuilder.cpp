@@ -129,9 +129,10 @@ void PDGBuilder::run(const ast_matchers::MatchFinder::MatchResult &result) {
     if (!hasStmt(ws)) {
       stmt_map[ws] = new LoopStatement(ws, getLoc(result,ws));
     }
-    stmt_map[ws->getBody()] = Statement::create(ws->getBody(),getLoc(result,ws->getBody()));
-    stmt_map[ws]->addControlChild({ stmt_map[ws->getBody()],Statement::Edge::True });
-    
+    if (stmt_map[ws]->getControlChildren().empty()) {
+      stmt_map[ws->getBody()] = Statement::create(ws->getBody(), getLoc(result, ws->getBody()));
+      stmt_map[ws]->addControlChild({ stmt_map[ws->getBody()],Statement::Edge::True });
+    }
     stmt_map[ws]->addUse(result.Nodes.getNodeAs<VarDecl>("whileCondVar"));
   }
   // compound

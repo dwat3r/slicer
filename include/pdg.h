@@ -105,7 +105,8 @@ protected:
 	                     std::map<int, std::vector<int>>& rank_map,int depth);
 
   std::map<const clang::ValueDecl*, std::pair<Statement*, Statement::Edge>>
-  setDataEdgesRec(std::map <const clang::ValueDecl*, std::pair<Statement*, Edge>> parent_def_map);
+  setDataEdgesRec(std::map <const clang::ValueDecl*, std::pair<Statement*, Edge>> parent_def_map,
+                  Statement* loopRef = nullptr);
   
   void setId() { static int _id = 0; id = _id++; }
   static std::string stmt2str(const clang::Stmt *s, clang::SourceManager &sm);

@@ -47,6 +47,12 @@ Statement* Statement::create(const clang::Stmt* astref,clang::FullSourceLoc loc)
 }
 
 // making the PDG
+// todo refactor it to iterative
+// use DFS with a (searchable) stack, and handle Loop, Branch specific operations differently
+// maybe use the class design
+// handle the nested whiles, ifs others
+// for stack, use a: vector<Statement*,def_map> for registering level defs
+// or just hack another variable into it
 void Statement::setDataEdges() {
 	// initialize initial def_map from this node's defines
   std::map <const clang::ValueDecl*, std::pair<Statement*, Statement::Edge>> def_map;
@@ -54,12 +60,13 @@ void Statement::setDataEdges() {
     def_map.insert({ def,{this,Statement::Edge::None} });
   }
   // we're using DFS for visiting every statement in execution order.
-  setDataEdgesRec(def_map);
+  setDataEdgesRec(def_map,nullptr);
 }
 
 std::map<const clang::ValueDecl*, std::pair<Statement*, Statement::Edge>>
 Statement::setDataEdgesRec(std::map <const clang::ValueDecl*, 
-	                                   std::pair<Statement*,Statement::Edge>> parent_def_map) {
+	                                   std::pair<Statement*,Statement::Edge>> parent_def_map,
+                           Statement* loopRef) {
   std::map <const clang::ValueDecl*, std::pair<Statement*, Statement::Edge>> def_map;
   // make every parent definition edge true.
   for (auto& d : parent_def_map) {
@@ -86,8 +93,10 @@ Statement::setDataEdgesRec(std::map <const clang::ValueDecl*,
 		  for (auto& def : stmt.first->getDefine()) {
 			  if (def_map.find(def) != def_map.end()) {
 				  // if they're on the same branch
-				  if (def_map[def].second == Statement::Edge::None ||
-					  def_map[def].second == stmt.second) {
+				  if ((def_map[def].second == Statement::Edge::None ||
+					  def_map[def].second == stmt.second) && 
+            // and they're not the same
+            def_map[def].first != stmt.first) {
 					  def_map[def].first->addDataEdge(stmt.first);
 				  }
 			  }
@@ -96,11 +105,18 @@ Statement::setDataEdgesRec(std::map <const clang::ValueDecl*,
 
 			  // while specific stuff
 			  if (name() == Type::Loop) {
-				  // if def, make backedge to predicate
+          // if def, make backedge to predicate
 				  if (use.find(def) != use.end()) {
 					  def_map[def].first->addDataEdge(this);
 				  }
-			  }
+        }
+        // when in nested child
+        else if (loopRef != nullptr) {
+          auto uses = loopRef->getUses();
+          if (uses.find(def) != uses.end()) {
+            def_map[def].first->addDataEdge(loopRef);
+          }
+        }
 		  }
       // def-use edges
       for (auto& uses : stmt.first->getUses()) {
@@ -128,8 +144,10 @@ Statement::setDataEdgesRec(std::map <const clang::ValueDecl*,
         else {
           child_def_map.insert(def_map.begin(), def_map.end());
         }
-        auto child_new_defs(stmt.first->setDataEdgesRec(child_def_map));
-        // merge new definitions from child to our def_map todo fix this shit
+
+        auto child_new_defs(stmt.first->setDataEdgesRec(child_def_map, 
+                                                        name() == Type::Loop ? this : loopRef));
+        // merge new definitions from child to our def_map
 		for (auto& kv : child_new_defs) {
 			def_map[kv.first] = kv.second;
 		}
@@ -239,12 +257,17 @@ std::string Statement::dumpDot(clang::SourceManager &sm,bool markSliced) {
   std::map<int, std::vector<int>> rank_map;
   ret += dumpDotRec(sm, markSliced,rank_map,0);
   // insert ranks
+  bool first = true;
   for (auto& kv : rank_map) {
-	  ret += "{ rank=same ";
-	  for (auto& i : kv.second) {
+    if (first) {
+      ret += "{ rank=same ";
+      first = false;
+    }else
+      ret += " -> { rank=same ";
+    for (auto& i : kv.second) {
 		  ret += std::to_string(i) + " ";
 	  }
-	  ret += "}\n";
+	  ret += "}";
   }
 
   ret += "\n}";

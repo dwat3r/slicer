@@ -1,14 +1,14 @@
 int main(){
   int x = 0;
   int y = 1;
+  int z = 2;
   while(x < 0){
-    if (x > 0){
-      //2. use here 
+    while (x > y){
+      while (z > x){
+        x = z;
+      }
       y = x;
-    }else{
-      x = 3;
     }
-    //1. define here
     x = 2;
   }
 }

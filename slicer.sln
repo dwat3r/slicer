@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Express 14 for Windows Desktop
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26228.12
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "slicer", "slicer.vcxproj", "{51009651-1C0D-489C-945A-220D2783C945}"
 EndProject
@@ -13,8 +13,8 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{51009651-1C0D-489C-945A-220D2783C945}.Debug|x64.ActiveCfg = Debug|Win32
-		{51009651-1C0D-489C-945A-220D2783C945}.Debug|x64.Build.0 = Debug|Win32
+		{51009651-1C0D-489C-945A-220D2783C945}.Debug|x64.ActiveCfg = Debug|x64
+		{51009651-1C0D-489C-945A-220D2783C945}.Debug|x64.Build.0 = Debug|x64
 		{51009651-1C0D-489C-945A-220D2783C945}.Debug|x86.ActiveCfg = Debug|Win32
 		{51009651-1C0D-489C-945A-220D2783C945}.Debug|x86.Build.0 = Debug|Win32
 		{51009651-1C0D-489C-945A-220D2783C945}.Debug|x86.Deploy.0 = Debug|Win32
