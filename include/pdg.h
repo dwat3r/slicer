@@ -106,7 +106,7 @@ protected:
 
   std::map<const clang::ValueDecl*, std::pair<Statement*, Statement::Edge>>
   setDataEdgesRec(std::map <const clang::ValueDecl*, std::pair<Statement*, Edge>> parent_def_map,
-                  Statement* loopRef = nullptr);
+                  std::vector<Statement*> loopRefs);
   
   void setId() { static int _id = 0; id = _id++; }
   static std::string stmt2str(const clang::Stmt *s, clang::SourceManager &sm);

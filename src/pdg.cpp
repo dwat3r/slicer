@@ -60,17 +60,20 @@ void Statement::setDataEdges() {
     def_map.insert({ def,{this,Statement::Edge::None} });
   }
   // we're using DFS for visiting every statement in execution order.
-  setDataEdgesRec(def_map,nullptr);
+  setDataEdgesRec(def_map, {});
 }
 
 std::map<const clang::ValueDecl*, std::pair<Statement*, Statement::Edge>>
 Statement::setDataEdgesRec(std::map <const clang::ValueDecl*, 
 	                                   std::pair<Statement*,Statement::Edge>> parent_def_map,
-                           Statement* loopRef) {
+                           std::vector<Statement*> loopRefs) {
   std::map <const clang::ValueDecl*, std::pair<Statement*, Statement::Edge>> def_map;
   // make every parent definition edge true.
   for (auto& d : parent_def_map) {
 	  def_map.insert({ d.first, { d.second.first,Statement::Edge::None } });
+  }
+  if (name() == Type::Loop) {
+    loopRefs.push_back(this);
   }
   // we have to bypass CompoundStatements and visit their childs. 
   std::set<std::pair<Statement*, Statement::Edge>, StatementLocCmp> visitingChildren;
@@ -103,18 +106,13 @@ Statement::setDataEdgesRec(std::map <const clang::ValueDecl*,
 			  // make this stmt the latest definition
 			  def_map[def] = stmt;
 
-			  // while specific stuff
-			  if (name() == Type::Loop) {
-          // if def, make backedge to predicate
-				  if (use.find(def) != use.end()) {
-					  def_map[def].first->addDataEdge(this);
-				  }
-        }
-        // when in nested child
-        else if (loopRef != nullptr) {
-          auto uses = loopRef->getUses();
-          if (uses.find(def) != uses.end()) {
-            def_map[def].first->addDataEdge(loopRef);
+			  // while backedge to predicate
+        if (!loopRefs.empty()) {
+          for (auto lr : loopRefs) {
+            auto uses = lr->getUses();
+            if (uses.find(def) != uses.end()) {
+              def_map[def].first->addDataEdge(lr);
+            }
           }
         }
 		  }
@@ -144,9 +142,7 @@ Statement::setDataEdgesRec(std::map <const clang::ValueDecl*,
         else {
           child_def_map.insert(def_map.begin(), def_map.end());
         }
-
-        auto child_new_defs(stmt.first->setDataEdgesRec(child_def_map, 
-                                                        name() == Type::Loop ? this : loopRef));
+        auto child_new_defs(stmt.first->setDataEdgesRec(child_def_map, loopRefs));
         // merge new definitions from child to our def_map
 		for (auto& kv : child_new_defs) {
 			def_map[kv.first] = kv.second;
@@ -257,19 +253,13 @@ std::string Statement::dumpDot(clang::SourceManager &sm,bool markSliced) {
   std::map<int, std::vector<int>> rank_map;
   ret += dumpDotRec(sm, markSliced,rank_map,0);
   // insert ranks
-  bool first = true;
   for (auto& kv : rank_map) {
-    if (first) {
       ret += "{ rank=same ";
-      first = false;
-    }else
-      ret += " -> { rank=same ";
     for (auto& i : kv.second) {
 		  ret += std::to_string(i) + " ";
 	  }
 	  ret += "}";
   }
-
   ret += "\n}";
   return ret;
 }
