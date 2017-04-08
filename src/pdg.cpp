@@ -64,8 +64,7 @@ void Statement::setDataEdges() {
 }
 
 std::map<const clang::ValueDecl*, std::pair<Statement*, Statement::Edge>>
-Statement::setDataEdgesRec(std::map <const clang::ValueDecl*, 
-	                                   std::pair<Statement*,Statement::Edge>> parent_def_map,
+Statement::setDataEdgesRec(std::map <const clang::ValueDecl*,std::pair<Statement*,Statement::Edge>> parent_def_map,
                            std::vector<Statement*> loopRefs) {
   std::map <const clang::ValueDecl*, std::pair<Statement*, Statement::Edge>> def_map;
   // make every parent definition edge true.
@@ -75,7 +74,7 @@ Statement::setDataEdgesRec(std::map <const clang::ValueDecl*,
   if (name() == Type::Loop) {
     loopRefs.push_back(this);
   }
-  // we have to bypass CompoundStatements and visit their childs. 
+  // we have to bypass CompoundStatements and visit their children. 
   std::set<std::pair<Statement*, Statement::Edge>, StatementLocCmp> visitingChildren;
   for (auto c : controlChildren) {
 	  if (c.first->name() == Type::Compound) {
@@ -118,56 +117,37 @@ Statement::setDataEdgesRec(std::map <const clang::ValueDecl*,
 		  }
       // def-use edges
       for (auto& uses : stmt.first->getUses()) {
-		  if (def_map.find(uses) == def_map.end()) {
-			  llvm::errs() << "use " << uses->getNameAsString() 
-				           << " not found in def_map, parent: " << std::to_string(id) 
-				           << ", this: " << stmt.first->getId() << "\n";
-			  assert(false);
-		  }
+			  assert(def_map.find(uses) != def_map.end());
         def_map[uses].first->addDataEdge(stmt.first);
       }
 
       // go down
       if (!stmt.first->controlChildren.empty()) {
         std::map <const clang::ValueDecl*, std::pair<Statement*, Statement::Edge>> child_def_map;
-        if (name() == Type::Branch) {
-          // erase defs from the other branch
-          for (auto& def : def_map) {
-			      if (def.second.second == Statement::Edge::None ||
-				      def.second.second == stmt.second) {
-				      child_def_map.insert(def);
-			      }
-          }
-        }
-        else {
-          child_def_map.insert(def_map.begin(), def_map.end());
+        // erase defs from the other branch
+        for (auto& def : def_map) {
+			    if (def.second.second == Statement::Edge::None ||
+				    def.second.second == stmt.second) {
+				    child_def_map.insert(def);
+			    }
         }
         auto child_new_defs(stmt.first->setDataEdgesRec(child_def_map, loopRefs));
         // merge new definitions from child to our def_map
-		for (auto& kv : child_new_defs) {
-			def_map[kv.first] = kv.second;
-		}
+		    for (auto& kv : child_new_defs) { def_map[kv.first] = kv.second; }
       }
     }
-	// create loop-carried dependences by 
-	// visiting every child once again after
-	// deleting local definitions (declStmts)
-	if (name() == Type::Loop && i < 2) {
-		for (auto it = def_map.begin(); it != def_map.end();)
-		{
-			if (llvm::isa<clang::DeclStmt>(it->second.first->getAstRef())
-				&& it->second.second != Statement::Edge::None) def_map.erase(it++);
-			else ++it;
-		}
-	}
-	else break; // if we're not in a loop, don't visit twice
-  }
-  // return our defs to caller parent, erasing local defs.
-  for (auto it = def_map.begin(); it != def_map.end();)
-  {
-    if (llvm::isa<clang::DeclStmt>(it->second.first->getAstRef())
-      && it->second.second != Statement::Edge::None) def_map.erase(it++);
-    else ++it;
+	  // create loop-carried dependences by 
+	  // visiting every child once again after
+	  // deleting local definitions (declStmts)
+    // we also need to erase local defs when returning our defs to caller parent 
+	  for (auto it = def_map.begin(); it != def_map.end();)
+	  {
+		  if (llvm::isa<clang::DeclStmt>(it->second.first->getAstRef())
+			  && it->second.second != Statement::Edge::None) def_map.erase(it++);
+		  else ++it;
+	  }
+	  // if we're not in a loop, don't visit twice
+	  if (name() != Type::Loop) break;
   }
   return def_map;
 }
@@ -336,10 +316,10 @@ void Statement::slice(Statement* slicingStmt,bool backwards) {
       kv.second->markSliced();
   }
   // debug
-  for (auto& kv : child) {
-    if(kv.second != nullptr) std::cout << kv.first->getId() << " -> " << kv.second->getId() << "\n";
-    else std::cout << kv.first->getId() << "\n";
-  }
+  //for (auto& kv : child) {
+  //  if(kv.second != nullptr) std::cout << kv.first->getId() << " -> " << kv.second->getId() << "\n";
+  //  else std::cout << kv.first->getId() << "\n";
+  //}
 }
 
 void Statement::resetSlice() {

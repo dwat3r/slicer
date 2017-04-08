@@ -67,45 +67,48 @@ void PDGBuilder::setSlicingStmt(const ast_matchers::MatchFinder::MatchResult &re
 void PDGBuilder::registerMatchers(MatchFinder *MatchFinder) {
   // first define matchers
   // assign
-  auto decls = declStmt(hasDescendant(varDecl().bind("decl"))).bind("declStmt");
-  auto declWithInit = declStmt(hasDescendant(
-                                  varDecl(forEachDescendant(
-                                    declRefExpr(to(varDecl().bind("declInit"))))).bind("declWithInit")
-                              )).bind("declStmtWithInit");
+  auto decls = declStmt(hasDescendant(varDecl(anyOf(
+    hasInitializer(stmt(forEachDescendant(declRefExpr(to(varDecl().bind("declInit")))))), 
+    hasInitializer(anything()), 
+    unless(hasInitializer(anything())))).bind("decl"))).bind("declStmt");
 
   auto bop = binaryOperator(isAssignmentOp(),
                                 hasLHS(ignoringImpCasts(declRefExpr(to(varDecl().bind("lval"))))),
-                                hasRHS(forEachDescendant(
-                                  expr(declRefExpr(to(varDecl().bind("rval"))))))).bind("binop");
-  
-  auto bopLit = binaryOperator(isAssignmentOp(),
-	  hasLHS(ignoringImpCasts(declRefExpr(to(varDecl().bind("lval")))))).bind("binopLit");
+                                anyOf(
+                                  hasRHS(forEachDescendant(expr(declRefExpr(to(varDecl().bind("rval")))))),
+                                  hasRHS(anything())
+                                )).bind("binop");
+
   //fixme do something with unary ops which are embedded in statements like: int x = a++;
   auto uop = unaryOperator(isIncrementDecrementOp(),
                            hasDescendant(declRefExpr(to(varDecl().bind("uval"))))).bind("unop");
 
   auto ret = returnStmt(forEachDescendant(declRefExpr(to(varDecl().bind("retVar"))))).bind("ret");
   // branch
-  //fixme it won't match for "if(0)"
-  auto ifs = ifStmt(hasCondition(
-    forEachDescendant(declRefExpr(to(varDecl().bind("ifCondVar")))))).bind("if");
+  auto ifs = ifStmt(hasCondition(anyOf(
+                                    forEachDescendant(declRefExpr(to(varDecl().bind("ifCondVar")))),
+                                    anything()
+                                    ))).bind("if");
   // loop
-  // todo detect and handle continue/break statements
-  auto whiles = whileStmt(hasCondition(
-    forEachDescendant(declRefExpr(to(varDecl().bind("whileCondVar")))))).bind("while");
+  // todo detect and handle continue/break statements + the big question: should we?
+  auto whiles = whileStmt(hasCondition(anyOf(
+                                          forEachDescendant(declRefExpr(to(varDecl().bind("whileCondVar")))),
+                                          anything())
+                                          )).bind("while");
   // compound
   auto compounds = compoundStmt().bind("comp");
 
   // then add them to MatchFinder
-  MatchFinder->addMatcher(functionDecl(hasName(funcName), forEachDescendant(decls)).bind("f"), this);
-  MatchFinder->addMatcher(functionDecl(hasName(funcName), forEachDescendant(declWithInit)).bind("f"), this);
-  MatchFinder->addMatcher(functionDecl(hasName(funcName), forEachDescendant(bop)).bind("f"), this);
-  MatchFinder->addMatcher(functionDecl(hasName(funcName), forEachDescendant(bopLit)).bind("f"), this);
-  MatchFinder->addMatcher(functionDecl(hasName(funcName), forEachDescendant(uop)).bind("f"), this);
-  MatchFinder->addMatcher(functionDecl(hasName(funcName), forEachDescendant(ret)).bind("f"), this);
-  MatchFinder->addMatcher(functionDecl(hasName(funcName), forEachDescendant(ifs)).bind("f"), this);
-  MatchFinder->addMatcher(functionDecl(hasName(funcName), forEachDescendant(whiles)).bind("f"), this);
-  MatchFinder->addMatcher(functionDecl(hasName(funcName), forEachDescendant(compounds)).bind("f"), this);
+  MatchFinder->addMatcher(functionDecl(hasName(funcName), 
+                                       eachOf(forEachDescendant(decls),
+                                               forEachDescendant(bop),
+                                               forEachDescendant(uop),
+                                               forEachDescendant(ret),
+                                               forEachDescendant(ifs),
+                                               forEachDescendant(whiles),
+                                               forEachDescendant(compounds)
+                                                                    )).bind("f"), this);
+
 }
 void PDGBuilder::run(const ast_matchers::MatchFinder::MatchResult &result) {
   // process the match results
@@ -121,8 +124,8 @@ void PDGBuilder::run(const ast_matchers::MatchFinder::MatchResult &result) {
 		  stmt_map[is->getElse()] = Statement::create(is->getElse(), getLoc(result, is->getElse()));
       stmt_map[is]->addControlChild({ stmt_map[is->getElse()],Statement::Edge::False });
 	  }
-    stmt_map[is]->addUse(result.Nodes.getNodeAs<VarDecl>("ifCondVar"));
-
+    auto cvar = result.Nodes.getNodeAs<VarDecl>("ifCondVar");
+    if (cvar != nullptr) stmt_map[is]->addUse(cvar);
   }
   // loop
   if (auto ws = result.Nodes.getNodeAs<WhileStmt>("while")) {
@@ -133,7 +136,8 @@ void PDGBuilder::run(const ast_matchers::MatchFinder::MatchResult &result) {
       stmt_map[ws->getBody()] = Statement::create(ws->getBody(), getLoc(result, ws->getBody()));
       stmt_map[ws]->addControlChild({ stmt_map[ws->getBody()],Statement::Edge::True });
     }
-    stmt_map[ws]->addUse(result.Nodes.getNodeAs<VarDecl>("whileCondVar"));
+    auto cvar = result.Nodes.getNodeAs<VarDecl>("whileCondVar");
+    if (cvar != nullptr) stmt_map[ws]->addUse(cvar);
   }
   // compound
   if (auto cs = result.Nodes.getNodeAs<CompoundStmt>("comp")) {
@@ -149,22 +153,14 @@ void PDGBuilder::run(const ast_matchers::MatchFinder::MatchResult &result) {
       }
     }
   }
+  //the function
   if (auto f = result.Nodes.getNodeAs<FunctionDecl>("f")) {
-    //root
     root = f->getBody();
     if (!hasStmt(root)) {
       stmt_map[root] = new CompoundStatement(root,getLoc(result,root));
-      for (auto& var : f->parameters()) {
-        stmt_map[root]->addDefine(var);
-      }
     }
-    if (stmt_map[root]->getControlChildren().empty()) {
-      for (auto c : root->children()) {
-        if (stmt_map.find(c) == stmt_map.end()) {
-          stmt_map[c] = Statement::create(c, getLoc(result, c));
-        }
-        stmt_map[root]->addControlChild({ stmt_map[c],Statement::Edge::True });
-      }
+    for (auto& var : f->parameters()) {
+      stmt_map[root]->addDefine(var);
     }
   }
   // assign
@@ -177,18 +173,8 @@ void PDGBuilder::run(const ast_matchers::MatchFinder::MatchResult &result) {
     else {
       stmt_map[ds]->addDefine(d);
     }
-    setSlicingStmt(result, ds);
-  }
-  if (auto ds = result.Nodes.getNodeAs<DeclStmt>("declStmtWithInit")) {
-    //todo multiple decl...
-    auto d = result.Nodes.getNodeAs<VarDecl>("declWithInit");
-    if (!hasStmt(ds)) {
-      stmt_map[ds] = new AssignStatement(ds, getLoc(result, ds), { d });
-    }
-    else {
-      stmt_map[ds]->addDefine(d);
-    }
-    stmt_map[ds]->addUse(result.Nodes.getNodeAs<VarDecl>("declInit"));
+    auto init = result.Nodes.getNodeAs<VarDecl>("declInit");
+    if (init != nullptr) stmt_map[ds]->addUse(init);
     setSlicingStmt(result, ds);
   }
   if (auto bo = result.Nodes.getNodeAs<BinaryOperator>("binop")) {
@@ -199,18 +185,9 @@ void PDGBuilder::run(const ast_matchers::MatchFinder::MatchResult &result) {
     else {
       stmt_map[bo]->addDefine(lhs);
     }
-    stmt_map[bo]->addUse(result.Nodes.getNodeAs<VarDecl>("rval"));
+    auto rval = result.Nodes.getNodeAs<VarDecl>("rval");
+    if (rval != nullptr) stmt_map[bo]->addUse(rval);
     setSlicingStmt(result, bo);
-  }
-  if (auto boL = result.Nodes.getNodeAs<BinaryOperator>("binopLit")) {
-    auto lhs = result.Nodes.getNodeAs<VarDecl>("lval");
-    if (!hasStmt(boL)) {
-      stmt_map[boL] = new AssignStatement(boL, getLoc(result, boL), { lhs });
-    }
-    else {
-      stmt_map[boL]->addDefine(lhs);
-    }
-    setSlicingStmt(result, boL);
   }
   if (auto uo = result.Nodes.getNodeAs<UnaryOperator>("unop")) {
     auto var = result.Nodes.getNodeAs<VarDecl>("uval");
