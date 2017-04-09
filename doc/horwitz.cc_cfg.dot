@@ -1,0 +1,16 @@
+digraph {
+	0[label="entry"];
+	1[label="int sum = 0;"];
+	2[label="int i = sum;"];
+	3[label="while (i < 11)"];
+	4[label="sum += i;"];
+	5[label="i++;"];
+	6[label="exit"];
+	0 -> 1;
+	1 -> 2;
+	2 -> 3;
+	3 -> 4;
+	4 -> 5;
+	5 -> 3;
+	3 -> 6;
+}

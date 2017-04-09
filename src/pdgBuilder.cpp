@@ -67,7 +67,7 @@ void PDGBuilder::setSlicingStmt(const ast_matchers::MatchFinder::MatchResult &re
 void PDGBuilder::registerMatchers(MatchFinder *MatchFinder) {
   // first define matchers
   // assign
-  auto decls = declStmt(hasDescendant(varDecl(anyOf(
+  auto decls = declStmt(forEachDescendant(varDecl(anyOf(
     hasInitializer(stmt(forEachDescendant(declRefExpr(to(varDecl().bind("declInit")))))), 
     hasInitializer(anything()), 
     unless(hasInitializer(anything())))).bind("decl"))).bind("declStmt");
@@ -165,7 +165,6 @@ void PDGBuilder::run(const ast_matchers::MatchFinder::MatchResult &result) {
   }
   // assign
   if (auto ds = result.Nodes.getNodeAs<DeclStmt>("declStmt")) {
-    //todo multiple decl...
     auto d = result.Nodes.getNodeAs<VarDecl>("decl");
     if (!hasStmt(ds)) {
       stmt_map[ds] = new AssignStatement(ds, getLoc(result, ds), { d });
@@ -209,7 +208,7 @@ void PDGBuilder::run(const ast_matchers::MatchFinder::MatchResult &result) {
     setSlicingStmt(result, ret);
   }
   // save sourcemanager, we'll need it later for dot creation.
-  sm = result.SourceManager;
+  if (sm != nullptr) sm = result.SourceManager;
 }
 
 void PDGBuilder::onEndOfTranslationUnit() {

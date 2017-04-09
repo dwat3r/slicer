@@ -1,5 +1,19 @@
 \select@language {english} \contentsline {chapter}{\numberline {1}Introduction}{2}
-\select@language {english} \contentsline {chapter}{\numberline {2}slicing, methods and efficiency}{3}
-\select@language {english} \contentsline {chapter}{\numberline {3}LLVM/Clang infrastructure}{4}
-\select@language {english} \contentsline {chapter}{\numberline {4}Implementation and algorithm}{5}
-\select@language {english} \contentsline {chapter}{Glossary}{5}
+\select@language {english} \contentsline {chapter}{\numberline {2}Slicing, methods and efficiency}{3}
+\select@language {english} \contentsline {section}{\numberline {2.1}About slicing}{3}
+\select@language {english} \contentsline {section}{\numberline {2.2}Types of slicing}{3}
+\select@language {english} \contentsline {section}{\numberline {2.3}Methods for slicing}{4}
+\select@language {english} \contentsline {subsection}{\numberline {2.3.1}Dataflow equations}{4}
+\select@language {english} \contentsline {subsection}{\numberline {2.3.2}Information flow relations}{4}
+\select@language {english} \contentsline {subsection}{\numberline {2.3.3}PDG based graph reachability}{4}
+\select@language {english} \contentsline {chapter}{\numberline {3}LLVM/Clang infrastructure}{5}
+\select@language {english} \contentsline {section}{\numberline {3.1}About Clang}{5}
+\select@language {english} \contentsline {section}{\numberline {3.2}The Clang AST}{5}
+\select@language {english} \contentsline {section}{\numberline {3.3}AST Matchers}{5}
+\select@language {english} \contentsline {chapter}{\numberline {4}Implementation and algorithm}{6}
+\select@language {english} \contentsline {section}{\numberline {4.1}The approach}{6}
+\select@language {english} \contentsline {section}{\numberline {4.2}Building the PDG}{6}
+\select@language {english} \contentsline {subsection}{\numberline {4.2.1}Control dependences}{6}
+\select@language {english} \contentsline {subsection}{\numberline {4.2.2}Data dependences}{6}
+\select@language {english} \contentsline {section}{\numberline {4.3}Implementing slicing}{6}
+\select@language {english} \contentsline {chapter}{Glossary}{6}
