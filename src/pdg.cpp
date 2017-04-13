@@ -243,7 +243,7 @@ std::string Statement::dumpDot(clang::SourceManager &sm,bool markSliced) {
   ret += "\n}";
   return ret;
 }
-// todo make it nicer + make left-to-right ordering of nodes correct.
+// todo make it nicer + make left-to-right ordering of nodes correct. in ranking, constraint=false might help.
 std::string Statement::dumpDotRec(clang::SourceManager &sm,bool markSliced,
 	                              std::map<int, std::vector<int>>& rank_map,int depth) {
   std::string ret = std::to_string(id) + "[label=\"" + sourceString(sm) + "\"";
