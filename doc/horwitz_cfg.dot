@@ -1,0 +1,17 @@
+digraph {
+	0[label="entry"];
+	1[label="int sum = 0;\nint i = sum;"];
+	2[label="while (i < 11)"];
+	3[label="sum += i;\ni++;"];
+	4[label="exit"];
+	0 -> 1;
+	1 -> 2;
+	2 -> 3;
+	2 -> 4;
+	3 -> 2;
+	{rank=same 0}
+	{rank=same 1}
+	{rank=same 2}
+	{rank=same 3}
+	{rank=same 4}
+}

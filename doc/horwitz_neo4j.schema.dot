@@ -1,0 +1,27 @@
+CREATE (n0:Stmt {id:0 ,label:"{}"}) 
+CREATE (n1:Stmt {id:1 ,label:"int sum = 0"})
+CREATE (n2:Stmt {id:2 ,label:"int i = sum"})
+CREATE (n3:Stmt {id:3 ,label:"sum += i"})
+CREATE (n4:Stmt {id:4 ,label:"i++"})
+CREATE (n5:Stmt {id:5 ,label:"while (i < 11)"}) 
+CREATE (n6:Stmt {id:6 ,label:"{}"})
+CREATE 
+	(n0) -[:CONTROL_DEP]-> (n1),
+	(n1) -[:DATA_DEP]-> (n2),
+	(n1) -[:DATA_DEP]-> (n3),
+	(n0) -[:CONTROL_DEP]-> (n2),
+	(n2) -[:DATA_DEP]-> (n3),
+	(n2) -[:DATA_DEP]-> (n4),
+	(n2) -[:DATA_DEP]-> (n5),
+	(n0) -[:CONTROL_DEP]-> (n5),
+	(n5) -[:CONTROL_DEP]-> (n6),
+	(n6) -[:CONTROL_DEP]-> (n3),
+	(n6) -[:CONTROL_DEP]-> (n4),
+	(n4) -[:DATA_DEP]-> (n3),
+	(n4) -[:DATA_DEP]-> (n4),
+	(n4) -[:DATA_DEP]-> (n5)
+
+// backward slicing:
+MATCH (n)-[*]->(x:Stmt {id:4}) RETURN DISTINCT(n)
+// forward slicing:
+MATCH (x:Stmt {id:4})-[*]->(n) RETURN DISTINCT(n)

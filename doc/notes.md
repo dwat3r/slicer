@@ -12,9 +12,7 @@
   - Control dependence:
     - Definition of post dominance
   - Write example examination of horwitz.cc with source, CFG and PDG
-
-
-
+  
 
 ## Dataflow Equations
 
