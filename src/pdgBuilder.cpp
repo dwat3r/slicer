@@ -208,7 +208,7 @@ void PDGBuilder::run(const ast_matchers::MatchFinder::MatchResult &result) {
     setSlicingStmt(result, ret);
   }
   // save sourcemanager, we'll need it later for dot creation.
-  if (sm != nullptr) sm = result.SourceManager;
+  if (sm == nullptr) sm = result.SourceManager;
 }
 
 void PDGBuilder::onEndOfTranslationUnit() {

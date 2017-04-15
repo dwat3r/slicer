@@ -118,7 +118,9 @@ Statement::setDataEdgesRec(std::map <const clang::ValueDecl*,std::pair<Statement
       // def-use edges
       for (auto& uses : stmt.first->getUses()) {
 			  assert(def_map.find(uses) != def_map.end());
-        def_map[uses].first->addDataEdge(stmt.first);
+        // don't add loops
+        if(def_map[uses].first != stmt.first)
+          def_map[uses].first->addDataEdge(stmt.first);
       }
 
       // go down
