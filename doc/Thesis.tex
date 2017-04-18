@@ -147,8 +147,29 @@ On the other hand, def-order dependence between statement s1 and s2 is different
 These definitions are used in all slicing methods, but differently. I will elaborate these in each section.
 
 \subsection{Data flow equations}
-The first method is created by there is the control flow graph, which contains basic blocks as nodes, which contains consecutive statements without any transfers of control, and edges which are the jumps connecting these blocks. 
+This method is created by Mark Weiser. It is based on the analysis of the CFG. As he wrote in \cite{weiser84}, he defines a slice regarding a \textit{slicing criterion}, which consists of a pair \textit{(n, V)} where n is a statement of the program and V is a subset of the program's variables, which we are slicing on. He also writes that a slice of a program is an executable, which has only the relevant statements in it.
 
+To calculate which statements should be included in the slice, he defines two sets of variables: \textit{directly} and \textit{indirectly relevant} variables. As written in \cite{slicing-survey}, he provides the following equations for them:
+
+For determining \textit{directly} relevant variables and statements:
+% TODO beautify
+
+For each edge $i \rightarrow_{CFG} j$ in the CFG:
+\begin{align*}
+R^0_C(i) &= R^0_C(i) \cup \{ v | v \in R^0_C(j), v \notin \textsc{Def}(i) \} \cup \{ v | v \in \textsc{Ref}(i), \textsc{Def}(i) \cap R^0_C(j) \neq \emptyset \} \\
+S^0_C &= \{ i | (\textsc{Def}(i) \cap R^0_C(j) \neq \emptyset, i \rightarrow_{CFG} j \}
+\end{align*}
+
+And for determining \textit{indirectly} relevant variables and statements:
+\begin{align*}
+B^k_C &= \{ b | \exists i \in S^k_C, i \in \textsc{Infl}(b) \} \\
+R^{k+1}_C(i) &= R^k_C(i) \cup \bigcup_{b \in B^k_C} R^0_{(b, \textsc{Ref}(b))} (i) \ \\
+S^{k+1}_C &= B^k_C \cup \{ \textsc{Def}(i) \cap R^{k+1}_C(j) \neq \emptyset, i \rightarrow_{CFG} j \} 
+\end{align*}
+
+He also says that a slice is statement-minimal if it couldn't have less statements. The slice then is computed in two steps:
+First by determining \textit{directly} relevant variables by the equation above. In it, $\textsc{Def}(i)$ and $\textsc{Ref}(i)$ means the variables that statement $i$ defines or uses, respectively. $R^0_C(i)$ will contain the directly relevant variables of statement $i$. It is an iterative process, and starts with the values in the slicing criterion: $R^0_C(n) = V$, and for all other sets initialized as $\emptyset$. 
+% TODO walk through the example.
 
 \subsection{Information flow relations}
 \subsection{PDG based graph reachability}
