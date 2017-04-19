@@ -1,5 +1,6 @@
 import Data.List
 import Control.Monad.State
+import Debug.Trace
 
 newtype Var  = Var {getName :: String}
   deriving (Eq, Show)
@@ -11,7 +12,9 @@ data Stmt = Stmt {
                    infl  :: [Stmt], -- stmts control dependent on this
                    edges :: [Stmt]  -- CFG edges
                   }
-   deriving (Eq)
+
+instance Eq Stmt where
+  (==) (Stmt t1 _ _ _ _) (Stmt t2 _ _ _ _) = t1 == t2
 
 instance Show Stmt where
     show s = text s
@@ -21,8 +24,8 @@ type Criterion = (Stmt,[Var])
 
 -- directly relevant variables and statements with 0
 -- indirectly relevant variables and statements with > 0
-rj :: Int -> Criterion -> Stmt -> [Stmt] -> [Var]
-rj k c i ss = concat [r k c j ss (i:vs) | j <- edges i]
+rj :: Int -> Criterion -> Stmt -> [Stmt] -> [Stmt] -> [Var]
+rj k c i ss vs = concat [r k c j ss (j:vs) | j <- edges i]
 
 -- i -cfg-> j
 -- it, crit, curstmt, visitedstmts, stmts , affectedvars
@@ -39,7 +42,7 @@ r k c i ss vs | i `elem` vs = []
 --todo recursion to eliminate infinite loops
 s :: Int -> Criterion -> [Stmt] -> [Stmt] -> [Stmt]
 s 0 c ss vs = [i | i <- ss, not $ null (def i `intersect` rj 0 c i ss vs)]
-s k c ss vs = b (k-1) c ss ++ [i | i <- ss, not $ null (def i `intersect` rj k c i ss (i:vs))]
+s k c ss vs = b (k-1) c ss vs ++ [i | i <- ss, not $ null (def i `intersect` rj k c i ss (i:vs))]
 
 b :: Int -> Criterion -> [Stmt] -> [Stmt] -> [Stmt]
 b k c ss vs = [bi | bi <- s k c ss vs,not $ null $ infl bi]
