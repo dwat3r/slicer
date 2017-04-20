@@ -24,3 +24,7 @@
  - tracing transitive data dependences (iterate when facing with loops)
  - tracing control dependences
  
+
+## Information flow Relations
+
+(lam(a) U p(a) `cprod` lam(b)) U p() `cprod` 

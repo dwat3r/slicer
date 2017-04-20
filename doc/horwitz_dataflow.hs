@@ -35,14 +35,13 @@ rj k c i ss vs = concat [r k c j ss vs | j <- edges i]
 -- i -cfg-> j
 -- it, crit, curstmt, visitedstmts, stmts , affectedvars
 r :: Int -> Criterion -> Stmt -> [Stmt] -> [Stmt] -> [Var]
-r 0 c i ss vs | i `elem` vs = []
+r 0 c i ss vs | length (filter (i==) vs) == 3 = []
               | otherwise   = nub $ initi ++ [v | v <- rj 0 c i ss (i:vs), v `notElem` def i ] ++ 
                             [v | v <- ref i, not $ null (def i `intersect` rj 0 c i ss (i:vs)) ]
                             where initi | i == fst c = snd c
                                         | otherwise  = []
 
-r k c i ss vs | i `elem` vs = []
-              | otherwise   = nub $ r (k-1) c i ss vs ++ concat [r 0 (b,ref b) i ss vs | b <- b (k-1) c ss vs]
+r k c i ss vs = nub $ r (k-1) c i ss vs ++ concat [r 0 (b,ref b) i ss vs | b <- b (k-1) c ss vs]
 
 
 s :: Int -> Criterion -> [Stmt] -> [Stmt] -> [Stmt]
@@ -88,6 +87,11 @@ w210 = Stmt {text = "WRITE(Z)",  def = [],        ref = [Var "Z"],         infl 
 
 weiser2 :: [Stmt]
 weiser2 = [w21,w22,w23,w24,w25,w26,w27,w28,w29,w210]
+
+weiserCrit :: Criterion
+weiserCrit = (w210,[Var "Z"])
+
+weiser2s k = s k weiserCrit weiser2 []
 {-
 todo.
 type Iteration = Int
