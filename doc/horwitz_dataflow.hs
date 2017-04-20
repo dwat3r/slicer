@@ -3,7 +3,12 @@ import Control.Monad.State
 import Debug.Trace
 
 newtype Var  = Var {getName :: String}
-  deriving (Eq, Show)
+
+instance Eq Var where
+  (==) (Var v1) (Var v2) = v1 == v2
+
+instance Show Var where
+  show v = getName v
 
 data Stmt = Stmt {
                    text  :: String, -- source text
@@ -17,7 +22,7 @@ instance Eq Stmt where
   (==) (Stmt t1 _ _ _ _) (Stmt t2 _ _ _ _) = t1 == t2
 
 instance Show Stmt where
-    show s = text s
+    show s = text s ++ "\n"
 
 -- c is criterion
 type Criterion = (Stmt,[Var])
@@ -25,27 +30,27 @@ type Criterion = (Stmt,[Var])
 -- directly relevant variables and statements with 0
 -- indirectly relevant variables and statements with > 0
 rj :: Int -> Criterion -> Stmt -> [Stmt] -> [Stmt] -> [Var]
-rj k c i ss vs = concat [r k c j ss (j:vs) | j <- edges i]
+rj k c i ss vs = concat [r k c j ss vs | j <- edges i]
 
 -- i -cfg-> j
 -- it, crit, curstmt, visitedstmts, stmts , affectedvars
 r :: Int -> Criterion -> Stmt -> [Stmt] -> [Stmt] -> [Var]
 r 0 c i ss vs | i `elem` vs = []
-              | otherwise   =  initi ++ [v | v <- rj 0 c i ss (i:vs), v `notElem` def i ] ++ 
+              | otherwise   = nub $ initi ++ [v | v <- rj 0 c i ss (i:vs), v `notElem` def i ] ++ 
                             [v | v <- ref i, not $ null (def i `intersect` rj 0 c i ss (i:vs)) ]
                             where initi | i == fst c = snd c
                                         | otherwise  = []
 
 r k c i ss vs | i `elem` vs = []
-              | otherwise   = r (k-1) c i ss (i:vs) ++ nub (concat [r 0 (b,ref b) i ss (i:vs) | b <- b (k-1) c ss vs])
+              | otherwise   = nub $ r (k-1) c i ss vs ++ concat [r 0 (b,ref b) i ss vs | b <- b (k-1) c ss vs]
 
---todo recursion to eliminate infinite loops
+
 s :: Int -> Criterion -> [Stmt] -> [Stmt] -> [Stmt]
-s 0 c ss vs = [i | i <- ss, not $ null (def i `intersect` rj 0 c i ss vs)]
-s k c ss vs = b (k-1) c ss vs ++ [i | i <- ss, not $ null (def i `intersect` rj k c i ss (i:vs))]
+s 0 c ss vs = nub [i | i <- ss, not $ null (def i `intersect` rj 0 c i ss vs)]
+s k c ss vs = nub $ b (k-1) c ss vs ++ [i | i <- ss, not $ null (def i `intersect` rj k c i ss vs)]
 
 b :: Int -> Criterion -> [Stmt] -> [Stmt] -> [Stmt]
-b k c ss vs = [bi | bi <- s k c ss vs,not $ null $ infl bi]
+b k c ss vs = nub [bi | i <- s k c ss vs, bi <- ss, i `elem` infl bi]
 
 
 -- sample data from horwitz:
@@ -63,6 +68,26 @@ horwitz = [n0,n1,n2,n3,n4]
 c :: Criterion
 c = (n4,[vi])
 
+w1 = Stmt {text = "y = x;", def = [Var "y"], ref = [Var "x"], infl = [], edges = [w2]} 
+w2 = Stmt {text = "a = b;", def = [Var "a"], ref = [Var "b"], infl = [], edges = [w3]} 
+w3 = Stmt {text = "z = y;", def = [Var "z"], ref = [Var "y"], infl = [], edges = []} 
+
+weiser :: [Stmt]
+weiser = [w1,w2,w3]
+ 
+w21  = Stmt {text = "A = const", def = [Var "A"], ref = [Var "const"],     infl = [], edges = [w22]}
+w22  = Stmt {text = "WHILE P(k)",def = [],        ref = [Var "K"],         infl = [w23,w24,w25,w26,w27,w28], edges = [w23,w29]}
+w23  = Stmt {text = "IF Q(C)",   def = [],        ref = [Var "C"],         infl = [w24,w25,w26,w27], edges = [w24,w26]}
+w24  = Stmt {text = "B = A",     def = [Var "B"], ref = [Var "A"],         infl = [], edges = [w25]}
+w25  = Stmt {text = "X = 1",     def = [Var "X"], ref = [],                infl = [], edges = [w28]}
+w26  = Stmt {text = "C = B",     def = [Var "C"], ref = [Var "B"],         infl = [], edges = [w27]}
+w27  = Stmt {text = "Y = 2",     def = [Var "Y"], ref = [],                infl = [], edges = [w28]}
+w28  = Stmt {text = "K = K + 1", def = [Var "K"], ref = [Var "K"],         infl = [], edges = [w22]}
+w29  = Stmt {text = "Z = X + Y", def = [Var "Z"], ref = [Var "X",Var "Y"], infl = [], edges = [w210]}
+w210 = Stmt {text = "WRITE(Z)",  def = [],        ref = [Var "Z"],         infl = [], edges = []}
+
+weiser2 :: [Stmt]
+weiser2 = [w21,w22,w23,w24,w25,w26,w27,w28,w29,w210]
 {-
 todo.
 type Iteration = Int
