@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014/W32TeX) (preloaded format=pdflatex 2015.5.24)  22 APR 2017 19:21
+This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014/W32TeX) (preloaded format=pdflatex 2015.5.24)  22 APR 2017 22:34
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -440,6 +440,9 @@ Package: epigraph 2009/09/02 v1.5c typesetting epigraphs
 \epigraphwidth=\skip50
 \epigraphrule=\skip51
 )
+(c:/texlive/2014/texmf-dist/tex/latex/placeins/placeins.sty
+Package: placeins 2005/04/18  v 2.2
+)
 (c:/texlive/2014/texmf-dist/tex/latex/geometry/geometry.sty
 Package: geometry 2010/09/12 v5.6 Page Geometry
 
@@ -739,18 +742,18 @@ File: tikzlibrarytopaths.code.tex 2008/06/17 v3.0.0 (rcs-revision 1.2)
  (./Thesis.aux)
 \openout1 = `Thesis.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 53.
-LaTeX Font Info:    ... okay on input line 53.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 53.
-LaTeX Font Info:    ... okay on input line 53.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 53.
-LaTeX Font Info:    ... okay on input line 53.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 53.
-LaTeX Font Info:    ... okay on input line 53.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 53.
-LaTeX Font Info:    ... okay on input line 53.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 53.
-LaTeX Font Info:    ... okay on input line 53.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 54.
+LaTeX Font Info:    ... okay on input line 54.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 54.
+LaTeX Font Info:    ... okay on input line 54.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 54.
+LaTeX Font Info:    ... okay on input line 54.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 54.
+LaTeX Font Info:    ... okay on input line 54.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 54.
+LaTeX Font Info:    ... okay on input line 54.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 54.
+LaTeX Font Info:    ... okay on input line 54.
 
 
 LaTeX Warning: Please use \usepackage[latin2]{inputenc} with
@@ -853,12 +856,12 @@ ABD: EveryShipout initializing macros
 LaTeX Info: Redefining \cal on input line 592.
 LaTeX Info: Redefining \mit on input line 593.
 )
-LaTeX Font Info:    Try loading font information for U+msa on input line 56.
+LaTeX Font Info:    Try loading font information for U+msa on input line 57.
 
 (c:/texlive/2014/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Try loading font information for U+msb on input line 56.
+LaTeX Font Info:    Try loading font information for U+msb on input line 57.
 
 (c:/texlive/2014/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
@@ -866,15 +869,15 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 <ELTE_logo.png, id=4, 426.8748pt x 426.8748pt>
 File: ELTE_logo.png Graphic file (type png)
  <use ELTE_logo.png>
-Package pdftex.def Info: ELTE_logo.png used on input line 57.
+Package pdftex.def Info: ELTE_logo.png used on input line 58.
 (pdftex.def)             Requested size: 85.37344pt x 85.37344pt.
 
-Overfull \hbox (15.17203pt too wide) in paragraph at lines 56--62
+Overfull \hbox (15.17203pt too wide) in paragraph at lines 57--63
 [] []
  []
 
 
-Overfull \hbox (23.99997pt too wide) in paragraph at lines 68--72
+Overfull \hbox (23.99997pt too wide) in paragraph at lines 69--73
 [] 
  []
 
@@ -906,42 +909,42 @@ File: lstlang1.sty 2014/09/06 1.5e listings language file
 (c:/texlive/2014/texmf-dist/tex/latex/listings/lstmisc.sty
 File: lstmisc.sty 2014/09/06 1.5e (Carsten Heinz)
 )
-LaTeX Font Info:    Try loading font information for T1+cmtt on input line 99.
+LaTeX Font Info:    Try loading font information for T1+cmtt on input line 100.
+
 
 (c:/texlive/2014/texmf-dist/tex/latex/base/t1cmtt.fd
 File: t1cmtt.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <10> not available
-(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 100.
+(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 101.
 
 <horwitz_cfg.png, id=27, 252.945pt x 395.4775pt>
 File: horwitz_cfg.png Graphic file (type png)
  <use horwitz_cfg.png>
-Package pdftex.def Info: horwitz_cfg.png used on input line 112.
+Package pdftex.def Info: horwitz_cfg.png used on input line 116.
 (pdftex.def)             Requested size: 162.18279pt x 253.57542pt.
- [4 <./horwitz_cfg.png>] [5] [6] [7]
+ [4 <./horwitz_cfg.png>] [5] [6] [7] [8] [9] [10
 
-LaTeX Warning: `h' float specifier changed to `ht'.
 
-[8] [9]
+] [11]
 Chapter 3.
-[10
+[12
 
 ]
 Chapter 4.
-[11
+[13
 
-] [12
+] [14
 
 ] (./Thesis.aux) ) 
 Here is how much of TeX's memory you used:
- 16330 strings out of 494367
- 300167 string characters out of 6163526
- 378634 words of memory out of 5000000
- 19243 multiletter control sequences out of 15000+600000
- 24959 words of font info for 60 fonts, out of 8000000 for 9000
+ 16358 strings out of 494367
+ 300610 string characters out of 6163526
+ 378878 words of memory out of 5000000
+ 19265 multiletter control sequences out of 15000+600000
+ 25900 words of font info for 63 fonts, out of 8000000 for 9000
  372 hyphenation exceptions out of 8191
- 55i,14n,60p,1086b,1224s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 55i,14n,60p,1086b,1324s stack positions out of 5000i,500n,10000p,200000b,80000s
 {c:/texlive/2014/texmf-dist/fonts/enc/dvips/cm-super/cm-super
 -t1.enc}<c:/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb><
 c:/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb><c:/texliv
@@ -957,17 +960,18 @@ f-dist/fonts/type1/public/cm-super/sfbx2074.pfb><c:/texlive/2014/texmf-dist/fon
 ts/type1/public/cm-super/sfbx2488.pfb><c:/texlive/2014/texmf-dist/fonts/type1/p
 ublic/cm-super/sfcc0800.pfb><c:/texlive/2014/texmf-dist/fonts/type1/public/cm-s
 uper/sfcc1200.pfb><c:/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sfit1
-200.pfb><c:/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sfrm1095.pfb><c
-:/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sfrm1200.pfb><c:/texlive/
-2014/texmf-dist/fonts/type1/public/cm-super/sfrm1440.pfb><c:/texlive/2014/texmf
--dist/fonts/type1/public/cm-super/sfti1095.pfb><c:/texlive/2014/texmf-dist/font
-s/type1/public/cm-super/sfti1200.pfb><c:/texlive/2014/texmf-dist/fonts/type1/pu
-blic/cm-super/sftt1000.pfb><c:/texlive/2014/texmf-dist/fonts/type1/public/cm-su
-per/sftt1200.pfb>
-Output written on Thesis.pdf (13 pages, 1016760 bytes).
+000.pfb><c:/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sfit1200.pfb><c
+:/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sfrm1095.pfb><c:/texlive/
+2014/texmf-dist/fonts/type1/public/cm-super/sfrm1200.pfb><c:/texlive/2014/texmf
+-dist/fonts/type1/public/cm-super/sfrm1440.pfb><c:/texlive/2014/texmf-dist/font
+s/type1/public/cm-super/sfti1095.pfb><c:/texlive/2014/texmf-dist/fonts/type1/pu
+blic/cm-super/sfti1200.pfb><c:/texlive/2014/texmf-dist/fonts/type1/public/cm-su
+per/sftt0800.pfb><c:/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sftt10
+00.pfb><c:/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sftt1200.pfb>
+Output written on Thesis.pdf (15 pages, 1063390 bytes).
 PDF statistics:
- 148 PDF objects out of 1000 (max. 8388607)
- 105 compressed objects within 2 object streams
+ 162 PDF objects out of 1000 (max. 8388607)
+ 115 compressed objects within 2 object streams
  0 named destinations out of 1000 (max. 500000)
  23 words of extra memory for PDF output out of 10000 (max. 10000000)
 

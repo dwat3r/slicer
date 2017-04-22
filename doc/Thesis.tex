@@ -18,6 +18,7 @@
 \usepackage{listings}
 \usepackage{wrapfig}
 \usepackage{epigraph}
+\usepackage{placeins}
 \lstset{basicstyle=\footnotesize\ttfamily}
 \newcommand{\inlinecode}{\texttt}
 \DeclareGraphicsExtensions{.png,.jpg}
@@ -95,7 +96,7 @@ We can construct slices via various methods on different representations of the 
 
 \subsection{Dependences}
 Before I describe the various methods currently available for slicing, we must get to know what dependences in programs are. There are two kinds of dependences: control and data. They can be defined by the control flow graph (CFG) of the program. Given the following example:
-
+\begin{figure}[h]
 \begin{lstlisting}[language=C++]
 int main(){
   int sum = 0;
@@ -106,6 +107,9 @@ int main(){
   }
 }
 \end{lstlisting}
+\caption{Example program}
+\label{fig:example_prog}
+\end{figure}
 
 \begin{wrapfigure}{r}{0.4\textwidth}
   \centering
@@ -227,8 +231,8 @@ The downside is that it only computes backwards slices, and since the criterion 
 \subsection{Information flow relations}
 \subsubsection{The algorithm}
 This algorithm is created by Bergeretti and Carré\cite{information-flow}. It has a different approach than Weiser's: it associates the program's statements with relations: that which expression may affect which variable. These relations has the definitions in the table below.
-
- \begin{table}[h]
+\clearpage
+\begin{table}[t]
   \centering
   	\begin{tabular}{l}
 Empty statements                                                                            \\
@@ -276,6 +280,48 @@ $\mu_S = (\{e\} \times D_A) \cup \mu_A\rho^*_A((\Gamma(e) \times D_A) \cup \iota
   \caption{Table of information flow relations}
   \label{tab:informationFlowTable}
 \end{table}
+\FloatBarrier
+The statements are classified into two primitive types: Empty and Assignment, and three hiearchical types: Sequence, Conditional with \texttt{else} branch, without \texttt{else} and the Repetitive statements. They are constructed from the control-flow graph. For analysis, they define \textit{variables} and \textit{expressions}.For Assignment, it's left side is the variable, and it's right side is the expression associated with it. Only this type of statement has a variable. For Conditional and Repetitive statements their conditional expression used, and Empty and Sequence has no variable or expression. There's also the definition of $\Gamma(e)$ which consists the variables which appear in $e$. We define $E$ and $V$ which contains all of the variables and expressions of the program. In $D_S$ there are the variables which $S$ \textit{may define}. In $P_S$ are the variables which $S$ \textit{may preserve}. The main three binary relations are the following:
+\begin{enumerate}
+\item $\lambda_S$, from $V$ to $E$
+\item $\mu_S$, from $E$ to $V$
+\item $\rho_S$, from $V$ to $V$
+\end{enumerate}
+
+For a statement $S$, $v \in V, e \in E: v \lambda_S e$ means that `the value of $v$ on entry to $S$ \textit{may be used} in the evaluation of the expression $e$ in $S$.' Taken the following program:
+\begin{figure}[h]
+\begin{lstlisting}[language=C++]
+void fn(int x){
+  read(n);             //1
+  int i = 1;           //2
+  while (i <= n){      //3
+    if (i \% 2 = 0) {  //4
+      x = 17;          //5
+    }
+    else{              
+      x = 18;          //6
+    }
+    i = i + 1;         //7
+  }
+  write(x);            //8
+}
+\end{lstlisting}
+\caption{Example program 2}
+\label{fig:example_prog_2}
+\end{figure}
+
+It can be seen that in case of the \texttt{while} statement, variable $n$ and the predicate of \texttt{while} is in the $\lambda_{\texttt{while}}$ relation.
+
+Taking a look at $\mu_S$, it means that for expression $e$ and variable $v$ : $e \mu_S v$ `a value of e in $S$ \textit{may be used} in obtaining the value of the variable $v$ on exit from $S$'. Looking at our example again, for the expression of \texttt{if} statement and variable $x$, $\mu_{\texttt{if}}$ holds, since the execution of assignments to $x$ are control dependent on the \texttt{if} statement.
+
+It is basically the dual relation of $\lambda_S$, which will be very useful in aspect of slicing.
+
+The final relation $\rho_S$ can be expressed in terms of $\lambda_S$,$\mu_S$ and $P_S$:
+\begin{equation}
+\rho_S = \lambda_S\mu_S \cup \Pi_S,\  where \ \Pi_S = \{(v,v) \in V \times V\ |\ v \in P_S\}.
+\end{equation}
+
+This is the combination of 
 
 
 
