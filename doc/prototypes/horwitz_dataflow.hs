@@ -55,11 +55,11 @@ b k c ss vs = nub [bi | i <- s k c ss vs, bi <- ss, i `elem` infl bi]
 -- sample data from horwitz:
 vi = Var "i"
 vsum = Var "sum"
-n0 = Stmt {text = "int sum = 0;",   def = [vsum], ref = [],     infl = [],     edges = [n1]}
-n1 = Stmt {text = "int i = sum;",   def = [vi],   ref = [vsum], infl = [],     edges = [n2]}
-n2 = Stmt {text = "while (i < 11)", def = [],     ref = [vi],   infl = [n3,n4],edges = [n3]}
-n3 = Stmt {text = "sum += i;",      def = [vsum], ref = [vi],   infl = [],     edges = [n4]}
-n4 = Stmt {text = "i++",            def = [vi],   ref = [vi],   infl = [],     edges = [n2]}
+n0 = Stmt {text = "int sum = 0;",   def = [vsum], ref = [],        infl = [],     edges = [n1]}
+n1 = Stmt {text = "int i = sum;",   def = [vi],   ref = [vsum],    infl = [],     edges = [n2]}
+n2 = Stmt {text = "while (i < 11)", def = [],     ref = [vi],      infl = [n3,n4],edges = [n3]}
+n3 = Stmt {text = "sum += i;",      def = [vsum], ref = [vsum,vi], infl = [],     edges = [n4]}
+n4 = Stmt {text = "i++",            def = [vi],   ref = [vi],      infl = [],     edges = [n2]}
 
 horwitz :: [Stmt]
 horwitz = [n0,n1,n2,n3,n4]

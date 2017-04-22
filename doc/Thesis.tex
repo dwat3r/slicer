@@ -148,6 +148,7 @@ On the other hand, def-order dependence between statement s1 and s2 is different
 These definitions are used in all slicing methods, but differently. I will elaborate these in each section.
 
 \subsection{Data flow equations}
+\subsubsection{The algorithm}
 This method is created by Mark Weiser. It is based on the analysis of the CFG. As he wrote in \cite{weiser84}, he defines a slice regarding a \textit{slicing criterion}, which consists of a pair \textit{(n, V)} where n is a statement of the program and V is a subset of the program's variables, which we are slicing on. He also writes that a slice of a program is an executable, which has only the relevant statements in it.
 
 To calculate which statements should be included in the slice, he defines two sets of variables: \textit{directly} and \textit{indirectly relevant} variables. As written in \cite{slicing-survey}, he provides the following equations for them:
@@ -169,10 +170,116 @@ S^{k+1}_C &= B^k_C \cup \{ \textsc{Def}(i) \cap R^{k+1}_C(j) \neq \emptyset, i \
 \end{align*}
 
 He also says that a slice is statement-minimal if it couldn't have less statements. The slice then is computed in two steps:
-First by determining \textit{directly} relevant variables by the equation above. In it, $\textsc{Def}(i)$ and $\textsc{Ref}(i)$ means the variables that statement $i$ defines or uses, respectively. $R^0_C(i)$ will contain the directly relevant variables of statement $i$. It is an iterative process, and starts with the values in the slicing criterion: $R^0_C(n) = V$, and for all other sets initialized as $\emptyset$. 
-% TODO walk through the example.
+First by determining \textit{directly} relevant variables by the equation above. In it, $\textsc{Def}(i)$ and $\textsc{Ref}(i)$ means the variables that statement $i$ defines or uses, respectively. $R^0_C(i)$ will contain the directly relevant variables of statement $i$. It starts with the values in the slicing criterion: $R^0_C(n) = V$, and for all other sets initialized as $\emptyset$. As it can be seen from the first equation above, to get the $R^0_C$ value for a node, it must use the computed values from every following node in the CFG. Weiser states in his work[1], that this is a simplification of the usual data flow information, which would use a PRE set to represent preservation of variable values. Reading the first equation, we see that variable $v$ is in the $R^0_C(i)$ set either if:
+\begin{enumerate}
+\item $v$ is in the slicing criterion $V$,
+\item or $v$ is in \textsc{Ref}(i) and the $R^0_C$ set of the following CFG node $j$ has a value which is also in \textsc{Def}(i) 
+\item or $v$ is not in \textsc{Def}(i) but $v$ is in $R^0_C(j)$.
+\end{enumerate}
+The last constraint ensures the propagation of the `may be used` variables through statements which does not use nor reference the variables in the slicing criterion. 
+
+The second equation $S^0_C$ then contains the statements which are included in the slice. It goes through the CFG from start and collects all variables that may have an influence on the slicing criterion. I've listed the sets of variables which are in \textsc{Def}, \textsc{Ref} and $R^0_C$ of the statements of the example program above in the table below.
+
+\begin{table}[h]
+  \centering
+  	\begin{tabular}{|l|l|l|l|}
+\hline
+Node                     & \textsc{Def} & \textsc{Ref}   & $R^0_C$      \\ \hline
+\texttt{int sum = 0;}    & \texttt{sum} & $\emptyset$    & $\emptyset$  \\ \hline
+\texttt{int i = sum;}    & \texttt{i}   & \texttt{sum}   & \texttt{sum} \\ \hline
+\texttt{while (i < 11)}  & $\emptyset$  & \texttt{i}     & \texttt{i}   \\ \hline
+\texttt{sum += i;}       & \texttt{sum} & \texttt{sum,i} & \texttt{i}   \\ \hline
+\texttt{i++}             & \texttt{i}   & \texttt{i}     & \texttt{i}   \\ \hline
+  \end{tabular}
+  \caption{Results of the algorithm for the given example and criterion \texttt{(i++,\{i\})} }
+  \label{tab:weiserExampleTable}
+\end{table}
+
+In this case, the set $S^0_C$ contains lines \texttt{2,3,6}. As we see, this slice is incomplete since it does not include the \texttt{while} statement. For this to be included, further iterations should be done. In the equations above, Weiser introduces the \textsc{Infl} set for every statement $i$, which consists all statements which are control dependent on $i$. In our example, it is the empty set for all statements except the \texttt{while}. Using this, he defines the $B^k_C$ set, which includes all statements which have a statement in it's \textsc{Infl} set which is included in $S^k_C$. 
+
+Now using $B^k_C$, we can add the \texttt{while} statement since the slicing criterion is control dependent on it. This is defined in the last equation, which is almost the same as the second, but it also includes the $B^k_C$ set in it. When facing with nested branch, or looping statements, multiple levels of indirect dependences must be considered. The $R^{i+1}_C$ set contains these for each level. Because of this, Weiser's algorithm needs iterations for achieving the correct slice. The $R^k_C$ and $S^k_C$ sets are non-decreasing, and they reach a fixpoint which are called $R_C$ and $S_C$, respectively. The final $S_C$ set contains the slice for the criterion.
+
+I must note that this method computes the \textit{backward} slice for any criterion, and cannot be used for forward slicing, since it computes only the statements which have influence on the criterion.
+
+\subsubsection{Efficiency}
+Weiser states that the complexity for computing $S_C$ is $O(n e log e)$. He notes that this slice is not always the smallest, since it could include statements which cannot influence the slicing variable. He shows it in the following example program:
+\begin{lstlisting}
+a = constant
+while(p(k)){
+  if (q(c)){
+    b = a;
+    x = 1;
+  }else{
+  	c = b;
+  	y = 2;
+  }
+  k++;
+}
+z = x + y;
+write(z)
+\end{lstlisting}
+
+For criterion \texttt{C = (write(z),\{z\})}, the set $S_C$ will contain the first statement, but it does not have an influence on \texttt{z} since on any path by which \texttt{a} can influence \texttt{c} will execute \texttt{x = 1} and \texttt{y = 2}, therefore \texttt{z} becomes a constant value in this case. 
+
+However, computing slices with Weiser's algorithm needs little information from the program, since it requires only the CFG and the \textsc{Ref} and \textsc{Def} sets for every statement.
+The downside is that it only computes backwards slices, and since the criterion is fixed, it needs to compute every set in the equations if we need a slice for a different slicing criterion of the program.
 
 \subsection{Information flow relations}
+\subsubsection{The algorithm}
+This algorithm is created by Bergeretti and Carré\cite{information-flow}. It has a different approach than Weiser's: it associates the program's statements with relations: that which expression may affect which variable. These relations has the definitions in the table below.
+
+ \begin{table}[h]
+  \centering
+  	\begin{tabular}{l}
+Empty statements                                                                            \\
+$D_S = \emptyset$                                                                           \\
+$\lambda_S = \emptyset$                                                                     \\
+$\rho_S = \iota$                                                                            \\
+$P_S = V$                                                                                   \\
+$\mu_S = \emptyset$                                                                         \\
+\hline                                                                                      
+Assignment Statements, in a form of \texttt{v = e}                                          \\
+$D_S = \{v\}$                                                                               \\
+$\lambda_S = \Gamma(e) \times \{e\}$                                                        \\
+$\rho_S = \Gamma(e) \times \{v\} \cup (\iota - \{(v,v)\}$                                   \\
+$P_S = V - \{v\}$                                                                           \\
+$\mu_S = \{(e,v)\}$                                                                         \\
+\hline                                                                                      
+Sequences of statements, in a form of A;B                                                   \\
+$D_S = D_A \cup D_B$                                                                        \\
+$\lambda_S = \lambda_A \cup \rho_A\lambda_B$                                                \\
+$\rho_S = \rho_A\rho_B$                                                                     \\
+$P_S = P_A \cap P_B$                                                                        \\
+$\mu_S = \mu_A\rho_B \cup \mu_B$                                                            \\
+\hline                                                                                      
+Conditional statements, in a form: \texttt{if (\textit{e}) A else B}                        \\
+$D_S = D_A \cup D_B$                                                                        \\
+$\lambda_S = (\Gamma(e) \times \{e\}) \cup \lambda_A \cup \lambda_B$                        \\
+$\rho_S = (\Gamma(e) \times (D_A \cup D_B)) \cup \rho_A \cup \rho_B$                        \\
+$P_S = P_A \cup P_B$                                                                        \\
+$\mu_S = (\{e\} \times (D_A \cup D_B)) \cup \mu_A \cup \mu_B$                               \\
+\hline                                                                                      
+Conditional statements, without else: \texttt{if (\textit{e}) A}                            \\
+$D_S = D_A$                                                                                 \\
+$\lambda_S = (\Gamma(e) \times \{e\}) \cup \lambda_A$                                       \\
+$\rho_S = (\Gamma(e) \times D_A) \cup \rho_A \cup \iota$                                    \\
+$P_S = V$                                                                                   \\
+$\mu_S = (\{e\} \times D_A) \cup \mu_A$                                                     \\
+\hline                                                                                      
+Repetitive statements, in a form: \texttt{while (\textit{e}) A}                             \\
+$D_S = D_A$                                                                                 \\
+$\lambda_S = \rho^*_A((\Gamma(e) \times \{e\}) \cup \lambda_A)$                   \\
+$\rho_S = \rho^*_A((\Gamma(e) \times D_A) \cup \iota)$                            \\
+$P_S = V$                                                                                   \\
+$\mu_S = (\{e\} \times D_A) \cup \mu_A\rho^*_A((\Gamma(e) \times D_A) \cup \iota)$\\
+  \end{tabular}
+  \caption{Table of information flow relations}
+  \label{tab:informationFlowTable}
+\end{table}
+
+
+
+
 \subsection{PDG based graph reachability}
 
 
@@ -212,6 +319,13 @@ First by determining \textit{directly} relevant variables by the equation above.
   ACM Transactions on Programming Languages and Systems,
   (TOPLAS) 12.1: 26-60,
   1990.
+
+\bibitem{information-flow}
+  Bergeretti, Jean-Francois, and Bernard A. Carré,
+  Information-flow and data-flow analysis of while-programs,
+  ACM Transactions on Programming Languages and Systems,
+  (TOPLAS) 7.1: 37-61,
+  1985
 
 \end{thebibliography}
 

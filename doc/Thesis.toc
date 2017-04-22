@@ -5,16 +5,19 @@
 \select@language {english} \contentsline {section}{\numberline {2.3}Methods for slicing}{4}
 \select@language {english} \contentsline {subsection}{\numberline {2.3.1}Dependences}{4}
 \select@language {english} \contentsline {subsection}{\numberline {2.3.2}Data flow equations}{6}
-\select@language {english} \contentsline {subsection}{\numberline {2.3.3}Information flow relations}{6}
-\select@language {english} \contentsline {subsection}{\numberline {2.3.4}PDG based graph reachability}{6}
-\select@language {english} \contentsline {chapter}{\numberline {3}LLVM/Clang infrastructure}{7}
-\select@language {english} \contentsline {section}{\numberline {3.1}About Clang}{7}
-\select@language {english} \contentsline {section}{\numberline {3.2}The Clang AST}{7}
-\select@language {english} \contentsline {section}{\numberline {3.3}AST Matchers}{7}
-\select@language {english} \contentsline {chapter}{\numberline {4}Implementation and algorithm}{8}
-\select@language {english} \contentsline {section}{\numberline {4.1}The approach}{8}
-\select@language {english} \contentsline {section}{\numberline {4.2}Building the PDG}{8}
-\select@language {english} \contentsline {subsection}{\numberline {4.2.1}Control dependences}{8}
-\select@language {english} \contentsline {subsection}{\numberline {4.2.2}Data dependences}{8}
-\select@language {english} \contentsline {section}{\numberline {4.3}Implementing slicing}{8}
-\select@language {english} \contentsline {chapter}{Glossary}{8}
+\select@language {english} \contentsline {subsubsection}{\numberline {2.3.2.1}The algorithm}{6}
+\select@language {english} \contentsline {subsubsection}{\numberline {2.3.2.2}Efficiency}{8}
+\select@language {english} \contentsline {subsection}{\numberline {2.3.3}Information flow relations}{8}
+\select@language {english} \contentsline {subsubsection}{\numberline {2.3.3.1}The algorithm}{8}
+\select@language {english} \contentsline {subsection}{\numberline {2.3.4}PDG based graph reachability}{8}
+\select@language {english} \contentsline {chapter}{\numberline {3}LLVM/Clang infrastructure}{10}
+\select@language {english} \contentsline {section}{\numberline {3.1}About Clang}{10}
+\select@language {english} \contentsline {section}{\numberline {3.2}The Clang AST}{10}
+\select@language {english} \contentsline {section}{\numberline {3.3}AST Matchers}{10}
+\select@language {english} \contentsline {chapter}{\numberline {4}Implementation and algorithm}{11}
+\select@language {english} \contentsline {section}{\numberline {4.1}The approach}{11}
+\select@language {english} \contentsline {section}{\numberline {4.2}Building the PDG}{11}
+\select@language {english} \contentsline {subsection}{\numberline {4.2.1}Control dependences}{11}
+\select@language {english} \contentsline {subsection}{\numberline {4.2.2}Data dependences}{11}
+\select@language {english} \contentsline {section}{\numberline {4.3}Implementing slicing}{11}
+\select@language {english} \contentsline {chapter}{Glossary}{11}
