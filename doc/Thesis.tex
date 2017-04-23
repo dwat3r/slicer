@@ -206,7 +206,7 @@ Now using $B^k_C$, we can add the \texttt{while} statement since the slicing cri
 I must note that this method computes the \textit{backward} slice for any criterion, and cannot be used for forward slicing, since it computes only the statements which have influence on the criterion.
 
 \subsubsection{Efficiency}
-Weiser states that the complexity for computing $S_C$ is $O(n e log e)$. He notes that this slice is not always the smallest, since it could include statements which cannot influence the slicing variable. He shows it in the following example program:
+Weiser states that the complexity for computing $S_C$ is $O(n\ e\ log\ e)$. He notes that this slice is not always the smallest, since it could include statements which cannot influence the slicing variable. He shows it in the following example program:
 \begin{lstlisting}
 a = constant
 while(p(k)){
@@ -245,7 +245,7 @@ $\mu_S = \emptyset$                                                             
 Assignment Statements, in a form of \texttt{v = e}                                          \\
 $D_S = \{v\}$                                                                               \\
 $\lambda_S = \Gamma(e) \times \{e\}$                                                        \\
-$\rho_S = \Gamma(e) \times \{v\} \cup (\iota - \{(v,v)\}$                                   \\
+$\rho_S = \Gamma(e) \times \{v\} \cup (\iota - \{(v,v)\})$                                   \\
 $P_S = V - \{v\}$                                                                           \\
 $\mu_S = \{(e,v)\}$                                                                         \\
 \hline                                                                                      
@@ -281,7 +281,13 @@ $\mu_S = (\{e\} \times D_A) \cup \mu_A\rho^*_A((\Gamma(e) \times D_A) \cup \iota
   \label{tab:informationFlowTable}
 \end{table}
 \FloatBarrier
-The statements are classified into two primitive types: Empty and Assignment, and three hiearchical types: Sequence, Conditional with \texttt{else} branch, without \texttt{else} and the Repetitive statements. They are constructed from the control-flow graph. For analysis, they define \textit{variables} and \textit{expressions}.For Assignment, it's left side is the variable, and it's right side is the expression associated with it. Only this type of statement has a variable. For Conditional and Repetitive statements their conditional expression used, and Empty and Sequence has no variable or expression. There's also the definition of $\Gamma(e)$ which consists the variables which appear in $e$. We define $E$ and $V$ which contains all of the variables and expressions of the program. In $D_S$ there are the variables which $S$ \textit{may define}. In $P_S$ are the variables which $S$ \textit{may preserve}. The main three binary relations are the following:
+The statements are classified into two primitive types: Empty and Assignment, and three hiearchical types: Sequence, Conditional with \texttt{else} branch, without \texttt{else} and the Repetitive statements. They are constructed from the control-flow graph. For analysis, they define \textit{variables} and \textit{expressions}.For Assignment, it's left side is the variable, and it's right side is the expression associated with it. Only this type of statement has a variable. For Conditional and Repetitive statements their conditional expression used, and Empty and Sequence has no variable or expression. There's also the definition of $\Gamma(e)$ which consists the variables which appear in $e$. We define $E$ and $V$ which contains all of the variables and expressions of the program. In $D_S$ there are the variables which $S$ \textit{may define}. In $P_S$ are the variables which $S$ \textit{may preserve}. The `multiplication` sign which we do not write between relations is the \textit{relational composition}:
+For relations $X$ and $Y$, where $X \subseteq A \times B$ and $Y \subseteq B \times C$:
+\begin{equation}
+XY = \{(a,d) \in A \times C | (a,b) \in X, (c,d) \in Y, b = c\}
+\end{equation}
+
+The main three binary relations are the following:
 \begin{enumerate}
 \item $\lambda_S$, from $V$ to $E$
 \item $\mu_S$, from $E$ to $V$
@@ -316,17 +322,137 @@ Taking a look at $\mu_S$, it means that for expression $e$ and variable $v$ : $e
 
 It is basically the dual relation of $\lambda_S$, which will be very useful in aspect of slicing.
 
-The final relation $\rho_S$ can be expressed in terms of $\lambda_S$,$\mu_S$ and $P_S$:
+The final relation $\rho_S$ can be constructed from $\lambda_S$,$\mu_S$ and $P_S$:
 \begin{equation}
 \rho_S = \lambda_S\mu_S \cup \Pi_S,\  where \ \Pi_S = \{(v,v) \in V \times V\ |\ v \in P_S\}.
 \end{equation}
 
-This is the combination of 
+This combination of $\lambda_S$ and $\mu_S$ creates a relation which is for $v,w \in V$:
+\begin{enumerate}
+\item either the entry value of $v$ to $S$ \textit{may be used} obtaining the exit value of $w$, or
+\item $v = w$, and $S$ \textit{may preserve} $v$.
+\end{enumerate}
 
+In the code above, for the \texttt{if} statement we get the \texttt{\{(i,x),(i,i),(n,n),(x,x)\}} set of pairs for it's $\rho_{\texttt{if}}$ relation, since it can be seen that variable $i$ is in the predicate, so it may be used for evaluating $x$, but also, if the predicate does not hold, then the statement preserves all three variables of the program. 
+
+These relations are different for each type of statements.
+
+For Empty, the sets $D_S$, $\lambda_S$ and $\mu_S$ are the empty set since it has no variable in it. $P_S$ is the whole $V$ because it does not modify any variable, therefore it preserves every variable. Also, for the $\rho_S$ relation we define the identity relation $\iota$ for variables $v \in V$:
+\begin{equation}
+\iota = \{(v,w) \in V \times V | v = w\}.
+\end{equation}
+Which means the same as the $P_S$ set.
+
+For Assignment statements, the definitions are simple. They have the form of \texttt{v = e}, so in $D_S$, there's $v$, in $P_S$, there's every variable minus $v$, since the statement assigns the value of the expression $e$ to it. In case of $\lambda_S$, it is trivial that the variables of $e$ - denoted by $\Gamma(e)$ - may be used in evaluating $e$. Also, $\mu_S$ defines that the right-hand side effects the left-hand side of the assignment. As written above, $\rho_S$ can be expressed as:
+\begin{equation}
+\begin{split}
+\rho_S &= \lambda_S\mu_S\ \cup\ \Pi_S\ =\ (\Gamma(e) \times {e})({(e,v)})\ \cup\ \Pi_S\ =\\
+&= (\Gamma(e) \times {v})\ \cup\ \Pi_S\ =\ (\Gamma(e) \times {v})\ \cup\ (\iota\ -\ \{(v,v\})
+\end{split}
+\end{equation}
+
+In Assignment, $\Pi_S$ does not contain the variable, because it is being changed.
+
+In the case of Sequence of statements, they have no direct variable or expression associated with them. They represent the single arrow between two nodes in the CFG. So, for the sequence of statements $A;B$, the relation $e \lambda_S v$ contains either
+\begin{enumerate}
+\item $e$ which is in $A$ and $v \lambda_A e$ or
+\item $e$ is in $B$ and there is a variable $w$ that $v \rho_A w$ and $w \lambda_B e$.
+\end{enumerate}
+
+As defined above, $\rho_A$ gets all the variables from statement $A$ which are preserved or may be used, therefore they are fitting in the definition for the sequence.
+
+Similarly, $\mu_S$ contains pairs of $(v,e)$ which either
+\begin{enumerate}
+\item $e$ is in $A$ and there is a variable $w$ that $e \mu_A w$ and $w \rho_B v$ or
+\item $e$ is in $B$ and $e \mu_B v$
+\end{enumerate}
+
+The duality of $\lambda_S$ and $\mu_S$ can again be seen.
+For $\rho_S$, we can substitute the formulas:
+\begin{equation}
+\begin{split}
+\rho_S\ &=\ (\lambda_A\ \cup\ \rho_A\lambda_B)(\lambda_A\ \cup\ \rho_A\lambda_B)\ \cup\ (\Pi_A\ \cap\ \Pi_B)
+\end{split}
+\end{equation}
+
+For brevity, I don't follow through the substitution here. The result of it is $\rho_A\rho_B$. 
+In case of a sequence of statements which has more than two statements in it, we can define it by nesting: $(((A;B);C);...)$. The ordering of parentheses are irrelevant.
+
+For Conditional statements, there is a control dependence between it's predicate $e$ and the statements $A,B$ in them. Therefore,
+$(v,e)$ is in $\lambda_S$ if
+\begin{enumerate}
+\item $e$ is the predicate and $v \in \Gamma(e)$
+\item $e$ is in $A$ and $v \lambda_A e$ or
+\item $e$ is in $B$ and $v \lambda_B e$.
+\end{enumerate}
+%todo more text
+
+In case of $\mu_S$, $(v,e)$ is in the relation if:
+\begin{enumerate}
+\item $e$ is the predicate, and either $A$ or $B$ define $v$, or
+\item $e$ is in $A$ and $e \mu_A v$ or
+\item $e$ is in $B$ and $e \mu_B v$.
+\end{enumerate}
+
+With substituting $\lambda_S$ and $\mu_S$ into the formula of $\rho_S$ above, we get:
+\begin{equation}
+\rho_S = (\Gamma(e) \times (D_A \cup D_B)) \cup \rho_A \cup \rho_B
+\end{equation}
+
+When the Conditional statement has no \texttt{else} branch, we can substitute it with an Empty expression, gaining the simplified formulas which can be seen in table \ref{tab:informationFlowTable}.
+
+Bergeretti in his paper states that Repetitive statements can be expressed as an infinite sequence of nested conditional  statements in a form of:
+\begin{lstlisting}
+if(e){
+  A;
+  if(e){
+    A;
+    ...
+  }
+}
+\end{lstlisting}
+
+Therefore we can get the formula of $\lambda_{\textsc{Rep}}$ if we repeatedly use $\lambda_{\textsc{Cond}}$ and $\lambda_{textsc{Seq}}$, gaining the following:
+\begin{equation}
+\lambda_S = \rho^*_A((\Gamma(e) \times \{e\}) \cup \lambda_A)
+\end{equation}
+where $\rho^*_A$ is the \textit{transitive closure} of $\rho_A$.
+
+For any relation $R$, it's transitive closure is the fixpoint of the following set:
+\begin{equation}
+R^* = \bigcup_{i \in \{1,2,...\}} R^i
+\end{equation}
+The other two relations can be similarly derived by applying their Conditional and Sequence versions, thus getting:
+\begin{equation}
+\begin{split}
+\rho_S &= \rho^*_A((\Gamma(e) \times D_A) \cup \iota) \\
+\mu_S &= (\{e\} \times D_A) \cup \mu_A\rho^*_A((\Gamma(e) \times D_A) \cup \iota)
+\end{split}
+\end{equation}
+
+For determining a slice of a program with these relations, Bergeretti describes the definition of partial statements, with the formula:
+\begin{equation}
+E^v_S = \{e \in E\ |\ e \mu_S v\}
+\end{equation}
+
+As it can be seen from the definition of $\mu_S$, this results in the whole slice for variable $v$, if the given statement $S$ is the `statement' of the whole program, as a Sequence of top-level statements. It also gets the \textit{expressions} which may affect the variable, and not the statements consisting it. However, using $\mu_S$, we can create formulas which effectively get the desired statements from the program. It can be seen that with the dual nature of $\mu_S$ and $\lambda_S$, they can be used for backwards slicing,and for forward slicing, respectively. 
+
+\subsubsection{Efficiency}
+
+This algorithm is throroughly defines the flow of data across statements, taking control dependences into account. Further extensions, like applications for \texttt{switch-case} expressions can be added by defining the relations for them, on the basis of the current ones. It needs deeper parsing than Weiser's method, for getting all the variables of the expressions, and statements. However, if we parse the program code, and collect the $D_S$, $v$,$e$, $\Gamma(e)$ sets, variables and expressions for each statement, we can compute different slices for different variables and statements after for the program. In the case of large codebases, this is an important aspect of the algorithm. 
+
+In the presence of loops, calculating the reflexive closure takes additional time. Bergeretti states the following for the complexity of the calculation of relations: $\rho_S$ has a worst case asymptotic $O(|V|^3)$. Therefore, for all statements it is $O(|E| \times |V|^3)$. For $\lambda_S$ and $\mu_S$, it is $O(|E| \times |V|^2)$ for each statement, or $O(|E|^2 \times |V|^2)$. 
+If we compare these with Weiser's, it is clear that this algorithm requires more computation for slicing the program for the first time, however Bergeretti noted that these times are not problematic in real life examples.
 
 
 
 \subsection{PDG based graph reachability}
+\subsubsection{The algorithm}
+The third algorithm is first written by Susan Horwitz\cite{horwitz-interproc}, and has been a base for different slicing techniques, used by 
+
+
+
+
 
 
 \chapter{LLVM/Clang infrastructure}
@@ -371,7 +497,29 @@ This is the combination of
   Information-flow and data-flow analysis of while-programs,
   ACM Transactions on Programming Languages and Systems,
   (TOPLAS) 7.1: 37-61,
-  1985
+  1985.
+
+\bibitem{use-of-slicing-horwitz}
+  Horwitz, Susan, and Thomas Reps,
+  The use of program dependence graphs in software engineering,
+  Proceedings of the 14th international conference on Software engineering. 
+  ACM,
+  1992.
+
+\bibitem{program-analysis-via-graph-reachability-reps}
+  Reps, Thomas,
+  Program analysis via graph reachability,
+  Information and software technology,
+  40.11: 701-726,
+  1998.
+
+\bibitem{efficient-pdg}
+  Harrold, Mary Jean, Brian Malloy, and Gregg Rothermel,
+  Efficient construction of program dependence graphs,
+  ACM SIGSOFT Software Engineering Notes,
+  Vol. 18. No. 3. ACM,
+  1993.
+
 
 \end{thebibliography}
 
