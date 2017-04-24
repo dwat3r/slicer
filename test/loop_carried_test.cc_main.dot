@@ -31,5 +31,9 @@ rankdir=TD;
 6 -> 4;
 6 -> 5;
 6 -> 7;
-{ rank=same 1 2 3 } -> { rank=same 10 } -> { rank=same 7 6 } -> { rank=same 8 9 } -> { rank=same 4 5 }
+{ rank=same 1 2 3 }
+{ rank=same 10 }
+{ rank=same 7 6 }
+{ rank=same 8 9 }
+{ rank=same 4 5 }
 }

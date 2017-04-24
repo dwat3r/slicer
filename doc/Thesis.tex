@@ -446,14 +446,63 @@ If we compare these with Weiser's, it is clear that this algorithm requires more
 
 
 
-\subsection{PDG based graph reachability}
+\subsection{Dependence graph based slicing}
 \subsubsection{The algorithm}
-The third algorithm is first written by Susan Horwitz\cite{horwitz-interproc}, and has been a base for different slicing techniques, used by \cite{use-of-slicing-horwitz}, \cite{program-analysis-via-graph-reachability-reps}, \cite{slicing-with-jumps} and \cite{slicing-oop}. 
+The third algorithm is first written by Ottenstein and Ottenstein\cite{ottenstein}, and has been a base for different slicing techniques, used by Susan Horwitz\cite{horwitz-interproc}, and \cite{use-of-slicing-horwitz}, \cite{program-analysis-via-graph-reachability-reps}, \cite{slicing-with-jumps} and \cite{slicing-oop}.  
 
+This algorithm uses the Program Dependence Graph, which is a directed graph constructed either from the control-flow graph or the abstract syntax tree \textit{(AST)} of the program. Horwitz describes this graph thoroughly in her paper\cite{horwitz-interproc}. It contains the control dependence and data dependence subgraphs. The nodes of it are the statements of the program. There is a special node called the entry node, which is considered to be before any statement in the CFG. Building the graph is done in two steps: first by creating the control dependence subgraph, then drawing the data dependence edges in it. Control dependence edges has boolean labels: they are either \texttt{true} or \texttt{false}.
 
+There is a control dependence edge between two nodes $v_1$ and $v_2$ if:
+\begin{enumerate}
+\item $v_1$ is the entry node, and $v_2$ is a statement which is not under any loop or branch.
+\item $v_1$ is a loop or branch statement, and $v_2$ is \textit{immediately} nested under $v_1$. If $v_1$ is a loop statement, then the label of the edge is \texttt{true}, if it is a branch statement, then if $v_2$ is under the `then` branch, the label is \texttt{true}, and \texttt{false} otherwise.
+\end{enumerate}
 
+The control dependence subgraph has similar structure as the AST. It is the direct consequence of that the usually the loop and branch statements has other statements nested in them. In \cite{efficient-pdg}, there are region nodes created for predicate of each loop or branch. In practice, I have found these unnecessary to deal with. I will later discuss it in the chapter about the implementation. 
 
+After constructing the control dependence subgraph, data dependence edges are added. The meaning of this kind of edge between $v_1$ and $v_2$ is that if we change the order of these statements then the program may become ill-formed or the computation is changed. In the aspect of slicing, there are two main different type of edges: \textit{flow dependence} and \textit{def-order dependence}. In compiler theory, in data-flow analysis there is the `use-def' or `def-use' chain, which has similar definitions what Horwitz describes in her paper. There is a flow dependence edge between nodes $v_1$ and $v_2$ if:
+\begin{enumerate}
+\item $v_1$ is a node which defines variable $x$ and
+\item $v_2$ uses $x$ and
+\item Control can reach $v_2$ after $v_1$ in an execution path which does not contain any intervening definition of $x$.
+\end{enumerate}
 
+The third rule is easy to verify if the PDG is built using the CFG, but using the `def-use' chains, it also can be derived from the AST. 
+
+In the case of loops, there are two further sub-types of flow dependence edges: \textit{loop-carried} and \textit{loop-independent}. In addition to the three rules above, Loop-carried edges must hold that:
+\begin{enumerate}
+\item The path in the third rule contains a backedge to the predicate of loop $L$ and
+\item $v_1$ and $v_2$ are both part of loop $L$.
+\end{enumerate}
+
+Loop-independent edges are not keeping the first rule above, so the path does not contain a backedge to the predicate.
+There is a def-order dependence edge between node $v_1$ and $v_2$ if:
+\begin{enumerate}
+\item $v_1$ and $v_2$ defines the same variable and
+\item There is a execution path between $v_1$ and $v_2$ without any intervening definition of that variable.
+\end{enumerate}
+
+Taken the following example program:
+\begin{figure}[h]
+\begin{lstlisting}[language=C++]
+int main(){
+  int x = 0;
+  int y = 1;
+  while(x < 0){
+    if (x > 0){
+      y = x; //2. use here
+    }else{
+      x = 3;
+    }
+    x = 2; //1. define here
+  }
+}
+\end{lstlisting}
+\caption{Example program 3}
+\label{fig:example_prog_3}
+\end{figure}
+
+\includegraphics[scale=.5]{loop_carried_test}
 
 \chapter{LLVM/Clang infrastructure}
 \section{About Clang}
@@ -533,6 +582,13 @@ The third algorithm is first written by Susan Horwitz\cite{horwitz-interproc}, a
   ACM Sigplan Notices,
   Vol. 29. No. 6. ACM,
   1994.
+
+\bibitem{ottenstein}
+  Ottenstein, Karl J., and Linda M. Ottenstein,
+  The program dependence graph in a software development environment,
+  ACM Sigplan Notices,
+  Vol. 19. No. 5. ACM,
+  1984.
 
 \end{thebibliography}
 
