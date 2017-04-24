@@ -83,7 +83,7 @@
 \epigraph{Everyone knows that debugging is twice as hard as writing a program in the first place. So if you're as clever as you can be when you write it, how will you ever debug it?}{\textit{Brian Kernighan}}
 
 Nowadays, there are a lot of tools available for debugging. A developer can examine call stacks, variable informations, and so on. There are a lot of times when a bug is when some variable does not behave like the writer of that code part would expect. When the programmer discovers it, he must follow back the path of assignments, and find out where did it get an unexpected value. Program slicing targets this kind of debugging. We can define a program slice as a part of the program which contains a selected statement, and all other statements which influences it, or gets influenced by it. These two types are respectively called backward and forward slicing. Basically this is what many programmers do intuitively, when facing with bugs. In this thesis, I'll introduce a few approaches for computing slices, and describe a working prototype tool application, which can analyze C++ programs, and compute slices of them. I've used the help of the Clang/LLVM compiler infrastructure, which builds the AST of the program and provides an interface to analyse it using C++.
-
+%TODO describe the structure of the thesis.
 \chapter{Slicing, methods and efficiency}
 \section{About slicing}
 For better understanding programs, programmers organize code into structures. They write sub-problems into functions, and organize variables and data to structs. Also, with object oriented design, they put these into classes. These are all good for separating the data, and the procedures on data. But these are not helpful when we need to examine a flow of data in the program. Slicing gets useful in this scenario. This is a program analysis technique introduced by Mark Weiser\cite{weiser84}. In his paper, he wrote: ``Program slicing is a decomposition based on data flow and control flow analysis''. We define slicing as a subset of the program, which only includes the statements which have transitive control or data dependency regarding the selected statement. 
@@ -448,7 +448,7 @@ If we compare these with Weiser's, it is clear that this algorithm requires more
 
 \subsection{PDG based graph reachability}
 \subsubsection{The algorithm}
-The third algorithm is first written by Susan Horwitz\cite{horwitz-interproc}, and has been a base for different slicing techniques, used by 
+The third algorithm is first written by Susan Horwitz\cite{horwitz-interproc}, and has been a base for different slicing techniques, used by \cite{use-of-slicing-horwitz}, \cite{program-analysis-via-graph-reachability-reps}, \cite{slicing-with-jumps} and \cite{slicing-oop}. 
 
 
 
@@ -520,6 +520,19 @@ The third algorithm is first written by Susan Horwitz\cite{horwitz-interproc}, a
   Vol. 18. No. 3. ACM,
   1993.
 
+\bibitem{slicing-oop}
+  Larsen, Loren, and Mary Jean Harrold,
+  Slicing object-oriented software,
+  Software Engineering,
+  Proceedings of the 18th International Conference on. IEEE,
+  1996.
+
+\bibitem{slicing-with-jumps}
+  Agrawal, Hiralal,
+  On slicing programs with jump statements,
+  ACM Sigplan Notices,
+  Vol. 29. No. 6. ACM,
+  1994.
 
 \end{thebibliography}
 
