@@ -12,14 +12,14 @@
 \select@language {english} \contentsline {subsubsection}{\numberline {2.3.3.2}Efficiency}{13}
 \select@language {english} \contentsline {subsection}{\numberline {2.3.4}Dependence graph based slicing}{14}
 \select@language {english} \contentsline {subsubsection}{\numberline {2.3.4.1}The algorithm}{14}
-\select@language {english} \contentsline {chapter}{\numberline {3}LLVM/Clang infrastructure}{17}
-\select@language {english} \contentsline {section}{\numberline {3.1}About Clang}{17}
-\select@language {english} \contentsline {section}{\numberline {3.2}The Clang AST}{17}
-\select@language {english} \contentsline {section}{\numberline {3.3}AST Matchers}{17}
-\select@language {english} \contentsline {chapter}{\numberline {4}Implementation and algorithm}{18}
-\select@language {english} \contentsline {section}{\numberline {4.1}The approach}{18}
-\select@language {english} \contentsline {section}{\numberline {4.2}Building the PDG}{18}
-\select@language {english} \contentsline {subsection}{\numberline {4.2.1}Control dependences}{18}
-\select@language {english} \contentsline {subsection}{\numberline {4.2.2}Data dependences}{18}
-\select@language {english} \contentsline {section}{\numberline {4.3}Implementing slicing}{18}
-\select@language {english} \contentsline {chapter}{Glossary}{18}
+\select@language {english} \contentsline {chapter}{\numberline {3}LLVM/Clang infrastructure}{18}
+\select@language {english} \contentsline {section}{\numberline {3.1}About Clang}{18}
+\select@language {english} \contentsline {section}{\numberline {3.2}The Clang AST}{18}
+\select@language {english} \contentsline {section}{\numberline {3.3}AST Matchers}{18}
+\select@language {english} \contentsline {chapter}{\numberline {4}Implementation and algorithm}{19}
+\select@language {english} \contentsline {section}{\numberline {4.1}The approach}{19}
+\select@language {english} \contentsline {section}{\numberline {4.2}Building the PDG}{19}
+\select@language {english} \contentsline {subsection}{\numberline {4.2.1}Control dependences}{19}
+\select@language {english} \contentsline {subsection}{\numberline {4.2.2}Data dependences}{19}
+\select@language {english} \contentsline {section}{\numberline {4.3}Implementing slicing}{19}
+\select@language {english} \contentsline {chapter}{Glossary}{19}

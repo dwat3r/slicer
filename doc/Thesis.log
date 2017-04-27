@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014/W32TeX) (preloaded format=pdflatex 2015.5.24)  25 APR 2017 08:15
+This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014/W32TeX) (preloaded format=pdflatex 2015.5.24)  26 APR 2017 20:19
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -930,35 +930,47 @@ LaTeX Warning: `h' float specifier changed to `ht'.
 [10
 
 
-] [11] [12] [13] [14]
-
-LaTeX Warning: `h' float specifier changed to `ht'.
-
-<loop_carried_test.png, id=82, 531.9875pt x 641.39626pt>
+] [11] [12] [13] [14] [15]
+<loop_carried_test.png, id=85, 534.99875pt x 641.39626pt>
 File: loop_carried_test.png Graphic file (type png)
 
 <use loop_carried_test.png>
-Package pdftex.def Info: loop_carried_test.png used on input line 506.
-(pdftex.def)             Requested size: 213.39568pt x 257.27818pt.
- [15] [16 <./loop_carried_test.png>]
+Package pdftex.def Info: loop_carried_test.png used on input line 507.
+(pdftex.def)             Requested size: 213.39568pt x 255.83951pt.
+
+<loop_carried_test_backward_slice.png, id=86, 534.99875pt x 641.39626pt>
+File: loop_carried_test_backward_slice.png Graphic file (type png)
+
+<use loop_carried_test_backward_slice.png>
+Package pdftex.def Info: loop_carried_test_backward_slice.png used on input lin
+e 515.
+(pdftex.def)             Requested size: 213.39568pt x 255.83951pt.
+
+Underfull \hbox (badness 10000) in paragraph at lines 513--518
+\T1/cmr/m/n/12 de-pen-dence edges.
+ []
+
+[16
+
+ <./loop_carried_test.png>] [17 <./loop_carried_test_backward_slice.png>]
 Chapter 3.
-[17
+[18
 
 ]
 Chapter 4.
-[18
+[19
 
-] [19
+] [20
 
-] [20] (./Thesis.aux) ) 
+] [21] (./Thesis.aux) ) 
 Here is how much of TeX's memory you used:
- 16375 strings out of 494367
- 300932 string characters out of 6163526
- 380924 words of memory out of 5000000
- 19281 multiletter control sequences out of 15000+600000
+ 16381 strings out of 494367
+ 301166 string characters out of 6163526
+ 380936 words of memory out of 5000000
+ 19286 multiletter control sequences out of 15000+600000
  25900 words of font info for 63 fonts, out of 8000000 for 9000
  372 hyphenation exceptions out of 8191
- 55i,15n,60p,1086b,1581s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 55i,15n,60p,1124b,1581s stack positions out of 5000i,500n,10000p,200000b,80000s
 {c:/texlive/2014/texmf-dist/fonts/enc/dvips/cm-super/cm-
 super-t1.enc}<c:/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.
 pfb><c:/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb><c:/t
@@ -975,18 +987,18 @@ t/fonts/type1/public/cm-super/sfbx2488.pfb><c:/texlive/2014/texmf-dist/fonts/ty
 pe1/public/cm-super/sfcc0800.pfb><c:/texlive/2014/texmf-dist/fonts/type1/public
 /cm-super/sfcc1200.pfb><c:/texlive/2014/texmf-dist/fonts/type1/public/cm-super/
 sfit1000.pfb><c:/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sfit1200.p
-fb><c:/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sfrm1095.pfb><c:/tex
-live/2014/texmf-dist/fonts/type1/public/cm-super/sfrm1200.pfb><c:/texlive/2014/
-texmf-dist/fonts/type1/public/cm-super/sfrm1440.pfb><c:/texlive/2014/texmf-dist
-/fonts/type1/public/cm-super/sfti1095.pfb><c:/texlive/2014/texmf-dist/fonts/typ
-e1/public/cm-super/sfti1200.pfb><c:/texlive/2014/texmf-dist/fonts/type1/public/
-cm-super/sftt0800.pfb><c:/texlive/2014/texmf-dist/fonts/type1/public/cm-super/s
-ftt1000.pfb><c:/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sftt1200.pf
-b>
-Output written on Thesis.pdf (21 pages, 1136026 bytes).
+fb><c:/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sfrm1000.pfb><c:/tex
+live/2014/texmf-dist/fonts/type1/public/cm-super/sfrm1095.pfb><c:/texlive/2014/
+texmf-dist/fonts/type1/public/cm-super/sfrm1200.pfb><c:/texlive/2014/texmf-dist
+/fonts/type1/public/cm-super/sfrm1440.pfb><c:/texlive/2014/texmf-dist/fonts/typ
+e1/public/cm-super/sfti1095.pfb><c:/texlive/2014/texmf-dist/fonts/type1/public/
+cm-super/sfti1200.pfb><c:/texlive/2014/texmf-dist/fonts/type1/public/cm-super/s
+ftt0800.pfb><c:/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sftt1000.pf
+b><c:/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sftt1200.pfb>
+Output written on Thesis.pdf (22 pages, 1198851 bytes).
 PDF statistics:
- 183 PDF objects out of 1000 (max. 8388607)
- 128 compressed objects within 2 object streams
+ 192 PDF objects out of 1000 (max. 8388607)
+ 133 compressed objects within 2 object streams
  0 named destinations out of 1000 (max. 500000)
- 28 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 33 words of extra memory for PDF output out of 10000 (max. 10000000)
 

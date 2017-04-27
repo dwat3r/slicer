@@ -481,14 +481,15 @@ There is a def-order dependence edge between node $v_1$ and $v_2$ if:
 \item $v_1$ and $v_2$ defines the same variable and
 \item There is a execution path between $v_1$ and $v_2$ without any intervening definition of that variable.
 \end{enumerate}
-
+\clearpage
 Taken the following example program:
 \begin{figure}[h]
+\lstset{numbers=left}
 \begin{lstlisting}[language=C++]
 int main(){
   int x = 0;
   int y = 1;
-  while(x < 0){
+  while(x >= 0){
     if (x > 0){
       y = x; //2. use here
     }else{
@@ -507,9 +508,32 @@ int main(){
 \caption{PDG of \ref{fig:example_prog_3}}
 \label{fig:example_prog_3_PDG}
 \end{wrapfigure}
+We can see the created PDG of it on \ref{fig:example_prog_3_PDG}. The bold arrows represent the control dependence edges and the others are the data dependence edges. In her paper, Horwitz creates loop edges to the statements which are under a loop, but regarding slicing, they are not making a difference. As it can be seen, the nodes labeled \texttt{\{\}} are the brackets which consist multiple statements. I have created this example to show how a loop-carried edge can be found between different scopes under a loop statement. The comments in the example code shows the order of `def-use' relationship created by the loop: when control reaches $1.$, $x$ gets defined, then in the second second iteration control goes into the true branch of the \texttt{if} statement and reaches $2.$, creating a `def-use' data dependence between the two statements. Among this, there are examples of def-order dependence edges: between line 8. and line 10., and also between the initial definition of $x$ and other definitions later. % todo fix the graph and the definition collecting in branches.
+
+Drawing data dependence edges are a non-trivial task. I will explain the details in the implementation chapter. However, the PDG itself when built, is a very useful abstraction of the program. To slice regarding a statement and variable in the program, we need to do only a graph reachability search in the graph over the control and data dependence edges. 
+\begin{wrapfigure}{r}{0.5\textwidth}
+\includegraphics[width=0.5\textwidth]{loop_carried_test_backward_slice}
+\caption{Backward slice of \ref{fig:example_prog_3} regarding line 9.}
+\label{fig:example_prog_3_backward_slice}
+\end{wrapfigure}
+If we store the edges of the graph bidirectionally, the difference becomes only the direction of search between creating backward and forward slices. We can see an example of a backward slice on \ref{fig:example_prog_3_backward_slice}, regarding the $x$ variable on line 9.
+% todo write more
+
 
 \chapter{LLVM/Clang infrastructure}
 \section{About Clang}
+
+
+
+
+
+
+
+
+
+
+
+
 \section{The Clang AST}
 \section{AST Matchers}
 

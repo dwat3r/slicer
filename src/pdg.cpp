@@ -151,6 +151,14 @@ Statement::setDataEdgesRec(std::map <const clang::ValueDecl*,std::pair<Statement
 	  // if we're not in a loop, don't visit twice
 	  if (name() != Type::Loop) break;
   }
+  // return only the intersection of definition of the two branches
+  if (name() == Type::Branch) {
+    // todo fix this piece of shit
+    auto intersection(def_map);
+    for (auto def : def_map) {
+
+    }
+  }
   return def_map;
 }
 // print out graph structure
