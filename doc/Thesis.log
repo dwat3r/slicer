@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014/W32TeX) (preloaded format=pdflatex 2015.5.24)  26 APR 2017 20:19
+This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014/W32TeX) (preloaded format=pdflatex 2015.5.24)  28 APR 2017 00:07
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -954,20 +954,65 @@ Underfull \hbox (badness 10000) in paragraph at lines 513--518
 
  <./loop_carried_test.png>] [17 <./loop_carried_test_backward_slice.png>]
 Chapter 3.
+
+Overfull \hbox (51.8964pt too wide) in paragraph at lines 551--552
+[][][][][][][][][][][][][][][][][][][][][][][][][][][] 
+ []
+
+
+Overfull \hbox (70.79196pt too wide) in paragraph at lines 559--560
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
+ []
+
+
+Overfull \hbox (58.19492pt too wide) in paragraph at lines 564--565
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
+ []
+
+
+Overfull \hbox (316.43436pt too wide) in paragraph at lines 567--568
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
+ []
+
+
+Overfull \hbox (64.49344pt too wide) in paragraph at lines 568--569
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
+ []
+
+
+Overfull \hbox (1.50821pt too wide) in paragraph at lines 569--570
+[][][][][][][][][][][][][][][][][][][][][][] 
+ []
+
+
+Overfull \hbox (70.79196pt too wide) in paragraph at lines 570--571
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
+ []
+
+
+Overfull \hbox (1.50821pt too wide) in paragraph at lines 571--572
+[][][][][][][][][][][][][][][][][][][][][][][] 
+ []
+
+
+Overfull \hbox (51.8964pt too wide) in paragraph at lines 572--573
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
+ []
+
 [18
 
-]
+] [19] [20]
 Chapter 4.
-[19
+[21
 
-] [20
+] [22
 
-] [21] (./Thesis.aux) ) 
+] [23] (./Thesis.aux) ) 
 Here is how much of TeX's memory you used:
- 16381 strings out of 494367
- 301166 string characters out of 6163526
- 380936 words of memory out of 5000000
- 19286 multiletter control sequences out of 15000+600000
+ 16474 strings out of 494367
+ 302450 string characters out of 6163526
+ 400956 words of memory out of 5000000
+ 19379 multiletter control sequences out of 15000+600000
  25900 words of font info for 63 fonts, out of 8000000 for 9000
  372 hyphenation exceptions out of 8191
  55i,15n,60p,1124b,1581s stack positions out of 5000i,500n,10000p,200000b,80000s
@@ -995,10 +1040,10 @@ e1/public/cm-super/sfti1095.pfb><c:/texlive/2014/texmf-dist/fonts/type1/public/
 cm-super/sfti1200.pfb><c:/texlive/2014/texmf-dist/fonts/type1/public/cm-super/s
 ftt0800.pfb><c:/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sftt1000.pf
 b><c:/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sftt1200.pfb>
-Output written on Thesis.pdf (22 pages, 1198851 bytes).
+Output written on Thesis.pdf (24 pages, 1210529 bytes).
 PDF statistics:
- 192 PDF objects out of 1000 (max. 8388607)
- 133 compressed objects within 2 object streams
+ 198 PDF objects out of 1000 (max. 8388607)
+ 137 compressed objects within 2 object streams
  0 named destinations out of 1000 (max. 500000)
  33 words of extra memory for PDF output out of 10000 (max. 10000000)
 

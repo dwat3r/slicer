@@ -523,18 +523,59 @@ If we store the edges of the graph bidirectionally, the difference becomes only 
 \chapter{LLVM/Clang infrastructure}
 \section{About Clang}
 
+LLVM is a compiler infrastucture which is created mainly for program optimization during compile, link and runtime. It is written in C++ and language-agnostic itself, and uses an intermediate representation (LLVM IR) of the programs created in numerous languages. LLVM stands for \textbf{Low Level Virtual Machine} which was the initial target for the project, but since then it has grown to a massive infrastructure for program compilation and toolchains. LLVM does not handle the parsing and syntactic error checking in the languages, and separates this part via the IR. It was initially developed for C and C++, but since then there are numerous language frontends for a wide variety of languages including Haskell, Ada, Ruby, Python, etc. 
 
-
-
-
-
-
-
-
-
-
+Clang is a compiler frontend for C,C++ and Objective-C, using LLVM as a backend for code generation. Clang is also written in C++, and has a library-based architecture which allows the compiler for not just compiling, but to build useful tools with it. For example, QtCreator IDE - an Integrated Development Environment - can use Clang as a `code model', for syntactically and semantically check the code in the editor, making error correcting much easier for the developer. There are also numerous tools built on the Clang using it as a library for parsing C++ code, for gaining information of it or performing source-to-source transformations.
 
 \section{The Clang AST}
+
+The internal representation of C++ source code in Clang is the \textbf{Abstract Syntax Tree} - AST. Since it is written in C++, it uses the language's object-oriented features for encoding the structure of the program into a large class hiearchy, keeping all relevant information of a language element in an AST node. Taken the example from Chapter 2:
+\begin{figure}[h]
+\begin{lstlisting}[language=C++]
+int main(){
+  int sum = 0;
+  int i = sum;
+  while (i < 11){
+    sum += i;
+    i++;
+  }
+}
+\end{lstlisting}
+\caption{Example program again}
+\label{fig:example_prog_again}
+\end{figure}
+Clang enables us to dump it's AST via a compiler option:
+\texttt{clang -Xclang -ast-dump -fsyntax-only <file>}
+\begin{figure}
+\begin{lstlisting}
+FunctionDecl 0x595bd10 <horwitz.cc:1:1, line:8:1> line:1:5 main 'int (void)'
+`-CompoundStmt 0x595bfd8 <col:11, line:8:1>
+  |-DeclStmt 0x595be28 <line:2:3, col:14>
+  | `-VarDecl 0x595bdd0 <col:3, col:13> col:7 used sum 'int' cinit
+  |   `-IntegerLiteral 0x595be08 <col:13> 'int' 0
+  |-DeclStmt 0x595bea8 <line:3:3, col:14>
+  | `-VarDecl 0x595be48 <col:3, col:11> col:7 used i 'int' cinit
+  |   `-ImplicitCastExpr 0x595be98 <col:11> 'int' <LValueToRValue>
+  |     `-DeclRefExpr 0x595be80 <col:11> 'int' lvalue Var 0x595bdd0 'sum' 'int'
+  `-WhileStmt 0x595bfc0 <line:4:3, line:7:3>
+    |-<<<NULL>>>
+    |-BinaryOperator 0x595bf00 <line:4:10, col:14> '_Bool' '<'
+    | |-ImplicitCastExpr 0x595bef0 <col:10> 'int' <LValueToRValue>
+    | | `-DeclRefExpr 0x595beb8 <col:10> 'int' lvalue Var 0x595be48 'i' 'int'
+    | `-IntegerLiteral 0x595bed0 <col:14> 'int' 11
+    `-CompoundStmt 0x595bfa8 <col:17, line:7:3>
+      |-CompoundAssignOperator 0x595bf58 <line:5:5, col:12> 'int' lvalue '+=' ComputeLHSTy='int' ComputeResultTy='int'
+      | |-DeclRefExpr 0x595bf18 <col:5> 'int' lvalue Var 0x595bdd0 'sum' 'int'
+      | `-ImplicitCastExpr 0x595bf48 <col:12> 'int' <LValueToRValue>
+      |   `-DeclRefExpr 0x595bf30 <col:12> 'int' lvalue Var 0x595be48 'i' 'int'
+      `-UnaryOperator 0x595bf90 <line:6:5, col:6> 'int' postfix '++'
+        `-DeclRefExpr 0x595bf78 <col:5> 'int' lvalue Var 0x595be48 'i' 'int'
+\end{lstlisting}
+\caption{Clang AST of the example in \ref{fig:example_prog_again}}
+\label{fig:clang_ast}
+\end{figure}
+
+
 \section{AST Matchers}
 
 \chapter{Implementation and algorithm}
