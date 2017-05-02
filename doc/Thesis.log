@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014/W32TeX) (preloaded format=pdflatex 2015.5.24)  1 MAY 2017 21:20
+This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014/W32TeX) (preloaded format=pdflatex 2015.5.24)  3 MAY 2017 00:33
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -954,9 +954,6 @@ Underfull \hbox (badness 10000) in paragraph at lines 513--518
 
  <./loop_carried_test.png>] [17 <./loop_carried_test_backward_slice.png>]
 Chapter 3.
-
-LaTeX Warning: Reference `Clang-AST' on page 18 undefined on input line 532.
-
 [18
 
 ]
@@ -978,61 +975,57 @@ Overfull \hbox (14.10526pt too wide) in paragraph at lines 598--599
 Chapter 4.
 [23
 
-] [24
+] [24] [25] [26
 
 ]
-Underfull \hbox (badness 10000) in paragraph at lines 725--727
+Underfull \hbox (badness 10000) in paragraph at lines 776--778
 []\T1/cmr/m/it/12 AST Matcher Ref-er-ence $\T1/cmtt/m/n/12 http : / / clang . l
 lvm . org / docs /
  []
 
 
-Underfull \hbox (badness 6016) in paragraph at lines 729--731
+Underfull \hbox (badness 6016) in paragraph at lines 780--782
 []\T1/cmr/m/it/12 Introduction to the Clang AST $\T1/cmtt/m/n/12 http : / / cla
 ng . llvm . org / docs /
  []
 
-[25] (./Thesis.aux)
-
-LaTeX Warning: There were undefined references.
-
- ) 
+[27] (./Thesis.aux) ) 
 Here is how much of TeX's memory you used:
- 16511 strings out of 494367
- 302899 string characters out of 6163526
- 401972 words of memory out of 5000000
- 19416 multiletter control sequences out of 15000+600000
+ 16513 strings out of 494367
+ 302917 string characters out of 6163526
+ 401970 words of memory out of 5000000
+ 19418 multiletter control sequences out of 15000+600000
  25900 words of font info for 63 fonts, out of 8000000 for 9000
  372 hyphenation exceptions out of 8191
  55i,15n,60p,1124b,1581s stack positions out of 5000i,500n,10000p,200000b,80000s
-{c:/texlive/2014/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc}<c:/texl
-ive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb><c:/texlive/2014/
-texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb><c:/texlive/2014/texmf-dis
-t/fonts/type1/public/amsfonts/cm/cmmi6.pfb><c:/texlive/2014/texmf-dist/fonts/ty
-pe1/public/amsfonts/cm/cmmi8.pfb><c:/texlive/2014/texmf-dist/fonts/type1/public
-/amsfonts/cm/cmr12.pfb><c:/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/
-cm/cmr8.pfb><c:/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.p
-fb><c:/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb><c:/tex
-live/2014/texmf-dist/fonts/type1/public/cm-super/sfbx1200.pfb><c:/texlive/2014/
-texmf-dist/fonts/type1/public/cm-super/sfbx1440.pfb><c:/texlive/2014/texmf-dist
-/fonts/type1/public/cm-super/sfbx1728.pfb><c:/texlive/2014/texmf-dist/fonts/typ
-e1/public/cm-super/sfbx2074.pfb><c:/texlive/2014/texmf-dist/fonts/type1/public/
-cm-super/sfbx2488.pfb><c:/texlive/2014/texmf-dist/fonts/type1/public/cm-super/s
-fcc0800.pfb><c:/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sfcc1200.pf
-b><c:/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sfit1000.pfb><c:/texl
-ive/2014/texmf-dist/fonts/type1/public/cm-super/sfit1200.pfb><c:/texlive/2014/t
-exmf-dist/fonts/type1/public/cm-super/sfrm1000.pfb><c:/texlive/2014/texmf-dist/
-fonts/type1/public/cm-super/sfrm1095.pfb><c:/texlive/2014/texmf-dist/fonts/type
-1/public/cm-super/sfrm1200.pfb><c:/texlive/2014/texmf-dist/fonts/type1/public/c
-m-super/sfrm1440.pfb><c:/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sf
-ti1095.pfb><c:/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sfti1200.pfb
-><c:/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sftt0800.pfb><c:/texli
-ve/2014/texmf-dist/fonts/type1/public/cm-super/sftt1000.pfb><c:/texlive/2014/te
-xmf-dist/fonts/type1/public/cm-super/sftt1200.pfb>
-Output written on Thesis.pdf (26 pages, 1233988 bytes).
+{c:/texlive/2014/texmf-dist/fonts/enc/dvips/cm-super/cm-su
+per-t1.enc}<c:/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pf
+b><c:/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb><c:/tex
+live/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb><c:/texlive/2014/
+texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb><c:/texlive/2014/texmf-dist
+/fonts/type1/public/amsfonts/cm/cmr12.pfb><c:/texlive/2014/texmf-dist/fonts/typ
+e1/public/amsfonts/cm/cmr8.pfb><c:/texlive/2014/texmf-dist/fonts/type1/public/a
+msfonts/cm/cmsy10.pfb><c:/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/c
+m/cmsy8.pfb><c:/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sfbx1200.pf
+b><c:/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sfbx1440.pfb><c:/texl
+ive/2014/texmf-dist/fonts/type1/public/cm-super/sfbx1728.pfb><c:/texlive/2014/t
+exmf-dist/fonts/type1/public/cm-super/sfbx2074.pfb><c:/texlive/2014/texmf-dist/
+fonts/type1/public/cm-super/sfbx2488.pfb><c:/texlive/2014/texmf-dist/fonts/type
+1/public/cm-super/sfcc0800.pfb><c:/texlive/2014/texmf-dist/fonts/type1/public/c
+m-super/sfcc1200.pfb><c:/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sf
+it1000.pfb><c:/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sfit1200.pfb
+><c:/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sfrm1000.pfb><c:/texli
+ve/2014/texmf-dist/fonts/type1/public/cm-super/sfrm1095.pfb><c:/texlive/2014/te
+xmf-dist/fonts/type1/public/cm-super/sfrm1200.pfb><c:/texlive/2014/texmf-dist/f
+onts/type1/public/cm-super/sfrm1440.pfb><c:/texlive/2014/texmf-dist/fonts/type1
+/public/cm-super/sfti1095.pfb><c:/texlive/2014/texmf-dist/fonts/type1/public/cm
+-super/sfti1200.pfb><c:/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sft
+t0800.pfb><c:/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sftt1000.pfb>
+<c:/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sftt1200.pfb>
+Output written on Thesis.pdf (28 pages, 1239411 bytes).
 PDF statistics:
- 205 PDF objects out of 1000 (max. 8388607)
- 142 compressed objects within 2 object streams
+ 211 PDF objects out of 1000 (max. 8388607)
+ 146 compressed objects within 2 object streams
  0 named destinations out of 1000 (max. 500000)
  33 words of extra memory for PDF output out of 10000 (max. 10000000)
 

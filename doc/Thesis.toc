@@ -19,8 +19,8 @@
 \select@language {english} \contentsline {section}{\numberline {3.3}AST Matchers}{20}
 \select@language {english} \contentsline {chapter}{\numberline {4}Implementation and algorithm}{23}
 \select@language {english} \contentsline {section}{\numberline {4.1}The approach}{23}
-\select@language {english} \contentsline {section}{\numberline {4.2}Building the PDG}{23}
-\select@language {english} \contentsline {subsection}{\numberline {4.2.1}Control dependences}{23}
-\select@language {english} \contentsline {subsection}{\numberline {4.2.2}Data dependences}{23}
-\select@language {english} \contentsline {section}{\numberline {4.3}Implementing slicing}{23}
-\select@language {english} \contentsline {chapter}{Glossary}{23}
+\select@language {english} \contentsline {section}{\numberline {4.2}Building the PDG}{24}
+\select@language {english} \contentsline {subsection}{\numberline {4.2.1}Control dependences}{24}
+\select@language {english} \contentsline {subsection}{\numberline {4.2.2}Data dependences}{25}
+\select@language {english} \contentsline {section}{\numberline {4.3}Implementing slicing}{25}
+\select@language {english} \contentsline {chapter}{Glossary}{25}

@@ -124,7 +124,7 @@ Therefore, control dependence can be defined in the knowing of post-dominance. A
 
 "A node \textit{i} in th CFG is \textit{post-dominated} by a node by \textit{j} if all paths from \textit{i} to STOP pass through \textit{j}. A node \textit{j} is \textit{control dependent} on a node \textit{i} if (i) there exists a path \textit{P} from \textit{i} to \textit{j} such that \textit{j} post-dominates every node in \textit{P}, excluding \textit{i} and \textit{j}, and (ii) is not post-dominated by \textit{j}."
 
-It basically means that every statement under a branch or loop are control dependent of the control statement's predicate. Excluding the unstructured and structured jump statements, \texttt{continue},\texttt{break} and \texttt{goto}, drawing control dependences between statements creates a tree, with the root being the inspected function, and control statements form the branches. I discuss later in detail the control dependences created by structured jumps. 
+It basically means that every statement under a branch or loop are control dependent of the control statement's predicate. Excluding the unstructured and structured jump statements, \texttt{continue},\texttt{break} and \texttt{goto}, drawing control dependences between statements creates a tree, with the root being the inspected function, and control statements form the branches. I discuss later in detail in the implementation chapter the control dependences created by structured jumps. 
 
 A data dependence between two statements means that if we change their order, the meaning of the program changes, or becomes ill-formed. There are two types of data dependences: \textit{flow dependences} and \textit{def-order dependences}. According to Horwitz\cite{horwitz-interproc}, we can define these with the following rules:
 
@@ -529,7 +529,7 @@ Clang is a compiler frontend for C,C++ and Objective-C, using LLVM as a backend 
 
 \section{The Clang AST}
 
-The internal representation of C++ source code in Clang is the \textbf{Abstract Syntax Tree} - AST\ref{Clang-AST}. Since it is written in C++, it uses the language's object-oriented features for encoding the structure of the program into a large class hiearchy, keeping all relevant information of a language element in an AST node.
+The internal representation of C++ source code in Clang is the \textbf{Abstract Syntax Tree} - AST\cite{Clang-AST}. Since it is written in C++, it uses the language's object-oriented features for encoding the structure of the program into a large class hiearchy, keeping all relevant information of a language element in an AST node.
 
 Taken the example from Chapter 2:
 \begin{lstlisting}[language=C++]
@@ -632,14 +632,65 @@ There are numerous tools built with this API, the most notable must be the Clang
 
 In this chapter I will introduce a prototype application for slicing in programs written in C++ using the tools described in the previous chapter. I will compare the described algorithms by usability, extendability and efficiency. 
 
+All of the %write more
+
 \section{The approach}
 
-For analyzing C++ source code, the best tool is the Clang LibTooling library. The GCC compilers internal representation transforms the original source in non-reversible way, so it is not useful in this setting. There are other approaches which implement slicing, notably the Wisconsin Program-Slicing tool\cite{Wisconsin-slicing-tool}, and Frama-C has a plug-in for slicing\cite{Frama-C-slicing}. While Frama-C is only analysing C code, 
+For analyzing C++ source code, the best tool is the Clang LibTooling library. The GCC compilers internal representation transforms the original source in non-reversible way, so it is not useful in this setting. There are other approaches which implement slicing, notably the Wisconsin Program-Slicing tool\cite{Wisconsin-slicing-tool}, and Frama-C has a plug-in for slicing\cite{Frama-C-slicing}. The Wisconsin tool has a graphical interface for displaying the source code and highlighting the slice, and it can perform forward and backward slicing too. It's algorithm is based on the PDG. There's little information about the Frama-C slicing pulgin. It has a command-line interface, and also can be integrated into the graphical IDE-like framework.
 
-The three algorithms described in the second chapter are all can be implemented 
+With Clang, I built a command-line tool which can be extended to work with any kind of code editor. It needs only the function which we want to slice and the location of the slicing variable in the function. 
+
+The tool has four main parts: 
+\begin{enumerate}
+\item the special ASTMatchers, which tells Clang what kind of information of the AST nodes are we interested in,
+\item the processing of the matched nodes, which builds the Control Dependence subgraph,
+\item the data dependence edge building algorithm, which completes the PDG,
+\item and the actual slicing on the PDG.
+\end{enumerate}
+
+The advantage of using the PDG-based slicing - besides it's efficiency considering multiple slices - the modular structure, which enables us to extend the matchers to different language constructs without interfering with the data dependence building for example. Considering the actual slicing, it is an independent part of the program entirely from the PDG building parts. With the LibTooling library, Clang takes care of the preprocessor includes, defines and different files in a project, and enables us to handle slicing on the AST, which consists an entire translation unit. If there are multiple ones are in the project, Clang will run the tool on each of them, eventually finding the target function specified for slicing.
 
 \section{Building the PDG}
+
+As I've written earlier, there are two main parts of building the PDG, the control dependence subgraph, and determining data dependence edges. In \cite{efficient-pdg}, there is a detailed algorithm for building it efficiently, but the author considers unstructured control flows, as known as jump statements (\texttt{break},\texttt{continue},\texttt{return},\texttt{goto}), but only specifies guidelines to the implementation of handling them. Since these control statements appear relatively rarely comparing to others in code (considering \texttt{goto}, it has almost disappeared - thankfully), the current implementation of the prototype does not handle them currently.
+Also, the article does only specify a generic algorithm for detecting data dependence edges. I will introduce a simplified approach to the PDG, and explain why it can be used to produce correct slices.
+
 \subsection{Control dependences}
+
+The first part is building the Control Dependence subgraph. I have created a object-oriented inheritance model for the nodes, to be able to derive the different node types from a general Statement class. There are four different type of nodes: \textit{Assign}, \textit{Compound}, \textit{Branch} and \textit{Loop}. All statements in C++ is classified into one of them. Logically, Assign stores assignments, definitions and also the statements which does not define a variable, but only use them like a return statement. In the algorithm, this will simplify calculating data dependences. The Compound class stores the curly braces which define scopes in the language, and contains the child nodes of them. The function declaration is also stored in it, with the parameter variables as definitions of the statement. Branch stores \texttt{if}, \texttt{switch-case} and Loop stores \texttt{while}, \texttt{for} and \texttt{do-while} statements. 
+
+There is an ASTMatcher written for every type of statement which we are interested regarding slicing. All of them captures the statement and the variables in it via the bind method. The hierarchy of them is created during the processing phase: for every statement which may have children, a create method is called which implements the Factory method design pattern and determines what kind of statement to create based on the type of the AST node. 
+
+Every statement has four important fields:
+\begin{enumerate}
+\item the set of control dependent child nodes,
+\item the set of data dependent nodes,
+\item the set of variables which the statement defines,
+\item and the set of variables which the statement uses.
+\end{enumerate}
+
+These sets are also filled during processing.
+
+The literature of PDGs writes about region and predicate nodes regarding loop and branch statements, but I have found these unnecessary to include in the graph, since they do not add any information to it, only makes traversals slower. Since we are only interested in variables, predicate nodes can be eliminated by putting the variables of them into the use set of the branch or loop statement. Also, region nodes are unnecessary, since any statement can have arbitrary amount of children, only assignment does not have any, by definition.
+
+
+
+
+
+
+
+
+\begin{lstlisting}[language=C++]
+while(x < 0){
+  if(y < 2) goto label; 
+  x = 2;
+}
+label:
+x = 1;
+\end{lstlisting}
+
+In this example, the third line is control dependent on the second, so if we're considering a slice regarding variable $x$ in the last statement, then the second line must be in the slice.
+
 \subsection{Data dependences}
 
 \section{Implementing slicing}
