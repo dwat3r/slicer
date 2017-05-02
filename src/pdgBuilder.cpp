@@ -221,7 +221,6 @@ void PDGBuilder::onEndOfTranslationUnit() {
   llvm::errs() << "With data dependence edges too:\n";
   llvm::errs() << stmt_map[root]->dump();
   if (dumpDot) dumpDots();
-  
 }
 } // namespace slicer
 } // namespace clang

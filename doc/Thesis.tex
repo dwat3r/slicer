@@ -525,61 +525,119 @@ If we store the edges of the graph bidirectionally, the difference becomes only 
 
 LLVM is a compiler infrastucture which is created mainly for program optimization during compile, link and runtime. It is written in C++ and language-agnostic itself, and uses an intermediate representation (LLVM IR) of the programs created in numerous languages. LLVM stands for \textbf{Low Level Virtual Machine} which was the initial target for the project, but since then it has grown to a massive infrastructure for program compilation and toolchains. LLVM does not handle the parsing and syntactic error checking in the languages, and separates this part via the IR. It was initially developed for C and C++, but since then there are numerous language frontends for a wide variety of languages including Haskell, Ada, Ruby, Python, etc. 
 
-Clang is a compiler frontend for C,C++ and Objective-C, using LLVM as a backend for code generation. Clang is also written in C++, and has a library-based architecture which allows the compiler for not just compiling, but to build useful tools with it. For example, QtCreator IDE - an Integrated Development Environment - can use Clang as a `code model', for syntactically and semantically check the code in the editor, making error correcting much easier for the developer. There are also numerous tools built on the Clang using it as a library for parsing C++ code, for gaining information of it or performing source-to-source transformations.
+Clang is a compiler frontend for C,C++ and Objective-C, using LLVM as a backend for code generation. Clang is also written in C++, and has a library-based architecture which allows the compiler for not just compiling, but to build useful tools with it. For example, QtCreator IDE - an Integrated Development Environment - can use Clang as a `code model', for syntactically and semantically check the code in the editor, making error correcting much easier for the developer. There are also numerous tools built on the Clang using it as a library for parsing C++ code, for gaining information of it or performing source-to-source transformations. %maybe write about the Clang Static Analyzer
 
 \section{The Clang AST}
 
-The internal representation of C++ source code in Clang is the \textbf{Abstract Syntax Tree} - AST. Since it is written in C++, it uses the language's object-oriented features for encoding the structure of the program into a large class hiearchy, keeping all relevant information of a language element in an AST node. Taken the example from Chapter 2:
-\begin{figure}[h]
+The internal representation of C++ source code in Clang is the \textbf{Abstract Syntax Tree} - AST\ref{Clang-AST}. Since it is written in C++, it uses the language's object-oriented features for encoding the structure of the program into a large class hiearchy, keeping all relevant information of a language element in an AST node.
+
+Taken the example from Chapter 2:
 \begin{lstlisting}[language=C++]
 int main(){
   int sum = 0;
   int i = sum;
   while (i < 11){
-    sum += i;
+    sum = sum + i;
     i++;
   }
 }
 \end{lstlisting}
-\caption{Example program again}
-\label{fig:example_prog_again}
-\end{figure}
-Clang enables us to dump it's AST via a compiler option:
-\texttt{clang -Xclang -ast-dump -fsyntax-only <file>}
-\begin{figure}
+\begin{figure}[h]
+\lstset{
+xleftmargin=-80pt,
+aboveskip=\smallskipamount,
+belowskip=\smallskipamount}
 \begin{lstlisting}
 FunctionDecl 0x595bd10 <horwitz.cc:1:1, line:8:1> line:1:5 main 'int (void)'
-`-CompoundStmt 0x595bfd8 <col:11, line:8:1>
-  |-DeclStmt 0x595be28 <line:2:3, col:14>
-  | `-VarDecl 0x595bdd0 <col:3, col:13> col:7 used sum 'int' cinit
-  |   `-IntegerLiteral 0x595be08 <col:13> 'int' 0
-  |-DeclStmt 0x595bea8 <line:3:3, col:14>
-  | `-VarDecl 0x595be48 <col:3, col:11> col:7 used i 'int' cinit
-  |   `-ImplicitCastExpr 0x595be98 <col:11> 'int' <LValueToRValue>
-  |     `-DeclRefExpr 0x595be80 <col:11> 'int' lvalue Var 0x595bdd0 'sum' 'int'
-  `-WhileStmt 0x595bfc0 <line:4:3, line:7:3>
+`-CompoundStmt 0x2716a50 <col:11, line:8:1>
+  |-DeclStmt 0x2716868 <line:2:3, col:14>
+  | `-VarDecl 0x2716810 <col:3, col:13> col:7 used sum 'int' cinit
+  |   `-IntegerLiteral 0x2716848 <col:13> 'int' 0
+  |-DeclStmt 0x27168e8 <line:3:3, col:14>
+  | `-VarDecl 0x2716888 <col:3, col:11> col:7 used i 'int' cinit
+  |   `-ImplicitCastExpr 0x27168d8 <col:11> 'int' <LValueToRValue>
+  |     `-DeclRefExpr 0x27168c0 <col:11> 'int' lvalue Var 0x2716810 'sum' 'int'
+  `-WhileStmt 0x2716a38 <line:4:3, line:7:3>
     |-<<<NULL>>>
-    |-BinaryOperator 0x595bf00 <line:4:10, col:14> '_Bool' '<'
-    | |-ImplicitCastExpr 0x595bef0 <col:10> 'int' <LValueToRValue>
-    | | `-DeclRefExpr 0x595beb8 <col:10> 'int' lvalue Var 0x595be48 'i' 'int'
-    | `-IntegerLiteral 0x595bed0 <col:14> 'int' 11
-    `-CompoundStmt 0x595bfa8 <col:17, line:7:3>
-      |-CompoundAssignOperator 0x595bf58 <line:5:5, col:12> 'int' lvalue '+=' ComputeLHSTy='int' ComputeResultTy='int'
-      | |-DeclRefExpr 0x595bf18 <col:5> 'int' lvalue Var 0x595bdd0 'sum' 'int'
-      | `-ImplicitCastExpr 0x595bf48 <col:12> 'int' <LValueToRValue>
-      |   `-DeclRefExpr 0x595bf30 <col:12> 'int' lvalue Var 0x595be48 'i' 'int'
-      `-UnaryOperator 0x595bf90 <line:6:5, col:6> 'int' postfix '++'
-        `-DeclRefExpr 0x595bf78 <col:5> 'int' lvalue Var 0x595be48 'i' 'int'
+    |-BinaryOperator 0x2716940 <line:4:10, col:14> '_Bool' '<'
+    | |-ImplicitCastExpr 0x2716930 <col:10> 'int' <LValueToRValue>
+    | | `-DeclRefExpr 0x27168f8 <col:10> 'int' lvalue Var 0x2716888 'i' 'int'
+    | `-IntegerLiteral 0x2716910 <col:14> 'int' 11
+    `-CompoundStmt 0x2716a20 <col:17, line:7:3>
+      |-BinaryOperator 0x27169d8 <line:5:5, col:17> 'int' lvalue '='
+      | |-DeclRefExpr 0x2716958 <col:5> 'int' lvalue Var 0x2716810 'sum' 'int'
+      | `-BinaryOperator 0x27169c0 <col:11, col:17> 'int' '+'
+      |   |-ImplicitCastExpr 0x27169a0 <col:11> 'int' <LValueToRValue>
+      |   | `-DeclRefExpr 0x2716970 <col:11> 'int' lvalue Var 0x2716810 'sum' 'int'
+      |   `-ImplicitCastExpr 0x27169b0 <col:17> 'int' <LValueToRValue>
+      |     `-DeclRefExpr 0x2716988 <col:17> 'int' lvalue Var 0x2716888 'i' 'int'
+      `-UnaryOperator 0x2716a08 <line:6:5, col:6> 'int' postfix '++'
+        `-DeclRefExpr 0x27169f0 <col:5> 'int' lvalue Var 0x2716888 'i' 'int'
 \end{lstlisting}
-\caption{Clang AST of the example in \ref{fig:example_prog_again}}
+\caption{Clang AST of the example}
 \label{fig:clang_ast}
 \end{figure}
 
+Clang enables us to dump it's AST via a compiler option, which can be seen on figure \ref{fig:clang_ast}.
+
+The type of the nodes has a class hierarchy which has no common ancestor. There are a several base types, but only two are important for implementing slicing algorithms: the \texttt{Decl} and \texttt{Stmt} class. As it is logical, they encode a generic declaration, and statement, respectively. For example in the AST above, \texttt{FunctionDecl}, \texttt{VarDecl} are Decls, and \texttt{WhileStmt}, \texttt{CompoundStmt} and \texttt{DeclStmt} are Stmts. Also, it can be seen that Stmts create a clean tree hierarchy, where a predicate of a while loop belongs under it, enabling the AST to describe complex expressions. There is an API created for accessing the nodes' properties, which supports iterators on nodes with \texttt{begin()} and \texttt{end()} much like the C++ standard library. For variable declarations, there is a wrapping \texttt{DeclStmt}, and for every block of code denoted by curly braces, there is a \texttt{CompoundStmt} associated with it. 
+
+The Clang AST has a bit different logic in naming language elements than we would expect. It encodes assignments in a more generic \texttt{BinaryOperator}, and the API provides the \texttt{IsAssignment()} boolean method for it. It also encodes a defined variable's access in a \texttt{DeclRefExpr}, and if they are used on a right-hand side of an operator, it uses implicit cast expressions for casting them from lvalue to rvalue.
+
+The source positions are also encoded in the nodes, but for accessing them, we need the \texttt{SourceManager} class, which can get the exact location of a node. 
+
+\subsection{The RecursiveASTVisitor class}
+
+Clang provides the \texttt{LibTooling} library to work with the AST. First, Clang parses the source code, and performs the compilation steps necessary to build the AST for us. Therefore if there's an error in the code, we won't get a partial AST. After then, we must provide a few classes which then can take care to run our action as a compilation step. The entry point is the \texttt{ASTFrontendAction} class, which creates an \texttt{ASTConsumer}, which can access the AST of the whole translation unit. Clang provides the \texttt{RecursiveASTVisitor} class, where we can create two types of methods for processing nodes: \texttt{Visit<NodeType>} and \texttt{Traverse<NodeType>}, where we put the node type which we want to process in the name of the method. With Visit, we can access the node, but Traverse can be used for controlling the traversal of the nodes, for example, if we do not want to visit any node under an If Statement, or to swap the traversal order of the two branches. 
 
 \section{AST Matchers}
 
+Although the RecursiveASTVisitor class could be enough for processing the AST, it could get easily complicated and require a lot of repeated code, making the tool less maintainable. However, there is a very useful API included with LibTooling of Clang, the ASTMatchers. With them, we can define the nodes we look for in the AST in a chain of matcher calls, which are a small domain-specific language defined for this specific task, but written in C++, naturally. For example, the following expression:
+\begin{lstlisting}
+binaryOperator(isAssignmentOp(),
+    hasLHS(ignoringImpCasts(declRefExpr(to(varDecl().bind("lval"))))),
+    anyOf(
+      hasRHS(forEachDescendant(
+      	expr(declRefExpr(to(varDecl().bind("rval")))))),
+      hasRHS(anything())
+    )).bind("binop");
+\end{lstlisting}
+
+Has a \texttt{binaryOperator} matcher, so with the internal boolean predication \\ \texttt{isAssignmentOp}, we can specify that it should match on assignment operators only. Via \texttt{hasLHS} and \texttt{hasRHS} inner matchers, we can specify what should be on the left and right side of the matched operator. And finally, the \texttt{anyOf} matcher can take arbitrary amount of arguments - which are also matchers - and becomes true if any of it's matchers are true. 
+
+This only specifies what nodes we want to work with. For processing them, there is the \texttt{bind()} method, where we can specify a string identifier for the matched node. In the example above, there is a match for every assign statement, and every variable in them, separately. Every matcher has a callback function which is called every time when a node matching our specified matcher matches. We can define the processing method for the matches, and extract the statements or declarations bound via \texttt{bind} in it. The example shows how can we extract the variable declarations referenced in the \texttt{DeclRefExprs} in the assignment.
+
+These ASTMatchers have a lot of similarities in common for querying with an NoSQL database query language. The separation of matching and processing enables us to avoid writing a lot of `boilerplate' code, and provides an intuitive way of specifying the desired information to query from the AST.
+
+There are three types of matchers:
+\begin{enumerate}
+\item Node: match a specific type of AST node,
+\item Narrowing: match attributes on AST nodes,
+\item Traversal: allow traversal between AST nodes.
+\end{enumerate}
+
+In the previous section, in RecursiveASTVisitor, Visit was the equivalent of the Node matchers here. Every match expression starts with a node matcher, and they take arbitrary amount of parameters and match if all parameters returns true. There are a node matcher for every type of node in the AST. They are the ones which support the \texttt{bind} method. 
+
+Narrowing matchers are boolean expressions which are narrowing down the set of nodes of the current type to match on. For example, \texttt{isAssignmentOp} is one of them, which can be used in \texttt{BinaryOperator} matchers. There are a few special logical matcher of this kind (\texttt{allOf}, \texttt{anyOf}, \texttt{anything}, \texttt{unless}), which can be used to build more complex matchers, as it can be seen from the example that with \texttt{anyOf} we specify that the right-hand side of the BinaryOperator has either a variable or something else, with \texttt{anything}. 
+
+The Traversal matchers are different from the Traverse method from RecursiveASTVisitor. They can be used to specify the child or subexpression of the node we want to match. There are a few special matchers of this kind (\texttt{has}, \texttt{hasDescendant}, \texttt{forEach}, \texttt{forEachDescendant}), which work on all type of nodes. In the example, forEachDescendant is used to match all variables on the right hand side of the assignment. 
+
+All kind of matchers can be extended by defining them with special macros also provided by the API. All of the default matchers can be found under\cite{ASTMatchers-reference}.
+
+For easing the building of complex matchers, there is a tool in the Clang repository named \textit{clang-query} which is an interpreter for evaluating matchers.
+
+There are numerous tools built with this API, the most notable must be the Clang Static Analyzer\cite{clang-static-analyzer}, which is a source code analysis tool that finds bugs in programs. It has a modular pluggable design, implemented with different matchers for finding flaws and potential patterns which would lead to bugs, for example unitialized variables, nullpointer accesses, and other errors which can be detected by analyzing the AST.
+
 \chapter{Implementation and algorithm}
+
+In this chapter I will introduce a prototype application for slicing in programs written in C++ using the tools described in the previous chapter. I will compare the described algorithms by usability, extendability and efficiency. 
+
 \section{The approach}
+
+For analyzing C++ source code, the best tool is the Clang LibTooling library. The GCC compilers internal representation transforms the original source in non-reversible way, so it is not useful in this setting. There are other approaches which implement slicing, notably the Wisconsin Program-Slicing tool\cite{Wisconsin-slicing-tool}, and Frama-C has a plug-in for slicing\cite{Frama-C-slicing}.
+
+The three algorithms described in the second chapter are all can be implemented 
+
 \section{Building the PDG}
 \subsection{Control dependences}
 \subsection{Data dependences}
@@ -591,73 +649,93 @@ FunctionDecl 0x595bd10 <horwitz.cc:1:1, line:8:1> line:1:5 main 'int (void)'
 \begin{thebibliography}{Textttext}
 \bibitem{weiser84}
   M. Weiser,
-  Program slicing,
+  \emph{Program slicing},
   IEEE Transactions on Software Engineering,
   10(4):352-357,
   1984.
 
 \bibitem{slicing-survey}
   Tip, Frank,
-  A survey of program slicing techniques,
+  \emph{A survey of program slicing techniques},
   Journal of programming languages 3.3,
   121-189,
   1995. 
 
 \bibitem{horwitz-interproc}
   Horwitz, Susan, Thomas Reps, and David Binkley,
-  Interprocedural slicing using dependence graphs, 
+  \emph{Interprocedural slicing using dependence graphs}, 
   ACM Transactions on Programming Languages and Systems,
   (TOPLAS) 12.1: 26-60,
   1990.
 
 \bibitem{information-flow}
   Bergeretti, Jean-Francois, and Bernard A. Carré,
-  Information-flow and data-flow analysis of while-programs,
+  \emph{Information-flow and data-flow analysis of while-programs},
   ACM Transactions on Programming Languages and Systems,
   (TOPLAS) 7.1: 37-61,
   1985.
 
 \bibitem{use-of-slicing-horwitz}
   Horwitz, Susan, and Thomas Reps,
-  The use of program dependence graphs in software engineering,
+  \emph{The use of program dependence graphs in software engineering},
   Proceedings of the 14th international conference on Software engineering. 
   ACM,
   1992.
 
 \bibitem{program-analysis-via-graph-reachability-reps}
   Reps, Thomas,
-  Program analysis via graph reachability,
+  \emph{Program analysis via graph reachability},
   Information and software technology,
   40.11: 701-726,
   1998.
 
 \bibitem{efficient-pdg}
   Harrold, Mary Jean, Brian Malloy, and Gregg Rothermel,
-  Efficient construction of program dependence graphs,
+  \emph{Efficient construction of program dependence graphs},
   ACM SIGSOFT Software Engineering Notes,
   Vol. 18. No. 3. ACM,
   1993.
 
 \bibitem{slicing-oop}
   Larsen, Loren, and Mary Jean Harrold,
-  Slicing object-oriented software,
+  \emph{Slicing object-oriented software},
   Software Engineering,
   Proceedings of the 18th International Conference on. IEEE,
   1996.
 
 \bibitem{slicing-with-jumps}
   Agrawal, Hiralal,
-  On slicing programs with jump statements,
+  \emph{On slicing programs with jump statements},
   ACM Sigplan Notices,
   Vol. 29. No. 6. ACM,
   1994.
 
 \bibitem{ottenstein}
   Ottenstein, Karl J., and Linda M. Ottenstein,
-  The program dependence graph in a software development environment,
+  \emph{The program dependence graph in a software development environment},
   ACM Sigplan Notices,
   Vol. 19. No. 5. ACM,
   1984.
+  
+\bibitem{clang-static-analyzer}
+  \emph{Clang Static Analyzer}
+  \url{http://clang-analyzer.llvm.org/}
+
+\bibitem{ASTMatchers-reference}
+  \emph{AST Matcher Reference}
+  \url{http://clang.llvm.org/docs/LibASTMatchersReference.html}
+  
+\bibitem{Clang-AST}
+  \emph{Introduction to the Clang AST}
+  \url{http://clang.llvm.org/docs/IntroductionToTheClangAST.html}
+  
+\bibitem{Wisconsin-slicing-tool}
+  \emph{The Wisconsin Program-Slicing Tool}
+  \url{http://research.cs.wisc.edu/wpis/slicing_tool/}
+
+\bibitem{Frama-C-slicing}
+  \emph{Slicing plug-in for Frama-C}
+  \url{https://frama-c.com/slicing.html}
 
 \end{thebibliography}
 
