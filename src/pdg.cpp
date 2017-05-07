@@ -55,63 +55,64 @@ Statement* Statement::create(const clang::Stmt* astref,clang::FullSourceLoc loc)
 // or just hack another variable into it
 void Statement::setDataEdges() {
 	// initialize initial def_map from this node's defines
-  std::map <const clang::ValueDecl*, std::pair<Statement*, Statement::Edge>> def_map;
+ defsMap def_map;
   for (auto& def : define) {
-    def_map.insert({ def,{this,Statement::Edge::None} });
+    def_map.insert({ def,{{this,Edge::None}} });
   }
   // we're using DFS for visiting every statement in execution order.
-  setDataEdgesRec(def_map, {});
+  setDataEdgesRec(def_map, {}, 0);
 }
-
-std::map<const clang::ValueDecl*, std::pair<Statement*, Statement::Edge>>
-Statement::setDataEdgesRec(std::map <const clang::ValueDecl*,std::pair<Statement*,Statement::Edge>> parent_def_map,
-                           std::vector<Statement*> loopRefs) {
-  std::map <const clang::ValueDecl*, std::pair<Statement*, Statement::Edge>> def_map;
+// we should use the phi-node technique for collecting all different definitions from branches by transforming 
+// def_map to: [(var,[(stmt,edge)]], to store multiple values (two for if-else, n for amount of case in switch-case)
+// in it, and if meet with a new value AFTER if, overwrite the set with that one value.
+Statement::defsMap
+Statement::setDataEdgesRec(defsMap parent_def_map,
+                           std::vector<Statement*> loopRefs,
+                           int inABranch) {
+  defsMap def_map;
   // make every parent definition edge true.
-  for (auto& d : parent_def_map) {
-	  def_map.insert({ d.first, { d.second.first,Statement::Edge::None } });
+
+  for (auto& ds : parent_def_map) {
+    for (auto& d : ds.second)
+	    def_map[ds.first].insert({ d.first, Edge::None });
   }
-  if (name() == Type::Loop) {
-    loopRefs.push_back(this);
-  }
-  // we have to bypass CompoundStatements and visit their children. 
-  std::set<std::pair<Statement*, Statement::Edge>, StatementLocCmp> visitingChildren;
-  for (auto c : controlChildren) {
-	  if (c.first->name() == Type::Compound) {
-		  // inherit edge labels
-		  for (auto& cc : c.first->getControlChildren()) {
-			  visitingChildren.insert({ cc.first,c.second });
-		  }
-	  }
-	  else {
-		  visitingChildren.insert(c);
-	  }
-  }
+  if (name() == Type::Loop) { loopRefs.push_back(this); }
+  if (name() == Type::Branch) inABranch++;
   // create loop-carried dependences by 
   // visiting every child twice
   for (int i = 0; i < 2; ++i) {
-    for (auto& stmt : visitingChildren) {
+    for (auto& stmt : controlChildren) {
 		  // def-def edges
 		  for (auto& def : stmt.first->getDefine()) {
+        bool added = false;
 			  if (def_map.find(def) != def_map.end()) {
-				  // if they're on the same branch
-				  if ((def_map[def].second == Statement::Edge::None ||
-					  def_map[def].second == stmt.second) && 
-            // and they're not the same
-            def_map[def].first != stmt.first) {
-					  def_map[def].first->addDataEdge(stmt.first);
-				  }
+          for (auto& defStmt : def_map[def]) {
+				    // if they're on the same branch
+            if ((inABranch == 0 || defStmt.second == Edge::None ||
+                (inABranch > 0 && defStmt.second == stmt.second)) &&
+              // and they're not the same
+              defStmt.first != stmt.first) {
+              defStmt.first->addDataEdge(stmt.first);
+            }
+            // add stmt as an other branch definition
+            if (inABranch > 0 &&
+                //defStmt.second != Edge::None &&
+                defStmt.second != stmt.second) {
+              def_map[def].insert(stmt);
+              added = true;
+            }
+          }
 			  }
 			  // make this stmt the latest definition
-			  def_map[def] = stmt;
-
+        if (inABranch == 0 || !added ) {
+          def_map[def] = { stmt };
+        }
 			  // while backedge to predicate
-        if (!loopRefs.empty()) {
-          for (auto lr : loopRefs) {
-            auto uses = lr->getUses();
-            if (uses.find(def) != uses.end()) {
-              def_map[def].first->addDataEdge(lr);
-            }
+        for (auto lr : loopRefs) {
+          auto uses = lr->getUses();
+          if (uses.find(def) != uses.end()) {
+            for(auto& defStmt : def_map[def])
+              defStmt.first->addDataEdge(lr);
           }
         }
 		  }
@@ -119,23 +120,44 @@ Statement::setDataEdgesRec(std::map <const clang::ValueDecl*,std::pair<Statement
       for (auto& uses : stmt.first->getUses()) {
 			  assert(def_map.find(uses) != def_map.end());
         // don't add loops
-        if(def_map[uses].first != stmt.first)
-          def_map[uses].first->addDataEdge(stmt.first);
+        for(auto& defStmt : def_map[uses])
+          if(defStmt.first != stmt.first)
+            defStmt.first->addDataEdge(stmt.first);
       }
 
       // go down
       if (!stmt.first->controlChildren.empty()) {
-        std::map <const clang::ValueDecl*, std::pair<Statement*, Statement::Edge>> child_def_map;
+        defsMap child_def_map;
         // erase defs from the other branch
-        for (auto& def : def_map) {
-			    if (def.second.second == Statement::Edge::None ||
-				    def.second.second == stmt.second) {
-				    child_def_map.insert(def);
-			    }
+        for (auto& defs : def_map) {
+			    for (auto def : defs.second){
+            if (def.second == Edge::None ||
+				        def.second == stmt.second) {
+				      child_def_map[defs.first].insert(def);
+			      }
+          }
         }
-        auto child_new_defs(stmt.first->setDataEdgesRec(child_def_map, loopRefs));
+        auto child_new_defs(stmt.first->setDataEdgesRec(child_def_map, loopRefs,inABranch));
         // merge new definitions from child to our def_map
-		    for (auto& kv : child_new_defs) { def_map[kv.first] = kv.second; }
+        // if branch, merge with the label to the child
+        if (inABranch > 0)
+          for (auto& kv : child_new_defs) { 
+            for (auto& v : kv.second) {
+              def_map[kv.first].insert({ v.first,stmt.second });
+            }
+          }
+        else 
+          for (auto& kv : child_new_defs) { 
+            if (kv.second.size() > 1) {
+              if (kv.second.size() > stmt.first->controlChildren.size())
+                def_map[kv.first].clear();
+              for (auto& v : kv.second) {
+                if (v.second != Edge::None) def_map[kv.first].insert(v);
+              }
+            }
+            else
+              def_map[kv.first] = kv.second;
+          }
       }
     }
 	  // create loop-carried dependences by 
@@ -144,21 +166,20 @@ Statement::setDataEdgesRec(std::map <const clang::ValueDecl*,std::pair<Statement
     // we also need to erase local defs when returning our defs to caller parent 
 	  for (auto it = def_map.begin(); it != def_map.end();)
 	  {
-		  if (llvm::isa<clang::DeclStmt>(it->second.first->getAstRef())
-			  && it->second.second != Statement::Edge::None) def_map.erase(it++);
-		  else ++it;
+      for (auto it2 = it->second.begin(); it2 != it->second.end();) {
+        if (llvm::isa<clang::DeclStmt>(it2->first->getAstRef())
+          && it2->second != Edge::None) it2 = it->second.erase(it2);
+        else ++it2;
+      }
+      if (it->second.empty()) it = def_map.erase(it);
+      else ++it;
 	  }
 	  // if we're not in a loop, don't visit twice
 	  if (name() != Type::Loop) break;
   }
-  // return only the intersection of definition of the two branches
-  if (name() == Type::Branch) {
-    // todo fix this piece of shit
-    auto intersection(def_map);
-    for (auto def : def_map) {
-
-    }
-  }
+  if (name() == Type::Loop)
+    loopRefs.erase(std::remove(loopRefs.begin(), loopRefs.end(), this));
+  if (name() == Type::Branch) inABranch--;
   return def_map;
 }
 // print out graph structure

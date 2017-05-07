@@ -100,14 +100,13 @@ void PDGBuilder::registerMatchers(MatchFinder *MatchFinder) {
 
   // then add them to MatchFinder
   MatchFinder->addMatcher(functionDecl(hasName(funcName), 
-                                       eachOf(forEachDescendant(decls),
-                                               forEachDescendant(bop),
-                                               forEachDescendant(uop),
-                                               forEachDescendant(ret),
-                                               forEachDescendant(ifs),
-                                               forEachDescendant(whiles),
-                                               forEachDescendant(compounds)
-                                                                    )).bind("f"), this);
+                                       eachOf(forEachDescendant(ifs),
+                                              forEachDescendant(whiles),
+                                              forEachDescendant(compounds),
+                                              forEachDescendant(decls),
+                                              forEachDescendant(bop),
+                                              forEachDescendant(uop),
+                                              forEachDescendant(ret))).bind("f"), this);
 
 }
 void PDGBuilder::run(const ast_matchers::MatchFinder::MatchResult &result) {

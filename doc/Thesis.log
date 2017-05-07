@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014/W32TeX) (preloaded format=pdflatex 2015.5.24)  3 MAY 2017 00:33
+This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014/W32TeX) (preloaded format=pdflatex 2015.5.24)  7 MAY 2017 18:40
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -886,19 +886,19 @@ Overfull \hbox (23.99997pt too wide) in paragraph at lines 69--73
 
 
 {c:/texlive/2014/texmf-var/fonts/map/pdftex/updmap/pdftex.map} <./ELTE_logo.png
->] (./Thesis.toc)
+>] (./Thesis.toc [1
+
+])
 \tf@toc=\write4
 \openout4 = `Thesis.toc'.
 
- [1
-
-]
+ [2]
 Chapter 1.
-[2
+[3
 
 ]
 Chapter 2.
-[3
+[4
 
 ] (c:/texlive/2014/texmf-dist/tex/latex/listings/lstlang1.sty
 File: lstlang1.sty 2014/09/06 1.5e listings language file
@@ -918,27 +918,27 @@ File: t1cmtt.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <10> not available
 (Font)              Font shape `T1/cmtt/m/n' tried instead on input line 101.
 
-<horwitz_cfg.png, id=27, 252.945pt x 395.4775pt>
+<horwitz_cfg.png, id=30, 252.945pt x 395.4775pt>
 File: horwitz_cfg.png Graphic file (type png)
  <use horwitz_cfg.png>
 Package pdftex.def Info: horwitz_cfg.png used on input line 116.
 (pdftex.def)             Requested size: 162.18279pt x 253.57542pt.
- [4 <./horwitz_cfg.png>] [5] [6] [7] [8] [9]
+ [5 <./horwitz_cfg.png>] [6] [7] [8] [9] [10]
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-[10
+[11
 
 
-] [11] [12] [13] [14] [15]
-<loop_carried_test.png, id=85, 534.99875pt x 641.39626pt>
+] [12] [13] [14] [15] [16]
+<loop_carried_test.png, id=88, 534.99875pt x 641.39626pt>
 File: loop_carried_test.png Graphic file (type png)
 
 <use loop_carried_test.png>
 Package pdftex.def Info: loop_carried_test.png used on input line 507.
 (pdftex.def)             Requested size: 213.39568pt x 255.83951pt.
 
-<loop_carried_test_backward_slice.png, id=86, 534.99875pt x 641.39626pt>
+<loop_carried_test_backward_slice.png, id=89, 534.99875pt x 641.39626pt>
 File: loop_carried_test_backward_slice.png Graphic file (type png)
 
 <use loop_carried_test_backward_slice.png>
@@ -950,11 +950,11 @@ Underfull \hbox (badness 10000) in paragraph at lines 513--518
 \T1/cmr/m/n/12 de-pen-dence edges.
  []
 
-[16
+[17
 
- <./loop_carried_test.png>] [17 <./loop_carried_test_backward_slice.png>]
+ <./loop_carried_test.png>] [18 <./loop_carried_test_backward_slice.png>]
 Chapter 3.
-[18
+[19
 
 ]
 Overfull \hbox (15.98605pt too wide) in paragraph at lines 571--572
@@ -966,38 +966,59 @@ Overfull \hbox (3.389pt too wide) in paragraph at lines 573--574
 [][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
  []
 
-[19] [20]
+[20] [21]
 Overfull \hbox (14.10526pt too wide) in paragraph at lines 598--599
 [][][][][][][][][][][][][][][][][] 
  []
 
-[21] [22]
+[22] [23]
 Chapter 4.
-[23
+[24
 
-] [24] [25] [26
+] [25] [26] [27
+
+] <while_while_while.png, id=128, 322.20375pt x 757.83125pt>
+File: while_while_while.png Graphic file (type png)
+
+<use while_while_while.png>
+Package pdftex.def Info: while_while_while.png used on input line 750.
+(pdftex.def)             Requested size: 170.71718pt x 401.54459pt.
+ [28 <./while_while_while.png>]
+<if_test_cfg.png, id=133, 208.78pt x 370.38374pt>
+File: if_test_cfg.png Graphic file (type png)
+ <use if_test_cfg.png>
+Package pdftex.def Info: if_test_cfg.png used on input line 773.
+(pdftex.def)             Requested size: 128.0387pt x 227.16014pt.
+
+Overfull \hbox (17.62482pt too wide) in paragraph at lines 759--775
+[]$[]$$[]$ 
+ []
+
+[29
+
+ <./if_test_cfg.png>] [30] [31
 
 ]
-Underfull \hbox (badness 10000) in paragraph at lines 776--778
+Underfull \hbox (badness 10000) in paragraph at lines 882--884
 []\T1/cmr/m/it/12 AST Matcher Ref-er-ence $\T1/cmtt/m/n/12 http : / / clang . l
 lvm . org / docs /
  []
 
 
-Underfull \hbox (badness 6016) in paragraph at lines 780--782
+Underfull \hbox (badness 6016) in paragraph at lines 886--888
 []\T1/cmr/m/it/12 Introduction to the Clang AST $\T1/cmtt/m/n/12 http : / / cla
 ng . llvm . org / docs /
  []
 
-[27] (./Thesis.aux) ) 
+[32] (./Thesis.aux) ) 
 Here is how much of TeX's memory you used:
- 16513 strings out of 494367
- 302917 string characters out of 6163526
- 401970 words of memory out of 5000000
- 19418 multiletter control sequences out of 15000+600000
+ 16621 strings out of 494367
+ 304160 string characters out of 6163526
+ 401973 words of memory out of 5000000
+ 19524 multiletter control sequences out of 15000+600000
  25900 words of font info for 63 fonts, out of 8000000 for 9000
  372 hyphenation exceptions out of 8191
- 55i,15n,60p,1124b,1581s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 55i,15n,60p,1124b,1646s stack positions out of 5000i,500n,10000p,200000b,80000s
 {c:/texlive/2014/texmf-dist/fonts/enc/dvips/cm-super/cm-su
 per-t1.enc}<c:/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pf
 b><c:/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb><c:/tex
@@ -1022,10 +1043,10 @@ onts/type1/public/cm-super/sfrm1440.pfb><c:/texlive/2014/texmf-dist/fonts/type1
 -super/sfti1200.pfb><c:/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sft
 t0800.pfb><c:/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sftt1000.pfb>
 <c:/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sftt1200.pfb>
-Output written on Thesis.pdf (28 pages, 1239411 bytes).
+Output written on Thesis.pdf (33 pages, 1298566 bytes).
 PDF statistics:
- 211 PDF objects out of 1000 (max. 8388607)
- 146 compressed objects within 2 object streams
+ 231 PDF objects out of 1000 (max. 8388607)
+ 157 compressed objects within 2 object streams
  0 named destinations out of 1000 (max. 500000)
- 33 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 43 words of extra memory for PDF output out of 10000 (max. 10000000)
 

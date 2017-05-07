@@ -657,9 +657,9 @@ Also, the article does only specify a generic algorithm for detecting data depen
 
 \subsection{Control dependences}
 
-The first part is building the Control Dependence subgraph. I have created a object-oriented inheritance model for the nodes, to be able to derive the different node types from a general Statement class. There are four different type of nodes: \textit{Assign}, \textit{Compound}, \textit{Branch} and \textit{Loop}. All statements in C++ is classified into one of them. Logically, Assign stores assignments, definitions and also the statements which does not define a variable, but only use them like a return statement. In the algorithm, this will simplify calculating data dependences. The Compound class stores the curly braces which define scopes in the language, and contains the child nodes of them. The function declaration is also stored in it, with the parameter variables as definitions of the statement. Branch stores \texttt{if}, \texttt{switch-case} and Loop stores \texttt{while}, \texttt{for} and \texttt{do-while} statements. 
+The first part is building the Control Dependence subgraph. I have created an object-oriented inheritance model for the nodes to be able to derive the different node types from a general Statement class. There are four different type of nodes: \textit{Assign}, \textit{Compound}, \textit{Branch} and \textit{Loop}. All statements in C++ is classified into one of them. Logically, Assign stores assignments, definitions and also the statements which are not assignments, but does not have subnodes and also do not define a variable, but only use them, for example the return statement. In the algorithm, this will simplify calculating data dependences. The Compound class stores the block scopes in the language, and contains the child nodes of them. The function declaration is also classified as a Compound statement, with the parameter variables as definitions of the statement. Branch stores \texttt{if}, \texttt{switch-case} and Loop stores \texttt{while}, \texttt{for}, \texttt{do-while} and other loop statements.
 
-There is an ASTMatcher written for every type of statement which we are interested regarding slicing. All of them captures the statement and the variables in it via the bind method. The hierarchy of them is created during the processing phase: for every statement which may have children, a create method is called which implements the Factory method design pattern and determines what kind of statement to create based on the type of the AST node. 
+There is an ASTMatcher written for every type of C++ statement which we are interested regarding slicing. All of them captures the statement and the variables in it via the bind method. The hierarchy of them is created during the processing phase: for every statement which may have children, a create method is called which implements the Factory method design pattern and determines what kind of statement to create based on the type of the AST node. 
 
 Every statement has four important fields:
 \begin{enumerate}
@@ -673,13 +673,116 @@ These sets are also filled during processing.
 
 The literature of PDGs writes about region and predicate nodes regarding loop and branch statements, but I have found these unnecessary to include in the graph, since they do not add any information to it, only makes traversals slower. Since we are only interested in variables, predicate nodes can be eliminated by putting the variables of them into the use set of the branch or loop statement. Also, region nodes are unnecessary, since any statement can have arbitrary amount of children, only assignment does not have any, by definition.
 
+The Control dependence subgraph will have a structure of a tree. This will make the data dependence building algorithm simpler. 
+
+\subsection{Data dependences}
+Builiding data dependences are a nontrivial task. As I have written earlier, there are two types of them: flow and def-order dependences. The pseudocode of the algorithm I have developed is the following:
+\clearpage
+\lstset{numbers=left}
+\begin{lstlisting}
+procedure start:
+  add function parameters to defs
+  DataEdges(root,defs,{},0)
+
+procedure DataEdges(v,defs,loops,inABrach):
+  add v to loops if v is Loop
+  add one to inABrach if v is Branch
+
+  repeat twice if loops not empty:
+    for all w in children(v):
+      if define(w) is in defs and
+         they have the same edge label and
+         they are not the same definition:
+        drawEdge(defs(define(w)),w)
+      if inABranch > 0 and
+         define(w) is in defs and
+         they have different labels:
+        add w to defs(define(w))
+      else:
+        overwrite defs(define(w)) with w
+            
+      if define(w) is in loops:
+        drawEdge(w,loops)
+
+      if use(w) is in defs:
+        drawEdge(defs(use(w)),w)
+
+      erase elements from defs from the 
+      other branch
+      childDefs := DataEdges(w,defs,loops)
+      add childDefs to defs
+
+  delete local definitions from defs
+  decrease inABrach by one if v is Branch
+  erase v from loops if v is Loop
+  return defs
+\end{lstlisting}
+
+It visits all nodes recursively, by starting from the function definition. With ordering the nodes by position in the code, we can effectively discover dependences between nodes. It is a version of depth-first search, but without using a set of visited nodes, because the Control Dependence subgraph is a tree and has no loops in it, so it does not need to track them. 
+
+The recursive function \texttt{DataEdges} has four parameters:
+\begin{enumerate}
+\item the node $v$ it visits,
+\item the set of definitions which defined earlier in it's caller
+\item the set of loops which node $v$ is in
+\item a counter which keeps track how many nested ifs are $v$ in.
+\end{enumerate}
+
+The algorithm consists two procedures, the first named \texttt{start} which calls the recursive function \texttt{DataEdges} for the root node, which is in our case the function definition we are interested in. \texttt{start} adds the function's parameter variables to the \texttt{defs} set before calling \texttt{DataEdges}. The algorithm then works as the dept-first search. If the current node $v$ is a Loop, then it stores the reference of it for to be able to draw backedges to $v$ from assignments which defines a variable appearing in the predicate of the loop $v$. This is handled on line 22-23 in the algorithm above. Parameter \texttt{loops} has a type of a set, to be able to handle a situation for nested loops.
+I have created an obscure example code for this scenario:
+\begin{minipage}[c]{0.5\textwidth}
+\lstset{numbers=left}
+\begin{lstlisting}[language=C++]
+int main(){
+  int x = 0;
+  while(x < 0){
+    while (x > 0){
+      while (0 > x){
+        x = 0;
+      }
+    }
+  }
+}
+\end{lstlisting}
+\end{minipage}%
+\begin{minipage}[c]{0.5\textwidth}
+\centering
+\includegraphics[width=0.8\textwidth]{while_while_while.png}
+\end{minipage}
+\clearpage
 
 
+It can be seen from the example that in all the \texttt{while} loops, the variable $x$ is being assigned a new value, and that means that it should have a backedge to every loop which uses $x$. Also, the initial definition of $x$ on line 2 should have an edge to all uses of $x$ too, and the definition of it on line 6.
 
+After addressing the need for the loop references there is another type of statement which is need to be tracker along recursive calls: the Branches. For understanding this, we must take a look at the following code on the left and it's CFG on the right:
 
+\begin{minipage}[c]{0.5\textwidth}
+\begin{lstlisting}
+int fn(int y){
+  int x = 0;
+  if (y == 1)
+    x = 0;
+  else
+    x = 1;
+  y = x;
+}
+\end{lstlisting}
+\end{minipage}%
+\begin{minipage}[c]{0.5\textwidth}
+\centering
+\includegraphics[width=0.6\textwidth]{if_test_cfg.png}
+\end{minipage}
 
+From this simple example it can be seen that the value of $y$ on line 7 depends on that which branch gets executed. Therefore we need to draw def-order dependence edges from line 2 to both of the definitions of $x$ under the branch, and also need to draw def-use dependence edges from them to line 7.
 
+This is multiple definition propagation is handled by implementing the set of defs as a multivalue map which has a key which stores the reference to the Clang AST node of the variable declaration (the reference to the \textit{VarDecl}), and a value which is a set which stores the latest definitions of that variable. The value has a single definition in it when outside of a branch, and only stores as many definitions as many branches a branch has. In case of an If statement, this amount is two at maximum, but in case of a Switch-Case statement, it could equal to the amount of cases in it. 
 
+\section{Implementing slicing}
+
+\subsection{Limitations}
+
+%larger ones
+%jumps
 \begin{lstlisting}[language=C++]
 while(x < 0){
   if(y < 2) goto label; 
@@ -691,9 +794,12 @@ x = 1;
 
 In this example, the third line is control dependent on the second, so if we're considering a slice regarding variable $x$ in the last statement, then the second line must be in the slice.
 
-\subsection{Data dependences}
+%pointers
 
-\section{Implementing slicing}
+
+\section{Summary and further works}
+
+
 
 
 \addcontentsline{toc}{chapter}{Glossary}

@@ -1,26 +1,28 @@
-\select@language {english} \contentsline {chapter}{\numberline {1}Introduction}{2}
-\select@language {english} \contentsline {chapter}{\numberline {2}Slicing, methods and efficiency}{3}
-\select@language {english} \contentsline {section}{\numberline {2.1}About slicing}{3}
-\select@language {english} \contentsline {section}{\numberline {2.2}Types of slicing}{3}
-\select@language {english} \contentsline {section}{\numberline {2.3}Methods for slicing}{4}
-\select@language {english} \contentsline {subsection}{\numberline {2.3.1}Dependences}{4}
-\select@language {english} \contentsline {subsection}{\numberline {2.3.2}Data flow equations}{6}
-\select@language {english} \contentsline {subsubsection}{\numberline {2.3.2.1}The algorithm}{6}
-\select@language {english} \contentsline {subsubsection}{\numberline {2.3.2.2}Efficiency}{8}
-\select@language {english} \contentsline {subsection}{\numberline {2.3.3}Information flow relations}{8}
-\select@language {english} \contentsline {subsubsection}{\numberline {2.3.3.1}The algorithm}{8}
-\select@language {english} \contentsline {subsubsection}{\numberline {2.3.3.2}Efficiency}{13}
-\select@language {english} \contentsline {subsection}{\numberline {2.3.4}Dependence graph based slicing}{14}
-\select@language {english} \contentsline {subsubsection}{\numberline {2.3.4.1}The algorithm}{14}
-\select@language {english} \contentsline {chapter}{\numberline {3}LLVM/Clang infrastructure}{18}
-\select@language {english} \contentsline {section}{\numberline {3.1}About Clang}{18}
-\select@language {english} \contentsline {section}{\numberline {3.2}The Clang AST}{18}
-\select@language {english} \contentsline {subsection}{\numberline {3.2.1}The RecursiveASTVisitor class}{20}
-\select@language {english} \contentsline {section}{\numberline {3.3}AST Matchers}{20}
-\select@language {english} \contentsline {chapter}{\numberline {4}Implementation and algorithm}{23}
-\select@language {english} \contentsline {section}{\numberline {4.1}The approach}{23}
-\select@language {english} \contentsline {section}{\numberline {4.2}Building the PDG}{24}
-\select@language {english} \contentsline {subsection}{\numberline {4.2.1}Control dependences}{24}
-\select@language {english} \contentsline {subsection}{\numberline {4.2.2}Data dependences}{25}
-\select@language {english} \contentsline {section}{\numberline {4.3}Implementing slicing}{25}
-\select@language {english} \contentsline {chapter}{Glossary}{25}
+\select@language {english} \contentsline {chapter}{\numberline {1}Introduction}{3}
+\select@language {english} \contentsline {chapter}{\numberline {2}Slicing, methods and efficiency}{4}
+\select@language {english} \contentsline {section}{\numberline {2.1}About slicing}{4}
+\select@language {english} \contentsline {section}{\numberline {2.2}Types of slicing}{4}
+\select@language {english} \contentsline {section}{\numberline {2.3}Methods for slicing}{5}
+\select@language {english} \contentsline {subsection}{\numberline {2.3.1}Dependences}{5}
+\select@language {english} \contentsline {subsection}{\numberline {2.3.2}Data flow equations}{7}
+\select@language {english} \contentsline {subsubsection}{\numberline {2.3.2.1}The algorithm}{7}
+\select@language {english} \contentsline {subsubsection}{\numberline {2.3.2.2}Efficiency}{9}
+\select@language {english} \contentsline {subsection}{\numberline {2.3.3}Information flow relations}{9}
+\select@language {english} \contentsline {subsubsection}{\numberline {2.3.3.1}The algorithm}{9}
+\select@language {english} \contentsline {subsubsection}{\numberline {2.3.3.2}Efficiency}{14}
+\select@language {english} \contentsline {subsection}{\numberline {2.3.4}Dependence graph based slicing}{15}
+\select@language {english} \contentsline {subsubsection}{\numberline {2.3.4.1}The algorithm}{15}
+\select@language {english} \contentsline {chapter}{\numberline {3}LLVM/Clang infrastructure}{19}
+\select@language {english} \contentsline {section}{\numberline {3.1}About Clang}{19}
+\select@language {english} \contentsline {section}{\numberline {3.2}The Clang AST}{19}
+\select@language {english} \contentsline {subsection}{\numberline {3.2.1}The RecursiveASTVisitor class}{21}
+\select@language {english} \contentsline {section}{\numberline {3.3}AST Matchers}{21}
+\select@language {english} \contentsline {chapter}{\numberline {4}Implementation and algorithm}{24}
+\select@language {english} \contentsline {section}{\numberline {4.1}The approach}{24}
+\select@language {english} \contentsline {section}{\numberline {4.2}Building the PDG}{25}
+\select@language {english} \contentsline {subsection}{\numberline {4.2.1}Control dependences}{25}
+\select@language {english} \contentsline {subsection}{\numberline {4.2.2}Data dependences}{26}
+\select@language {english} \contentsline {section}{\numberline {4.3}Implementing slicing}{29}
+\select@language {english} \contentsline {subsection}{\numberline {4.3.1}Limitations}{29}
+\select@language {english} \contentsline {section}{\numberline {4.4}Summary and further works}{30}
+\select@language {english} \contentsline {chapter}{Glossary}{30}

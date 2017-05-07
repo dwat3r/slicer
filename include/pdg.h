@@ -103,10 +103,12 @@ protected:
   std::string dumpLevel(int level);
   std::string dumpDotRec(clang::SourceManager &sm,bool markSliced,
 	                     std::map<int, std::vector<int>>& rank_map,int depth);
-
-  std::map<const clang::ValueDecl*, std::pair<Statement*, Statement::Edge>>
-  setDataEdgesRec(std::map <const clang::ValueDecl*, std::pair<Statement*, Edge>> parent_def_map,
-                  std::vector<Statement*> loopRefs);
+  // [(var,[(stmt,edge)]]
+  typedef std::map<const clang::ValueDecl*, std::set<std::pair<Statement*, Statement::Edge>>> defsMap;
+  defsMap
+  setDataEdgesRec(defsMap parent_def_map,
+                  std::vector<Statement*> loopRefs,
+                  int inABranch);
   
   void setId() { static int _id = 0; id = _id++; }
   static std::string stmt2str(const clang::Stmt *s, clang::SourceManager &sm);

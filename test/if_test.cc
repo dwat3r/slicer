@@ -1,9 +1,8 @@
-int main(){
-	int x = 0;
-	int y = 1;
-	if (x == 1){
-		y = 0;
-	}else{
-		x = 1;
-	}
+int fn(int y){
+  int x = 0;
+  if (y == 1)
+    x = 0;
+  else
+    x = 1;
+  x = 2;
 }
