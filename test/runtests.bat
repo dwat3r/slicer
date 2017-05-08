@@ -1,0 +1,11 @@
+..\Debug\slicer.exe if_test.cc           -function-name=fn   -line=7  -column=3  -dump-dot=true --
+..\Debug\slicer.exe if_test2.cc          -function-name=main -line=8  -column=7  -dump-dot=true --
+..\Debug\slicer.exe if_while_test.cc     -function-name=main -line=8  -column=7  -dump-dot=true --
+..\Debug\slicer.exe loop_carried_test.cc -function-name=main -line=12 -column=5  -dump-dot=true --
+..\Debug\slicer.exe paper.cc             -function-name=main -line=13 -column=16 -dump-dot=true --
+..\Debug\slicer.exe test.cc              -function-name=f    -line=36 -column=10 -dump-dot=true --
+..\Debug\slicer.exe test_simple.cc       -function-name=f    -line=7  -column=5  -dump-dot=true --
+..\Debug\slicer.exe while_while.cc       -function-name=main -line=10 -column=5  -dump-dot=true --
+..\Debug\slicer.exe while_while_while.cc -function-name=main -line=12 -column=5  -dump-dot=true --
+..\Debug\slicer.exe cica.cc              -function-name=main -line=13 -column=17 -dump-dot=true --
+..\Debug\slicer.exe horwitz.cc           -function-name=main -line=6  -column=5  -dump-dot=true --

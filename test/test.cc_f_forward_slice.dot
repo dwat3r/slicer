@@ -1,0 +1,66 @@
+digraph {
+rankdir=TD;
+3[label="{}"]; 
+3 -> 9[label="T",style=bold];
+9[label="int y = 0;"];
+9 -> 1;
+9 -> 2;
+3 -> 10[label="T",style=bold];
+10[label="int z;"];
+10 -> 19;
+10 -> 17;
+3 -> 0[label="T",style=bold];
+0[label="if(x>1)
+    "]; 
+0 -> 1[label="T",style=bold];
+1[label="y = 1"];
+1 -> 16;
+1 -> 18;
+0 -> 2[label="F",style=bold];
+2[label="y = 2"];
+3 -> 4[label="T",style=bold];
+4[label="if(x=2)"]; 
+4 -> 5[label="T",style=bold];
+5[label="{}"]; 
+5 -> 16[label="T",style=bold];
+16[label="y = 1"];
+16 -> 8;
+5 -> 17[label="T",style=bold];
+17[label="z = 2"];
+4 -> 6[label="F",style=bold];
+6[label="{}"]; 
+6 -> 18[label="T",style=bold];
+18[label="y = 2"];
+6 -> 19[label="T",style=bold];
+19[label="z = 3"];
+3 -> 7[label="T",style=bold];
+7[label="while(x>2)
+    "]; 
+7 -> 8[label="T",style=bold];
+8[label="y = 3"];
+8 -> 15;
+3 -> 11[label="T",style=bold];
+11[label="do
+  {
+    y = 4;
+    break;
+  }while(x>3)"];
+3 -> 12[label="T",style=bold];
+12[label="do
+  {
+    y = 5;
+    continue;
+  }while(x>4)"];
+3 -> 13[label="T",style=bold];
+13[label="goto label"];
+3 -> 14[label="T",style=bold];
+14[label="label:
+  // assignment
+  y = x"];
+3 -> 15[label="T",style=bold];
+15[label="return y",color=red];
+3 -> 0;
+3 -> 4;
+3 -> 7;
+{ rank=same 9 10 0 4 7 11 12 13 14 15 }{ rank=same 1 2 5 6 8 }{ rank=same 16 17 18 19 }
+}

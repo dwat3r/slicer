@@ -80,31 +80,31 @@ Statement::setDataEdgesRec(defsMap parent_def_map,
   if (name() == Type::Branch) inABranch++;
   // create loop-carried dependences by 
   // visiting every child twice
-  for (int i = 0; i < 2; ++i) {
+  for (int loopIteration = 0; loopIteration < 2; ++loopIteration) {
     for (auto& stmt : controlChildren) {
 		  // def-def edges
 		  for (auto& def : stmt.first->getDefine()) {
-        bool added = false;
+        bool toAdd = true;
 			  if (def_map.find(def) != def_map.end()) {
           for (auto& defStmt : def_map[def]) {
 				    // if they're on the same branch
             if ((inABranch == 0 || defStmt.second == Edge::None ||
                 (inABranch > 0 && defStmt.second == stmt.second)) &&
               // and they're not the same
-              defStmt.first != stmt.first) {
+              defStmt.first->id != stmt.first->id) {
               defStmt.first->addDataEdge(stmt.first);
             }
             // add stmt as an other branch definition
+            // TODO if we are in the same branch && we have a def-def relation, overwrite the previous def.
             if (inABranch > 0 &&
-                //defStmt.second != Edge::None &&
-                defStmt.second != stmt.second) {
-              def_map[def].insert(stmt);
-              added = true;
+                defStmt.second == stmt.second) {
+              toAdd = false;
             }
           }
+          if(toAdd) def_map[def].insert(stmt);
 			  }
 			  // make this stmt the latest definition
-        if (inABranch == 0 || !added ) {
+        if (inABranch == 0 || toAdd ) {
           def_map[def] = { stmt };
         }
 			  // while backedge to predicate
@@ -132,7 +132,8 @@ Statement::setDataEdgesRec(defsMap parent_def_map,
         for (auto& defs : def_map) {
 			    for (auto def : defs.second){
             if (def.second == Edge::None ||
-				        def.second == stmt.second) {
+				        def.second == stmt.second ||
+                loopIteration > 0) {
 				      child_def_map[defs.first].insert(def);
 			      }
           }
@@ -143,13 +144,16 @@ Statement::setDataEdgesRec(defsMap parent_def_map,
         if (inABranch > 0)
           for (auto& kv : child_new_defs) { 
             for (auto& v : kv.second) {
-              def_map[kv.first].insert({ v.first,stmt.second });
+              if(v.second != Edge::None)
+                def_map[kv.first].insert({ v.first,stmt.second });
             }
           }
         else 
           for (auto& kv : child_new_defs) { 
             if (kv.second.size() > 1) {
-              if (kv.second.size() > stmt.first->controlChildren.size())
+              //empty previous definition only if there is definition overwritten in every branch.
+              // this is temporarily fixed as 2, but for implementing switch-cases, we need a smarter solution.
+              if (kv.second.size() > 2)
                 def_map[kv.first].clear();
               for (auto& v : kv.second) {
                 if (v.second != Edge::None) def_map[kv.first].insert(v);

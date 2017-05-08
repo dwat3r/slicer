@@ -117,10 +117,12 @@ void PDGBuilder::run(const ast_matchers::MatchFinder::MatchResult &result) {
     if (!hasStmt(is)) {
       stmt_map[is] = new BranchStatement(is, getLoc(result, is));
     }
-    stmt_map[is->getThen()] = Statement::create(is->getThen(), getLoc(result, is->getThen()));
+    if (!hasStmt(is->getThen()))
+      stmt_map[is->getThen()] = Statement::create(is->getThen(), getLoc(result, is->getThen()));
     stmt_map[is]->addControlChild({ stmt_map[is->getThen()],Statement::Edge::True });
 	  if (is->getElse() != nullptr) {
-		  stmt_map[is->getElse()] = Statement::create(is->getElse(), getLoc(result, is->getElse()));
+      if(!hasStmt(is->getElse()))
+		    stmt_map[is->getElse()] = Statement::create(is->getElse(), getLoc(result, is->getElse()));
       stmt_map[is]->addControlChild({ stmt_map[is->getElse()],Statement::Edge::False });
 	  }
     auto cvar = result.Nodes.getNodeAs<VarDecl>("ifCondVar");
@@ -132,7 +134,8 @@ void PDGBuilder::run(const ast_matchers::MatchFinder::MatchResult &result) {
       stmt_map[ws] = new LoopStatement(ws, getLoc(result,ws));
     }
     if (stmt_map[ws]->getControlChildren().empty()) {
-      stmt_map[ws->getBody()] = Statement::create(ws->getBody(), getLoc(result, ws->getBody()));
+      if(!hasStmt(ws->getBody()))
+        stmt_map[ws->getBody()] = Statement::create(ws->getBody(), getLoc(result, ws->getBody()));
       stmt_map[ws]->addControlChild({ stmt_map[ws->getBody()],Statement::Edge::True });
     }
     auto cvar = result.Nodes.getNodeAs<VarDecl>("whileCondVar");

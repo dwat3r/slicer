@@ -1,0 +1,26 @@
+digraph {
+rankdir=TD;
+3[label="{}",color=red]; 
+3 -> 4[label="T",style=bold,color=red];
+4[label="int z = 10;",color=red];
+4 -> 6;
+4 -> 2[color=red];
+3 -> 0[label="T",style=bold,color=red];
+0[label="if (x < y)",color=red]; 
+0 -> 1[label="T",style=bold];
+1[label="{}"]; 
+1 -> 6[label="T",style=bold];
+6[label="x = z"];
+6 -> 5;
+6 -> 7;
+1 -> 7[label="T",style=bold];
+7[label="x = 3"];
+0 -> 2[label="F",style=bold,color=red];
+2[label="z = 1",color=red];
+3 -> 5[label="T",style=bold];
+5[label="return x"];
+3 -> 5;
+3 -> 6;
+3 -> 0[color=red];
+{ rank=same 4 0 5 }{ rank=same 1 2 }{ rank=same 6 7 }
+}
