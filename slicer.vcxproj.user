@@ -1,11 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerCommandArguments>"$(ProjectDir)test\if_test.cc" -line=7 -column=3 -function-name=fn  -dump-dot=true --</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>"$(ProjectDir)test\test_simple.cc" -function-name=f    -line=7  -column=5  -dump-dot=true --</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LocalDebuggerCommandArguments>$(ProjectDir)test\test_simple.cc -function-name=f  -line=7  -column=5  -dump-dot=true --</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>$(ProjectDir)test\loop_carried_test.cc -function-name=main -line=9 -column=7 -dump-dot=true --</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
 </Project>

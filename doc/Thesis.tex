@@ -684,11 +684,11 @@ procedure start:
   add function parameters to defs
   DataEdges(root,defs,{},0)
 
-procedure DataEdges(v,defs,loops,inABrach):
+procedure DataEdges(v,defs,loops,inABranch):
   add v to loops if v is Loop
   add one to inABrach if v is Branch
 
-  repeat twice if loops not empty:
+  repeat twice if v is Loop:
     for all w in children(v):
       if define(w) is in defs and
          they have the same edge label and

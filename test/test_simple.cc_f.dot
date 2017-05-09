@@ -3,8 +3,8 @@ rankdir=TD;
 3[label="{}"]; 
 3 -> 4[label="T",style=bold];
 4[label="int z = 10;"];
-4 -> 6;
 4 -> 2;
+4 -> 6;
 3 -> 0[label="T",style=bold];
 0[label="if (x < y)"]; 
 0 -> 1[label="T",style=bold];
@@ -19,8 +19,9 @@ rankdir=TD;
 2[label="z = 1"];
 3 -> 5[label="T",style=bold];
 5[label="return x"];
+3 -> 0;
 3 -> 5;
 3 -> 6;
-3 -> 0;
+3 -> 7;
 { rank=same 4 0 5 }{ rank=same 1 2 }{ rank=same 6 7 }
 }

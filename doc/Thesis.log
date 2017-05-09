@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014/W32TeX) (preloaded format=pdflatex 2015.5.24)  7 MAY 2017 18:40
+This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014/W32TeX) (preloaded format=pdflatex 2015.5.24)  7 MAY 2017 22:21
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1012,10 +1012,10 @@ ng . llvm . org / docs /
 
 [32] (./Thesis.aux) ) 
 Here is how much of TeX's memory you used:
- 16621 strings out of 494367
- 304160 string characters out of 6163526
+ 16619 strings out of 494367
+ 304140 string characters out of 6163526
  401973 words of memory out of 5000000
- 19524 multiletter control sequences out of 15000+600000
+ 19522 multiletter control sequences out of 15000+600000
  25900 words of font info for 63 fonts, out of 8000000 for 9000
  372 hyphenation exceptions out of 8191
  55i,15n,60p,1124b,1646s stack positions out of 5000i,500n,10000p,200000b,80000s
@@ -1043,7 +1043,7 @@ onts/type1/public/cm-super/sfrm1440.pfb><c:/texlive/2014/texmf-dist/fonts/type1
 -super/sfti1200.pfb><c:/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sft
 t0800.pfb><c:/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sftt1000.pfb>
 <c:/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sftt1200.pfb>
-Output written on Thesis.pdf (33 pages, 1298566 bytes).
+Output written on Thesis.pdf (33 pages, 1298896 bytes).
 PDF statistics:
  231 PDF objects out of 1000 (max. 8388607)
  157 compressed objects within 2 object streams
