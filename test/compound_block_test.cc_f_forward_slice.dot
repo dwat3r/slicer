@@ -1,0 +1,35 @@
+digraph {
+rankdir=TD;
+0[label="{}"]; 
+0 -> 1[label="T",style=bold];
+1[label="x = 1"];
+1 -> 3;
+1 -> 5;
+0 -> 2[label="T",style=bold];
+2[label="{}"]; 
+2 -> 6[label="T",style=bold];
+6[label="int x = 2;"];
+6 -> 7;
+2 -> 7[label="T",style=bold];
+7[label="y = x"];
+7 -> 3;
+0 -> 3[label="T",style=bold];
+3[label="y = x"];
+3 -> 10;
+0 -> 4[label="T",style=bold];
+4[label="{}"]; 
+4 -> 8[label="T",style=bold];
+8[label="int x = 3;"];
+8 -> 10;
+4 -> 9[label="T",style=bold];
+9[label="{}"]; 
+9 -> 11[label="T",style=bold];
+11[label="int x = 4;"];
+4 -> 10[label="T",style=bold];
+10[label="x = y"];
+0 -> 5[label="T",style=bold];
+5[label="return x",color=red];
+0 -> 1;
+0 -> 7;
+{ rank=same 1 2 3 4 5 }{ rank=same 6 7 8 9 10 }{ rank=same 11 }
+}

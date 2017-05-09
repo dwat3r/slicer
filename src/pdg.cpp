@@ -84,31 +84,31 @@ Statement::setDataEdgesRec(defsMap parent_def_map,
     for (auto& stmt : controlChildren) {
 		  // def-def edges
 		  for (auto& def : stmt.first->getDefine()) {
-        bool toAdd = true;
+        bool added = false;
 			  if (def_map.find(def) != def_map.end()) {
-          for (auto& defStmt : def_map[def]) {
+          for (auto defStmt = def_map[def].begin(); defStmt != def_map[def].end();) {
 				    // if they're on the same branch
-            if ((inABranch == 0 || defStmt.second == Edge::None ||
-                (inABranch > 0 && defStmt.second == stmt.second)) &&
+            if ((inABranch == 0 || defStmt->second == Edge::None ||
+                (inABranch > 0 && defStmt->second == stmt.second)) &&
               // and they're not the same
-              defStmt.first->id != stmt.first->id) {
-              defStmt.first->addDataEdge(stmt.first);
+              defStmt->first->id != stmt.first->id) {
+              defStmt->first->addDataEdge(stmt.first);
             }
             // add stmt as an other branch definition
             // TODO if we are in the same branch && we have a def-def relation, overwrite the previous def.
             //maybe use a map for storing the values by the key of the branches like: (True , stmt), (False, stmt)...
             if (inABranch > 0 &&
-                defStmt.second == stmt.second) {
-              toAdd = false;
+                defStmt->second != stmt.second) {
+              defStmt = def_map[def].erase(defStmt);
+              def_map[def].insert(stmt);
+              added = true;
             }
-          }
-          if (toAdd) {
-            def_map[def].insert(stmt);
-            toAdd = false;
+            else
+              ++defStmt;
           }
 			  }
 			  // make this stmt the latest definition
-        if (inABranch == 0 || toAdd ) {
+        if (inABranch == 0 || !added ) {
           def_map[def] = { stmt };
         }
 			  // while backedge to predicate

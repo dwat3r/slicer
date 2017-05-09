@@ -103,6 +103,7 @@ protected:
   std::string dumpLevel(int level);
   std::string dumpDotRec(clang::SourceManager &sm,bool markSliced,
 	                     std::map<int, std::vector<int>>& rank_map,int depth);
+  
   // [(var,[(stmt,edge)]]
   typedef std::map<const clang::ValueDecl*, std::set<std::pair<Statement*, Statement::Edge>>> defsMap;
   defsMap
