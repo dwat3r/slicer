@@ -775,7 +775,32 @@ int fn(int y){
 
 From this simple example it can be seen that the value of $y$ on line 7 depends on that which branch gets executed. Therefore we need to draw def-order dependence edges from line 2 to both of the definitions of $x$ under the branch, and also need to draw def-use dependence edges from them to line 7.
 
-This is multiple definition propagation is handled by implementing the set of defs as a multivalue map which has a key which stores the reference to the Clang AST node of the variable declaration (the reference to the \textit{VarDecl}), and a value which is a set which stores the latest definitions of that variable. The value has a single definition in it when outside of a branch, and only stores as many definitions as many branches a branch has. In case of an If statement, this amount is two at maximum, but in case of a Switch-Case statement, it could equal to the amount of cases in it. 
+This is multiple definition propagation is handled by implementing the set of defs as a multivalue map which has a key which stores the reference to the Clang AST node of the variable declaration (the reference to the \textit{VarDecl}), and a value which is a set which stores the latest definitions of that variable. The value has a single definition in it when outside of a branch, and only stores as many definitions as many branches a branch has, plus optionally the inherited definition before the branch. In case of an If statement, this amount is two plus one at maximum, but in case of a Switch-Case statement, it could equal to the amount of cases in it plus one. 
+\clearpage
+\begin{wrapfigure}{r}{0.5\textwidth}
+\includegraphics[width=0.5\textwidth]{if_test}
+\caption{PDG of example}
+\label{fig:if_test}
+\end{wrapfigure}
+To get a picture of the case, take a look at figure \ref{fig:if_test}. When the algorithm visits the \texttt{if} statement, it inherits the initial definition of $x$, and while drawing data dependence edges to both of the branches, it collects their definitions, and returns them to the uppermost Compound statement, which is the root node in this example. Thus when it visits the final node, \texttt{y = x;}, it will know that there has been definitions of $x$ on both branches, so it draws those dependence edges. The algorithm recognize that $x$ is defined on both branches, thus it does not draw dependence edge from the initial definition to \texttt{y = x;}, since that is not directly dependent on it. Otherwise, if there has been a definition of $x$ in only one of the branches, it would also draw edge over the \texttt{if} statement. 
+
+The most difficult part of drawing dependences are the loop-carried ones. For explaining, I have created another example code:
+\begin{lstlisting}
+int main(){
+  int x = 0;
+  int y = 1;
+  while(x >= 0){
+    if (x > 0){
+      y = x; //2. use here 
+    }else{
+      x = 3;
+    }
+    x = 2; //1. define here
+  }
+}
+\end{lstlisting}
+
+
 
 \section{Implementing slicing}
 

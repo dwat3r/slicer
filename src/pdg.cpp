@@ -95,16 +95,16 @@ Statement::setDataEdgesRec(defsMap parent_def_map,
               defStmt->first->addDataEdge(stmt.first);
             }
             // add stmt as an other branch definition
-            // TODO if we are in the same branch && we have a def-def relation, overwrite the previous def.
-            //maybe use a map for storing the values by the key of the branches like: (True , stmt), (False, stmt)...
-            if (inABranch > 0 &&
-                defStmt->second != stmt.second) {
-              defStmt = def_map[def].erase(defStmt);
+            // if we are in the same branch && we have a def-def relation, overwrite the previous def.
+            if (inABranch > 0){
+              if(defStmt->second == stmt.second &&
+                 defStmt->second != Edge::None)
+                defStmt = def_map[def].erase(defStmt);
+              else ++defStmt;
               def_map[def].insert(stmt);
               added = true;
             }
-            else
-              ++defStmt;
+            else ++defStmt;
           }
 			  }
 			  // make this stmt the latest definition

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014/W32TeX) (preloaded format=pdflatex 2015.5.24)  7 MAY 2017 22:21
+This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014/W32TeX) (preloaded format=pdflatex 2015.5.24)  10 MAY 2017 21:30
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -996,29 +996,37 @@ Overfull \hbox (17.62482pt too wide) in paragraph at lines 759--775
 
 [29
 
- <./if_test_cfg.png>] [30] [31
+ <./if_test_cfg.png>] <if_test.png, id=138, 395.4775pt x 315.1775pt>
+File: if_test.png Graphic file (type png)
+
+<use if_test.png>
+Package pdftex.def Info: if_test.png used on input line 781.
+(pdftex.def)             Requested size: 213.39568pt x 170.06827pt.
+ [30
+
+ <./if_test.png>] [31
 
 ]
-Underfull \hbox (badness 10000) in paragraph at lines 882--884
+Underfull \hbox (badness 10000) in paragraph at lines 891--893
 []\T1/cmr/m/it/12 AST Matcher Ref-er-ence $\T1/cmtt/m/n/12 http : / / clang . l
 lvm . org / docs /
  []
 
 
-Underfull \hbox (badness 6016) in paragraph at lines 886--888
+Underfull \hbox (badness 6016) in paragraph at lines 895--897
 []\T1/cmr/m/it/12 Introduction to the Clang AST $\T1/cmtt/m/n/12 http : / / cla
 ng . llvm . org / docs /
  []
 
 [32] (./Thesis.aux) ) 
 Here is how much of TeX's memory you used:
- 16619 strings out of 494367
- 304140 string characters out of 6163526
- 401973 words of memory out of 5000000
- 19522 multiletter control sequences out of 15000+600000
+ 16625 strings out of 494367
+ 304227 string characters out of 6163526
+ 401984 words of memory out of 5000000
+ 19527 multiletter control sequences out of 15000+600000
  25900 words of font info for 63 fonts, out of 8000000 for 9000
  372 hyphenation exceptions out of 8191
- 55i,15n,60p,1124b,1646s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 55i,15n,60p,1124b,1581s stack positions out of 5000i,500n,10000p,200000b,80000s
 {c:/texlive/2014/texmf-dist/fonts/enc/dvips/cm-super/cm-su
 per-t1.enc}<c:/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pf
 b><c:/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb><c:/tex
@@ -1043,10 +1051,10 @@ onts/type1/public/cm-super/sfrm1440.pfb><c:/texlive/2014/texmf-dist/fonts/type1
 -super/sfti1200.pfb><c:/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sft
 t0800.pfb><c:/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sftt1000.pfb>
 <c:/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sftt1200.pfb>
-Output written on Thesis.pdf (33 pages, 1298896 bytes).
+Output written on Thesis.pdf (33 pages, 1322906 bytes).
 PDF statistics:
- 231 PDF objects out of 1000 (max. 8388607)
+ 233 PDF objects out of 1000 (max. 8388607)
  157 compressed objects within 2 object streams
  0 named destinations out of 1000 (max. 500000)
- 43 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 48 words of extra memory for PDF output out of 10000 (max. 10000000)
 

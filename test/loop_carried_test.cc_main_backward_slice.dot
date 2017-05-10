@@ -3,11 +3,11 @@ rankdir=TD;
 3[label="{}",color=red]; 
 3 -> 6[label="T",style=bold,color=red];
 6[label="int x = 0;",color=red];
-6 -> 4[color=red];
 6 -> 0[color=red];
+6 -> 4[color=red];
 6 -> 8[color=red];
-6 -> 10[color=red];
 6 -> 9;
+6 -> 10[color=red];
 3 -> 7[label="T",style=bold];
 7[label="int y = 1;"];
 7 -> 9;
@@ -29,9 +29,9 @@ rankdir=TD;
 10 -> 8[color=red];
 5 -> 8[label="T",style=bold,color=red];
 8[label="x = 2",color=red];
-8 -> 4[color=red];
 8 -> 0[color=red];
-8 -> 10[color=red];
+8 -> 4[color=red];
 8 -> 9;
+8 -> 10[color=red];
 { rank=same 6 7 4 }{ rank=same 5 }{ rank=same 0 8 }{ rank=same 1 2 }{ rank=same 9 10 }
 }

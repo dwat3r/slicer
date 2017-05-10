@@ -22,5 +22,6 @@ rankdir=TD;
 3 -> 0;
 3 -> 5;
 3 -> 6;
+3 -> 7;
 { rank=same 4 0 5 }{ rank=same 1 2 }{ rank=same 6 7 }
 }

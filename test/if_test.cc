@@ -4,5 +4,5 @@ int fn(int y){
     x = 0;
   else
     x = 1;
-  x = 2;
+  y = x;
 }

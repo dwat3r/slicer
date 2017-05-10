@@ -1,18 +1,21 @@
 digraph {
 rankdir=TD;
 3[label="{}",color=red]; 
-3 -> 9[label="T",style=bold];
-9[label="int y = 0;"];
-9 -> 1;
+3 -> 9[label="T",style=bold,color=red];
+9[label="int y = 0;",color=red];
+9 -> 2;
+9 -> 1[color=red];
 3 -> 10[label="T",style=bold];
 10[label="int z;"];
 10 -> 17;
 10 -> 19;
-3 -> 0[label="T",style=bold];
+3 -> 0[label="T",style=bold,color=red];
 0[label="if(x>1)
-    "]; 
-0 -> 1[label="T",style=bold];
-1[label="y = 1"];
+    ",color=red]; 
+0 -> 1[label="T",style=bold,color=red];
+1[label="y = 1",color=red];
+1 -> 16[color=red];
+1 -> 18;
 0 -> 2[label="F",style=bold];
 2[label="y = 2"];
 3 -> 4[label="T",style=bold,color=red];
@@ -56,7 +59,7 @@ rankdir=TD;
   y = x"];
 3 -> 15[label="T",style=bold,color=red];
 15[label="return y",color=red];
-3 -> 0;
+3 -> 0[color=red];
 3 -> 4[color=red];
 3 -> 7[color=red];
 { rank=same 9 10 0 4 7 11 12 13 14 15 }{ rank=same 1 2 5 6 8 }{ rank=same 16 17 18 19 }
