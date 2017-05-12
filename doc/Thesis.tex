@@ -83,10 +83,13 @@
 \epigraph{Everyone knows that debugging is twice as hard as writing a program in the first place. So if you're as clever as you can be when you write it, how will you ever debug it?}{\textit{Brian Kernighan}}
 
 Nowadays, there are a lot of tools available for debugging. A developer can examine call stacks, variable informations, and so on. There are a lot of times when a bug is when some variable does not behave like the writer of that code part would expect. When the programmer discovers it, he must follow back the path of assignments, and find out where did it get an unexpected value. Program slicing targets this kind of debugging. We can define a program slice as a part of the program which contains a selected statement, and all other statements which influences it, or gets influenced by it. These two types are respectively called backward and forward slicing. Basically this is what many programmers do intuitively, when facing with bugs. In this thesis, I'll introduce a few approaches for computing slices, and describe a working prototype tool application, which can analyze C++ programs, and compute slices of them. I've used the help of the Clang/LLVM compiler infrastructure, which builds the AST of the program and provides an interface to analyse it using C++.
+
 %TODO describe the structure of the thesis.
+In the second chapter, I will describe three known algorithms and analyze them by performance, effectiveness and usability regarding slicing. In the next chapter, I will introduce the Clang/LLVM compiler infrastructure, and it's library for analyzing C++ code, and how I used it for the task. In the last chapter, I will describe the algorithm I have used to implement slicing, and how I implemented it.
+
 \chapter{Slicing, methods and efficiency}
 \section{About slicing}
-For better understanding programs, programmers organize code into structures. They write sub-problems into functions, and organize variables and data to structs. Also, with object oriented design, they put these into classes. These are all good for separating the data, and the procedures on data. But these are not helpful when we need to examine a flow of data in the program. Slicing gets useful in this scenario. This is a program analysis technique introduced by Mark Weiser\cite{weiser84}. In his paper, he wrote: ``Program slicing is a decomposition based on data flow and control flow analysis''. We define slicing as a subset of the program, which only includes the statements which have transitive control or data dependency regarding the selected statement. 
+For better understanding programs, programmers organize code into structures. They write sub-problems into functions, and organize variables and data to structs. Also, with object oriented design, they combine the related functions and variables into classes which define objects. These are all good for separating the data, and the procedures on data. But these are not helpful when we need to examine a flow of data in the program. Slicing gets useful in this scenario. This is a program analysis technique introduced by Mark Weiser\cite{weiser84}. In his paper, he wrote: ``Program slicing is a decomposition based on data flow and control flow analysis''. We define slicing as a subset of the program, which only includes the statements which may influence the value regarding the selected statement, or may get influenced by that value, depending on the direction of interest. In other words, slicing filters the statements of the program, and include only those which have transitive control or data dependency regarding the selected statement. 
 
 \section{Types of slicing}
 There is two different type of slicing known: static and dynamic. While dynamic slicing gets the statements which could affect the selected statement at a particular execution of the program with a fixed input, static slicing examines it statically, including all possible statements which could affect that selected statement. In this thesis, I'll focus on static slicing methods. There are two different subtypes of static slicing, backward and forward. They are indicating the relevant statements' direction from our selected statement. 
@@ -122,43 +125,42 @@ It's control-flow graph can be seen on \ref{fig:horwitz_cfg}. This type of graph
 
 Therefore, control dependence can be defined in the knowing of post-dominance. As written in \cite{slicing-survey}:
 
-"A node \textit{i} in th CFG is \textit{post-dominated} by a node by \textit{j} if all paths from \textit{i} to STOP pass through \textit{j}. A node \textit{j} is \textit{control dependent} on a node \textit{i} if (i) there exists a path \textit{P} from \textit{i} to \textit{j} such that \textit{j} post-dominates every node in \textit{P}, excluding \textit{i} and \textit{j}, and (ii) is not post-dominated by \textit{j}."
+"A node \textit{i} in the CFG is \textit{post-dominated} by a node by \textit{j} if all paths from \textit{i} to STOP pass through \textit{j}. A node \textit{j} is \textit{control dependent} on a node \textit{i} if (i) there exists a path \textit{P} from \textit{i} to \textit{j} such that \textit{j} post-dominates every node in \textit{P}, excluding \textit{i} and \textit{j}, and (ii) is not post-dominated by \textit{j}."
 
 It basically means that every statement under a branch or loop are control dependent of the control statement's predicate. Excluding the unstructured and structured jump statements, \texttt{continue},\texttt{break} and \texttt{goto}, drawing control dependences between statements creates a tree, with the root being the inspected function, and control statements form the branches. I discuss later in detail in the implementation chapter the control dependences created by structured jumps. 
 
 A data dependence between two statements means that if we change their order, the meaning of the program changes, or becomes ill-formed. There are two types of data dependences: \textit{flow dependences} and \textit{def-order dependences}. According to Horwitz\cite{horwitz-interproc}, we can define these with the following rules:
 
-There is a flow dependence between statement s1 and s2 if:
+There is a flow dependence between statement $s_1$ and $s_2$ if:
 \begin{enumerate}
-  \item s1 defines variable x.
-  \item s2 uses x.
-  \item There is a path between s1 and s2 in program execution with no intervening definitions of x in between, and s2 can be reached by control from s1. 
+  \item $s_1$ defines variable $x$.
+  \item $s_2$ uses $x$.
+  \item There is a path between $s_1$ and $s_2$ in program execution with no intervening definitions of $x$ in between, and $s_2$ can be reached by control from $s_1$. 
 \end{enumerate}
 
-Definition in this context means a bit different than usual: it can be either an initial definition of a variable but an assignment where x is on the left side is also counts as a definition. In compiler theory, flow-dependence referred as reaching definition of a variable.
+Definition in this context means a bit different than usual: it can be either an initial definition of a variable, or an assignment where $x$ is on the left side. In compiler theory, flow-dependence referred as reaching definition of a variable.
 
-In the presence of loops, there are two further classification of flow-dependence: loop-carried and loop-independent. A flow-dependence is loop-carried if it satisfies all rules above and also:
+In the presence of loops, there are two further classifications of flow-dependence: loop-carried and loop-independent. A flow-dependence is loop-carried if it satisfies all rules above and also:
 \begin{enumerate}
-  \item includes a backedge to the predicate of the loop.
-  \item s1 and s2 are enclosed in the loop.
+  \item includes a backedge to the predicate of the loop and
+  \item $s_1$ and $s_2$ are both enclosed in the loop.
 \end{enumerate}
 
-Backedge means that there is a flow dependence between the statement and the predicate of the loop, therefore the loop uses the variable which that statement defines. In the example above, the statement \texttt{i++} is like this.
+Backedge means that there is a flow dependence between the statement and the predicate of the loop, therefore the loop uses the variable which that statement defines. In the example above, the loop is dependent on the the statement \texttt{i++}, so from \texttt{i++} there is a backedge to the \texttt{while} loop.
 
-Loop-independent flow-dependences can be described as the common ones which has no backedge to the loop predicate. 
+Loop-independent flow-dependences has no backedge to the loop predicate. They are drawn on the statements used in the body of the loop which does not change on every loop iteration. There can be both type of dependences to the same statement. 
 
-On the other hand, def-order dependence between statement s1 and s2 is different from loop-independent flow-dependences only in that s2 instead of using x, it also defines it. The other two rules stays the same. 
+On the other hand, def-order dependence between statement $s_1$ and $s_2$ is different from loop-independent flow-dependences only in that $s_2$ instead of using $x$, it also defines it. The other two rules stays the same. 
 
 These definitions are used in all slicing methods, but differently. I will elaborate these in each section.
 
 \subsection{Data flow equations}
 \subsubsection{The algorithm}
-This method is created by Mark Weiser. It is based on the analysis of the CFG. As he wrote in \cite{weiser84}, he defines a slice regarding a \textit{slicing criterion}, which consists of a pair \textit{(n, V)} where n is a statement of the program and V is a subset of the program's variables, which we are slicing on. He also writes that a slice of a program is an executable, which has only the relevant statements in it.
+This method is created by Mark Weiser. It is based on the analysis of the CFG. As he wrote in \cite{weiser84}, he defines a slice regarding a \textit{slicing criterion}, which consists of a pair $(n, V)$ where $n$ is a statement of the program and $V$ is a subset of the program's variables, which we are slicing on. He also wrote that a slice of a program is an executable, which has only the relevant statements in it.
 
 To calculate which statements should be included in the slice, he defines two sets of variables: \textit{directly} and \textit{indirectly relevant} variables. As written in \cite{slicing-survey}, he provides the following equations for them:
 
 For determining \textit{directly} relevant variables and statements:
-% TODO beautify
 
 For each edge $i \rightarrow_{CFG} j$ in the CFG:
 \begin{align*}
@@ -174,10 +176,10 @@ S^{k+1}_C &= B^k_C \cup \{ \textsc{Def}(i) \cap R^{k+1}_C(j) \neq \emptyset, i \
 \end{align*}
 
 He also says that a slice is statement-minimal if it couldn't have less statements. The slice then is computed in two steps:
-First by determining \textit{directly} relevant variables by the equation above. In it, $\textsc{Def}(i)$ and $\textsc{Ref}(i)$ means the variables that statement $i$ defines or uses, respectively. $R^0_C(i)$ will contain the directly relevant variables of statement $i$. It starts with the values in the slicing criterion: $R^0_C(n) = V$, and for all other sets initialized as $\emptyset$. As it can be seen from the first equation above, to get the $R^0_C$ value for a node, it must use the computed values from every following node in the CFG. Weiser states in his work[1], that this is a simplification of the usual data flow information, which would use a PRE set to represent preservation of variable values. Reading the first equation, we see that variable $v$ is in the $R^0_C(i)$ set either if:
+First by determining \textit{directly} relevant variables by the equation above. In it, $\textsc{Def}(i)$ and $\textsc{Ref}(i)$ means the variables that statement $i$ defines or uses (references), respectively. $R^0_C(i)$ will contain the directly relevant variables of statement $i$. We take the following base values: in the slicing criterion: $R^0_C(n) = V$ and for all other sets initialized as $\emptyset$. As it can be seen from the first equation above, to get the $R^0_C$ value for a node, it must use the computed values from every direct node following it in the CFG. Weiser states in his work[1], that this algorithm is a simplification of the usual data flow information extraction, which would use a PRE set to represent preservation of variable values. Reading the first equation, we see that variable $v$ is in the $R^0_C(i)$ set either if:
 \begin{enumerate}
 \item $v$ is in the slicing criterion $V$,
-\item or $v$ is in \textsc{Ref}(i) and the $R^0_C$ set of the following CFG node $j$ has a value which is also in \textsc{Def}(i) 
+\item or $v$ is in \textsc{Ref}(i) and the $R^0_C$ set of any of the following CFG node $j$ has a value which is also in \textsc{Def}(i) 
 \item or $v$ is not in \textsc{Def}(i) but $v$ is in $R^0_C(j)$.
 \end{enumerate}
 The last constraint ensures the propagation of the `may be used` variables through statements which does not use nor reference the variables in the slicing criterion. 
@@ -186,24 +188,24 @@ The second equation $S^0_C$ then contains the statements which are included in t
 
 \begin{table}[h]
   \centering
-  	\begin{tabular}{|l|l|l|l|}
+  	\begin{tabular}{|l|l|l|l|l|}
 \hline
-Node                     & \textsc{Def} & \textsc{Ref}   & $R^0_C$      \\ \hline
-\texttt{int sum = 0;}    & \texttt{sum} & $\emptyset$    & $\emptyset$  \\ \hline
-\texttt{int i = sum;}    & \texttt{i}   & \texttt{sum}   & \texttt{sum} \\ \hline
-\texttt{while (i < 11)}  & $\emptyset$  & \texttt{i}     & \texttt{i}   \\ \hline
-\texttt{sum += i;}       & \texttt{sum} & \texttt{sum,i} & \texttt{i}   \\ \hline
-\texttt{i++}             & \texttt{i}   & \texttt{i}     & \texttt{i}   \\ \hline
+No. & Statement                & \textsc{Def} & \textsc{Ref}   & $R^0_C$      \\ \hline
+1   & \texttt{int sum = 0;}    & \texttt{sum} & $\emptyset$    & $\emptyset$  \\ \hline
+2   & \texttt{int i = sum;}    & \texttt{i}   & \texttt{sum}   & \texttt{sum} \\ \hline
+3   & \texttt{while (i < 11)}  & $\emptyset$  & \texttt{i}     & \texttt{i}   \\ \hline
+4   & \texttt{sum += i;}       & \texttt{sum} & \texttt{sum,i} & \texttt{i}   \\ \hline
+5   & \texttt{i++}             & \texttt{i}   & \texttt{i}     & \texttt{i}   \\ \hline
   \end{tabular}
   \caption{Results of the algorithm for the given example and criterion \texttt{(i++,\{i\})} }
   \label{tab:weiserExampleTable}
 \end{table}
 
-In this case, the set $S^0_C$ contains lines \texttt{2,3,6}. As we see, this slice is incomplete since it does not include the \texttt{while} statement. For this to be included, further iterations should be done. In the equations above, Weiser introduces the \textsc{Infl} set for every statement $i$, which consists all statements which are control dependent on $i$. In our example, it is the empty set for all statements except the \texttt{while}. Using this, he defines the $B^k_C$ set, which includes all statements which have a statement in it's \textsc{Infl} set which is included in $S^k_C$. 
+In this case, the set $S^0_C$ contains statements no. 1, 2, and 5. As we see, this slice is incomplete since it does not include the \texttt{while} statement. For this to be included, further iterations should be done. In the equations above, Weiser introduces the \textsc{Infl} set for every statement $i$, which consists all statements which are control dependent on $i$. In our example, it is the empty set for all statements except the \texttt{while}, which consists statements no. 4 and 5. Using this, he defines the $B^k_C$ set, which includes all statements which have a statement in it's \textsc{Infl} set which is included in $S^k_C$.
 
-Now using $B^k_C$, we can add the \texttt{while} statement since the slicing criterion is control dependent on it. This is defined in the last equation, which is almost the same as the second, but it also includes the $B^k_C$ set in it. When facing with nested branch, or looping statements, multiple levels of indirect dependences must be considered. The $R^{i+1}_C$ set contains these for each level. Because of this, Weiser's algorithm needs iterations for achieving the correct slice. The $R^k_C$ and $S^k_C$ sets are non-decreasing, and they reach a fixpoint which are called $R_C$ and $S_C$, respectively. The final $S_C$ set contains the slice for the criterion.
+Now using $B^k_C$, we can add the \texttt{while} statement since the slicing criterion is control dependent on it. This is defined in the last equation, which is almost the same as the second, but it also includes the $B^k_C$ set in it. When facing with nested branch, or looping statements, multiple levels of indirect dependences must be considered. The $R^{i+1}_C$ set contains these for each level. Because of this, Weiser's algorithm needs iterations for achieving the correct slice. With every iteration $k$, $R^k_C$ and $S^k_C$ sets are creating a series of non-decreasing sets by size, and they reach a fixpoint which are called $R_C$ and $S_C$, respectively. The final $S_C$ set contains the slice for the criterion.
 
-I must note that this method computes the \textit{backward} slice for any criterion, and cannot be used for forward slicing, since it computes only the statements which have influence on the criterion.
+I must note that this method computes the whole slice for any criterion, and can only be used for forward and/or backward slicing if the algorithm gets prepared, partial CFG graphs of the program to analyze.
 
 \subsubsection{Efficiency}
 Weiser states that the complexity for computing $S_C$ is $O(n\ e\ log\ e)$. He notes that this slice is not always the smallest, since it could include statements which cannot influence the slicing variable. He shows it in the following example program:
@@ -226,7 +228,7 @@ write(z)
 For criterion \texttt{C = (write(z),\{z\})}, the set $S_C$ will contain the first statement, but it does not have an influence on \texttt{z} since on any path by which \texttt{a} can influence \texttt{c} will execute \texttt{x = 1} and \texttt{y = 2}, therefore \texttt{z} becomes a constant value in this case. 
 
 However, computing slices with Weiser's algorithm needs little information from the program, since it requires only the CFG and the \textsc{Ref} and \textsc{Def} sets for every statement.
-The downside is that it only computes backwards slices, and since the criterion is fixed, it needs to compute every set in the equations if we need a slice for a different slicing criterion of the program.
+The downside is that it only computes whole slices, and since the criterion is fixed, it needs to compute every set in the equations if we need a slice for a different slicing criterion of the program.
 
 \subsection{Information flow relations}
 \subsubsection{The algorithm}
@@ -281,7 +283,7 @@ $\mu_S = (\{e\} \times D_A) \cup \mu_A\rho^*_A((\Gamma(e) \times D_A) \cup \iota
   \label{tab:informationFlowTable}
 \end{table}
 \FloatBarrier
-The statements are classified into two primitive types: Empty and Assignment, and three hiearchical types: Sequence, Conditional with \texttt{else} branch, without \texttt{else} and the Repetitive statements. They are constructed from the control-flow graph. For analysis, they define \textit{variables} and \textit{expressions}.For Assignment, it's left side is the variable, and it's right side is the expression associated with it. Only this type of statement has a variable. For Conditional and Repetitive statements their conditional expression used, and Empty and Sequence has no variable or expression. There's also the definition of $\Gamma(e)$ which consists the variables which appear in $e$. We define $E$ and $V$ which contains all of the variables and expressions of the program. In $D_S$ there are the variables which $S$ \textit{may define}. In $P_S$ are the variables which $S$ \textit{may preserve}. The `multiplication` sign which we do not write between relations is the \textit{relational composition}:
+The statements are classified into two primitive types: Empty and Assignment, and three hiearchical types: Sequence, Conditional with \texttt{else} branch, without \texttt{else} and the Repetitive statements. They are constructed from the control-flow graph. For analysis, they define \textit{variables} and \textit{expressions}. For Assignment, it's left side is the variable, and it's right side is the expression associated with it. Only this type of statement has a variable. For Conditional and Repetitive statements their conditional expression used, and Empty and Sequence has no variable or expression. There's also the definition of $\Gamma(e)$ which consists the variables which appear in $e$. We define $E$ and $V$ which contains all of the variables and expressions of the program. In $D_S$ there are the variables which $S$ \textit{may define}. In $P_S$ are the variables which $S$ \textit{may preserve}. The `multiplication` sign which we do not write between relations is the \textit{relational composition}:
 For relations $X$ and $Y$, where $X \subseteq A \times B$ and $Y \subseteq B \times C$:
 \begin{equation}
 XY = \{(a,d) \in A \times C | (a,b) \in X, (c,d) \in Y, b = c\}
@@ -295,7 +297,6 @@ The main three binary relations are the following:
 \end{enumerate}
 
 For a statement $S$, $v \in V, e \in E: v \lambda_S e$ means that `the value of $v$ on entry to $S$ \textit{may be used} in the evaluation of the expression $e$ in $S$.' Taken the following program:
-\begin{figure}[h]
 \begin{lstlisting}[language=C++]
 void fn(int x){
   read(n);             //1
@@ -312,9 +313,6 @@ void fn(int x){
   write(x);            //8
 }
 \end{lstlisting}
-\caption{Example program 2}
-\label{fig:example_prog_2}
-\end{figure}
 
 It can be seen that in case of the \texttt{while} statement, variable $n$ and the predicate of \texttt{while} is in the $\lambda_{\texttt{while}}$ relation.
 
@@ -412,7 +410,7 @@ if(e){
 }
 \end{lstlisting}
 
-Therefore we can get the formula of $\lambda_{\textsc{Rep}}$ if we repeatedly use $\lambda_{\textsc{Cond}}$ and $\lambda_{textsc{Seq}}$, gaining the following:
+Therefore we can get the formula of $\lambda_{\textsc{Rep}}$ if we repeatedly use $\lambda_{\textsc{Cond}}$ and $\lambda_{\textsc{Seq}}$, gaining the following:
 \begin{equation}
 \lambda_S = \rho^*_A((\Gamma(e) \times \{e\}) \cup \lambda_A)
 \end{equation}
@@ -435,11 +433,11 @@ For determining a slice of a program with these relations, Bergeretti describes 
 E^v_S = \{e \in E\ |\ e \mu_S v\}
 \end{equation}
 
-As it can be seen from the definition of $\mu_S$, this results in the whole slice for variable $v$, if the given statement $S$ is the `statement' of the whole program, as a Sequence of top-level statements. It also gets the \textit{expressions} which may affect the variable, and not the statements consisting it. However, using $\mu_S$, we can create formulas which effectively get the desired statements from the program. It can be seen that with the dual nature of $\mu_S$ and $\lambda_S$, they can be used for backwards slicing,and for forward slicing, respectively. 
+As it can be seen from the definition of $\mu_S$, this results in the whole slice for variable $v$, if the given statement $S$ is the `statement' of the whole program, as a Sequence of top-level statements. It also gets the \textit{expressions} which may affect the variable, and not the statements consisting it. However, using $\mu_S$, we can create formulas which effectively get the desired statements from the program. It can be seen that with the dual nature of $\mu_S$ and $\lambda_S$, they can be used for backward and for forward slicing, respectively. 
 
 \subsubsection{Efficiency}
 
-This algorithm is throroughly defines the flow of data across statements, taking control dependences into account. Further extensions, like applications for \texttt{switch-case} expressions can be added by defining the relations for them, on the basis of the current ones. It needs deeper parsing than Weiser's method, for getting all the variables of the expressions, and statements. However, if we parse the program code, and collect the $D_S$, $v$,$e$, $\Gamma(e)$ sets, variables and expressions for each statement, we can compute different slices for different variables and statements after for the program. In the case of large codebases, this is an important aspect of the algorithm. 
+This algorithm is throroughly defines the flow of data across statements, taking control dependences into account. Further extensions, like applications for \texttt{switch-case} expressions can be added by defining the relations for them, on the basis of the current ones. It needs deeper examination of the source code than Weiser's method, for getting all the variables of the expressions, and statements. However, if we parse the program code, and collect the $D_S$, $v$, $e$, and $\Gamma(e)$ sets, and the variables and expressions for each statement, we can compute many different slices for different variables and statements for the program. In the case of large codebases, this is an important aspect of the algorithm. 
 
 In the presence of loops, calculating the reflexive closure takes additional time. Bergeretti states the following for the complexity of the calculation of relations: $\rho_S$ has a worst case asymptotic $O(|V|^3)$. Therefore, for all statements it is $O(|E| \times |V|^3)$. For $\lambda_S$ and $\mu_S$, it is $O(|E| \times |V|^2)$ for each statement, or $O(|E|^2 \times |V|^2)$. 
 If we compare these with Weiser's, it is clear that this algorithm requires more computation for slicing the program for the first time, however Bergeretti noted that these times are not problematic in real life examples.
@@ -458,7 +456,7 @@ There is a control dependence edge between two nodes $v_1$ and $v_2$ if:
 \item $v_1$ is a loop or branch statement, and $v_2$ is \textit{immediately} nested under $v_1$. If $v_1$ is a loop statement, then the label of the edge is \texttt{true}, if it is a branch statement, then if $v_2$ is under the `then` branch, the label is \texttt{true}, and \texttt{false} otherwise.
 \end{enumerate}
 
-The control dependence subgraph has similar structure as the AST. It is the direct consequence of that the usually the loop and branch statements has other statements nested in them. In \cite{efficient-pdg}, there are region nodes created for predicate of each loop or branch. In practice, I have found these unnecessary to deal with. I will later discuss it in the chapter about the implementation. 
+The control dependence subgraph has similar structure as the AST. It is the direct consequence of that the loop and branch statements has other statements nested in them. In \cite{efficient-pdg}, there are region nodes created for predicate of each loop or branch. In practice, I have found these unnecessary to deal with. I will later discuss it in the chapter about the implementation. 
 
 After constructing the control dependence subgraph, data dependence edges are added. The meaning of this kind of edge between $v_1$ and $v_2$ is that if we change the order of these statements then the program may become ill-formed or the computation is changed. In the aspect of slicing, there are two main different type of edges: \textit{flow dependence} and \textit{def-order dependence}. In compiler theory, in data-flow analysis there is the `use-def' or `def-use' chain, which has similar definitions what Horwitz describes in her paper. There is a flow dependence edge between nodes $v_1$ and $v_2$ if:
 \begin{enumerate}
@@ -499,7 +497,7 @@ int main(){
   }
 }
 \end{lstlisting}
-\caption{Example program 3}
+\caption{Example for loop-carried dependences}
 \label{fig:example_prog_3}
 \end{figure}
 
@@ -508,15 +506,19 @@ int main(){
 \caption{PDG of \ref{fig:example_prog_3}}
 \label{fig:example_prog_3_PDG}
 \end{wrapfigure}
-We can see the created PDG of it on \ref{fig:example_prog_3_PDG}. The bold arrows represent the control dependence edges and the others are the data dependence edges. In her paper, Horwitz creates loop edges to the statements which are under a loop, but regarding slicing, they are not making a difference. As it can be seen, the nodes labeled \texttt{\{\}} are the brackets which consist multiple statements. I have created this example to show how a loop-carried edge can be found between different scopes under a loop statement. The comments in the example code shows the order of `def-use' relationship created by the loop: when control reaches $1.$, $x$ gets defined, then in the second second iteration control goes into the true branch of the \texttt{if} statement and reaches $2.$, creating a `def-use' data dependence between the two statements. Among this, there are examples of def-order dependence edges: between line 8. and line 10., and also between the initial definition of $x$ and other definitions later. % todo fix the graph and the definition collecting in branches.
+We can see the created PDG of it on figure \ref{fig:example_prog_3_PDG}. The bold arrows represent the control dependence edges and the others are the data dependence edges. In her paper, Horwitz creates loop edges to the statements which are under a loop, but regarding slicing, they are not making a difference. As it can be seen, the nodes labeled \texttt{\{\}} are the brackets which consist multiple statements. I have created this example to show how a loop-carried edge can be found between different scopes under a loop statement. The comments in the example code shows the order of `def-use' relationship created by the loop: when control reaches $1.$, $x$ gets defined, then in the second iteration control goes into the true branch of the \texttt{if} statement and reaches $2.$, creating a `def-use' data dependence between the two statements. Among this, there are examples of def-order dependence edges: between line 8. and line 10., and also between the initial definition of $x$ and other definitions later. 
 
-Drawing data dependence edges are a non-trivial task. I will explain the details in the implementation chapter. However, the PDG itself when built, is a very useful abstraction of the program. To slice regarding a statement and variable in the program, we need to do only a graph reachability search in the graph over the control and data dependence edges. 
-\begin{wrapfigure}{r}{0.5\textwidth}
-\includegraphics[width=0.5\textwidth]{loop_carried_test_backward_slice}
-\caption{Backward slice of \ref{fig:example_prog_3} regarding line 9.}
+Covering every case which could occur in a source code, drawing data dependence edges are a non-trivial task. I will explain the details in the implementation chapter. However, the PDG itself when built, is a very useful abstraction of the program. To slice regarding a statement and variable in the program, we need to do only a graph reachability search in the graph over the control and data dependence edges. 
+
+If we store the edges of the graph bidirectionally, the difference becomes only the direction of search between creating backward and forward slices. To show how a result of it looks, I have created an example of a backward slice on \ref{fig:example_prog_3_backward_slice}, regarding the $x$ variable on line 9.
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.7\textwidth]{loop_carried_test_backward_slice}
+\caption{Backward slice of \ref{fig:example_prog_3}}
 \label{fig:example_prog_3_backward_slice}
-\end{wrapfigure}
-If we store the edges of the graph bidirectionally, the difference becomes only the direction of search between creating backward and forward slices. We can see an example of a backward slice on \ref{fig:example_prog_3_backward_slice}, regarding the $x$ variable on line 9.
+\end{figure}
+
+
 % todo write more
 
 
@@ -525,11 +527,11 @@ If we store the edges of the graph bidirectionally, the difference becomes only 
 
 LLVM is a compiler infrastucture which is created mainly for program optimization during compile, link and runtime. It is written in C++ and language-agnostic itself, and uses an intermediate representation (LLVM IR) of the programs created in numerous languages. LLVM stands for \textbf{Low Level Virtual Machine} which was the initial target for the project, but since then it has grown to a massive infrastructure for program compilation and toolchains. LLVM does not handle the parsing and syntactic error checking in the languages, and separates this part via the IR. It was initially developed for C and C++, but since then there are numerous language frontends for a wide variety of languages including Haskell, Ada, Ruby, Python, etc. 
 
-Clang is a compiler frontend for C,C++ and Objective-C, using LLVM as a backend for code generation. Clang is also written in C++, and has a library-based architecture which allows the compiler for not just compiling, but to build useful tools with it. For example, QtCreator IDE - an Integrated Development Environment - can use Clang as a `code model', for syntactically and semantically check the code in the editor, making error correcting much easier for the developer. There are also numerous tools built on the Clang using it as a library for parsing C++ code, for gaining information of it or performing source-to-source transformations. %maybe write about the Clang Static Analyzer
+Clang is a compiler frontend for C,C++ and Objective-C, using LLVM as a backend for code generation. Clang is also written in C++, and has a library-based architecture which allows the compiler for not just compiling, but to build useful tools with it. For example, QtCreator IDE - an Integrated Development Environment - can use Clang as a `code model', for syntactically and semantically check the code in the editor, making error correcting much easier for the developer. There are also numerous tools built on the Clang using it as a library for parsing C++ code, for gaining information of it or performing source-to-source transformations. The Clang Static Analyzer is one of the most well-known tool of them, which is designed for analyzing and pointing flaws and possible runtime errors in a source code, statically, so without running it. It can detect possible division by zeroes, array overindexing, nullpointer dereferences, and so on. The prototype tool of this thesis uses similar techniques to achieve efficient program analysis, which will be discussed later in detail.
 
 \section{The Clang AST}
 
-The internal representation of C++ source code in Clang is the \textbf{Abstract Syntax Tree} - AST\cite{Clang-AST}. Since it is written in C++, it uses the language's object-oriented features for encoding the structure of the program into a large class hiearchy, keeping all relevant information of a language element in an AST node.
+The internal representation of C++ source code in Clang is using the \textbf{Abstract Syntax Tree} (AST\cite{Clang-AST}). Since it is written in C++, it uses the language's object-oriented features for encoding the structure of the program into a large class hiearchy, keeping all relevant information of a language element in an AST node.
 
 Taken the example from Chapter 2:
 \begin{lstlisting}[language=C++]
@@ -580,19 +582,21 @@ FunctionDecl 0x595bd10 <horwitz.cc:1:1, line:8:1> line:1:5 main 'int (void)'
 
 Clang enables us to dump it's AST via a compiler option, which can be seen on figure \ref{fig:clang_ast}.
 
-The type of the nodes has a class hierarchy which has no common ancestor. There are a several base types, but only two are important for implementing slicing algorithms: the \texttt{Decl} and \texttt{Stmt} class. As it is logical, they encode a generic declaration, and statement, respectively. For example in the AST above, \texttt{FunctionDecl}, \texttt{VarDecl} are Decls, and \texttt{WhileStmt}, \texttt{CompoundStmt} and \texttt{DeclStmt} are Stmts. Also, it can be seen that Stmts create a clean tree hierarchy, where a predicate of a while loop belongs under it, enabling the AST to describe complex expressions. There is an API created for accessing the nodes' properties, which supports iterators on nodes with \texttt{begin()} and \texttt{end()} much like the C++ standard library. For variable declarations, there is a wrapping \texttt{DeclStmt}, and for every block of code denoted by curly braces, there is a \texttt{CompoundStmt} associated with it. 
+The type of the nodes has a class hierarchy which has no common ancestor. There are a several base types, but only two are important for implementing slicing algorithms: the \texttt{Decl} and \texttt{Stmt} class. As it is logical, they encode a generic declaration, and statement, respectively. For example in the AST above, \texttt{FunctionDecl}, \texttt{VarDecl} are Decls, and \texttt{WhileStmt}, \texttt{CompoundStmt} and \texttt{DeclStmt} are Stmts. Also, it can be seen that Stmts create a clean tree hierarchy, where a predicate of a while loop belongs under it, enabling the AST to describe complex expressions. There is an API created for accessing the nodes' properties, which supports iterators on their children with \texttt{begin()} and \texttt{end()} much like the C++ standard library. For variable declarations, there is a wrapping \texttt{DeclStmt}, and for every block of code denoted by curly braces, there is a \texttt{CompoundStmt} associated with it. 
 
 The Clang AST has a bit different logic in naming language elements than we would expect. It encodes assignments in a more generic \texttt{BinaryOperator}, and the API provides the \texttt{IsAssignment()} boolean method for it. It also encodes a defined variable's access in a \texttt{DeclRefExpr}, and if they are used on a right-hand side of an operator, it uses implicit cast expressions for casting them from lvalue to rvalue.
 
-The source positions are also encoded in the nodes, but for accessing them, we need the \texttt{SourceManager} class, which can get the exact location of a node. 
+The source positions are also encoded in the nodes, but for space efficiency, they only store offsets. To access the correct visible position of them, we need to ask the \texttt{SourceManager} class, which can get the exact location of a node. 
 
 \subsection{The RecursiveASTVisitor class}
 
-Clang provides the \texttt{LibTooling} library to work with the AST. First, Clang parses the source code, and performs the compilation steps necessary to build the AST for us. Therefore if there's an error in the code, we won't get a partial AST. After then, we must provide a few classes which then can take care to run our action as a compilation step. The entry point is the \texttt{ASTFrontendAction} class, which creates an \texttt{ASTConsumer}, which can access the AST of the whole translation unit. Clang provides the \texttt{RecursiveASTVisitor} class, where we can create two types of methods for processing nodes: \texttt{Visit<NodeType>} and \texttt{Traverse<NodeType>}, where we put the node type which we want to process in the name of the method. With Visit, we can access the node, but Traverse can be used for controlling the traversal of the nodes, for example, if we do not want to visit any node under an If Statement, or to swap the traversal order of the two branches. 
+Clang provides the \texttt{LibTooling} library to work with the AST. First, Clang parses the source code, and performs the compilation steps necessary to build the AST for us. Therefore if there's an error in the code, we won't get a partial AST. After then, we must provide a few classes which then can take care to run our action as a compilation step. The entry point is the \texttt{ASTFrontendAction} class, which creates an \texttt{ASTConsumer}, which can access the AST of the whole translation unit. Clang provides the \texttt{RecursiveASTVisitor} class, where we can create two types of methods for processing nodes: \texttt{Visit<NodeType>} and \texttt{Traverse<NodeType>}, where we put the node type which we want to process in the name of the method. With Visit, we can access the node, but Traverse can be used for controlling the traversal of the nodes, for example, if we do not want to visit any node under an If Statement, or to swap the traversal order of the two branches.
+
+I have started the implementation with this API, but soon found out about the AST Matchers, which provided a better and easier to use solution.
 
 \section{AST Matchers}
 
-Although the RecursiveASTVisitor class could be enough for processing the AST, it could get easily complicated and require a lot of repeated code, making the tool less maintainable. However, there is a very useful API included with LibTooling of Clang, the ASTMatchers. With them, we can define the nodes we look for in the AST in a chain of matcher calls, which are a small domain-specific language defined for this specific task, but written in C++, naturally. For example, the following expression:
+Although the RecursiveASTVisitor class could be enough for processing the AST, it could get easily complicated and require a lot of repeated code, making the tool less maintainable. However, there is a very useful API included with LibTooling of Clang, the ASTMatchers. With them, we can define the nodes we look for in the AST in a chain of matcher calls, which is a small domain-specific language defined for this specific task, but written in C++, naturally. For example, the following expression:
 \begin{lstlisting}
 binaryOperator(isAssignmentOp(),
     hasLHS(ignoringImpCasts(declRefExpr(to(varDecl().bind("lval"))))),
@@ -624,21 +628,20 @@ The Traversal matchers are different from the Traverse method from RecursiveASTV
 
 All kind of matchers can be extended by defining them with special macros also provided by the API. All of the default matchers can be found under\cite{ASTMatchers-reference}.
 
-For easing the building of complex matchers, there is a tool in the Clang repository named \textit{clang-query} which is an interpreter for evaluating matchers.
+For easing the building of complex matchers, there is a tool in the Clang repository named \textit{clang-query} which is an interpreter for evaluating matchers. It has a command-line interface for querying AST nodes from a source code, and has an option which shows the AST dump of the matched nodes. I have used this tool extensively during the matcher development.
 
-There are numerous tools built with this API, the most notable must be the Clang Static Analyzer\cite{clang-static-analyzer}, which is a source code analysis tool that finds bugs in programs. It has a modular pluggable design, implemented with different matchers for finding flaws and potential patterns which would lead to bugs, for example unitialized variables, nullpointer accesses, and other errors which can be detected by analyzing the AST.
+There are numerous tools built with this API, which can also be found in the \texttt{clang-extras} repository of the Clang/LLVM project. I have taken example from them for the usage of the matchers.
 
 \chapter{Implementation and algorithm}
 
 In this chapter I will introduce a prototype application for slicing in programs written in C++ using the tools described in the previous chapter. I will compare the described algorithms by usability, extendability and efficiency. 
-
-All of the %write more
+%todo write more
 
 \section{The approach}
 
-For analyzing C++ source code, the best tool is the Clang LibTooling library. The GCC compilers internal representation transforms the original source in non-reversible way, so it is not useful in this setting. There are other approaches which implement slicing, notably the Wisconsin Program-Slicing tool\cite{Wisconsin-slicing-tool}, and Frama-C has a plug-in for slicing\cite{Frama-C-slicing}. The Wisconsin tool has a graphical interface for displaying the source code and highlighting the slice, and it can perform forward and backward slicing too. It's algorithm is based on the PDG. There's little information about the Frama-C slicing pulgin. It has a command-line interface, and also can be integrated into the graphical IDE-like framework.
+For analyzing C++ source code, the best tool is the Clang LibTooling library. The GCC compiler's internal representation transforms the original source in non-reversible way, so it is not useful in this setting. There are other approaches which implement slicing, notably the Wisconsin Program-Slicing tool\cite{Wisconsin-slicing-tool}, and Frama-C has a plug-in for slicing\cite{Frama-C-slicing}. The Wisconsin tool has a graphical interface for displaying the source code and highlighting the slice, and it can perform forward and backward slicing too. It's algorithm is based on the PDG. There's little information about the Frama-C slicing plugin. It has a command-line interface, and also can be integrated into the graphical IDE-like framework.
 
-With Clang, I built a command-line tool which can be extended to work with any kind of code editor. It needs only the function which we want to slice and the location of the slicing variable in the function. 
+With the help of the Clang LibTooling library, I have built a command-line tool which can be extended to work with any kind of code editor. It needs only the function which we want to slice and the location of the slicing variable in the function. 
 
 The tool has four main parts: 
 \begin{enumerate}
@@ -648,16 +651,16 @@ The tool has four main parts:
 \item and the actual slicing on the PDG.
 \end{enumerate}
 
-The advantage of using the PDG-based slicing - besides it's efficiency considering multiple slices - the modular structure, which enables us to extend the matchers to different language constructs without interfering with the data dependence building for example. Considering the actual slicing, it is an independent part of the program entirely from the PDG building parts. With the LibTooling library, Clang takes care of the preprocessor includes, defines and different files in a project, and enables us to handle slicing on the AST, which consists an entire translation unit. If there are multiple ones are in the project, Clang will run the tool on each of them, eventually finding the target function specified for slicing.
+The advantage of using the PDG-based slicing - besides it's efficiency considering multiple slices - the modular structure, which enables us to extend the matchers to different language constructs without interfering with the data dependence building for example. Considering the actual slicing, it is an independent part of the program entirely from the PDG building parts. With the LibTooling library, Clang takes care of the preprocessor includes, defines, different files and compilation dependencies in a project, and enables us to handle slicing on the AST, which consists an entire translation unit. If there are multiple ones are in the project, Clang will run the tool on each of them, eventually finding the target function specified for slicing.
 
 \section{Building the PDG}
 
-As I've written earlier, there are two main parts of building the PDG, the control dependence subgraph, and determining data dependence edges. In \cite{efficient-pdg}, there is a detailed algorithm for building it efficiently, but the author considers unstructured control flows, as known as jump statements (\texttt{break},\texttt{continue},\texttt{return},\texttt{goto}), but only specifies guidelines to the implementation of handling them. Since these control statements appear relatively rarely comparing to others in code (considering \texttt{goto}, it has almost disappeared - thankfully), the current implementation of the prototype does not handle them currently.
+As I've written earlier, there are two main parts of building the PDG, the control dependence subgraph, and determining data dependence edges. In \cite{efficient-pdg}, there is a detailed algorithm for building it efficiently, but the author considers unstructured control flows, as known as jump statements (\texttt{break}, \texttt{continue}, \texttt{return}, \texttt{goto}), but only specifies guidelines to the implementation of handling them. Since these control statements appear relatively rarely comparing to others in code (considering \texttt{goto}, it has almost disappeared - thankfully), the current implementation of the prototype does not handle them currently.
 Also, the article does only specify a generic algorithm for detecting data dependence edges. I will introduce a simplified approach to the PDG, and explain why it can be used to produce correct slices.
 
 \subsection{Control dependences}
 
-The first part is building the Control Dependence subgraph. I have created an object-oriented inheritance model for the nodes to be able to derive the different node types from a general Statement class. There are four different type of nodes: \textit{Assign}, \textit{Compound}, \textit{Branch} and \textit{Loop}. All statements in C++ is classified into one of them. Logically, Assign stores assignments, definitions and also the statements which are not assignments, but does not have subnodes and also do not define a variable, but only use them, for example the return statement. In the algorithm, this will simplify calculating data dependences. The Compound class stores the block scopes in the language, and contains the child nodes of them. The function declaration is also classified as a Compound statement, with the parameter variables as definitions of the statement. Branch stores \texttt{if}, \texttt{switch-case} and Loop stores \texttt{while}, \texttt{for}, \texttt{do-while} and other loop statements.
+The first part is building the Control Dependence subgraph. I have created an object-oriented model using inheritance for the nodes to be able to derive the different node types from a general Statement class. There are four different types of nodes: \textit{Assign}, \textit{Compound}, \textit{Branch} and \textit{Loop}. All statements in C++ is classified into one of them. Logically, Assign stores assignments, definitions and also the statements which are not assignments, but does not have subnodes and also do not define a variable, but only use them, for example the return statement. In the algorithm, this will simplify calculating data dependences. The Compound class stores the block scopes in the language, and contains the child nodes of them. The function declaration is also classified as a Compound statement, with the parameter variables as definitions of the statement. Branch stores \texttt{if}, \texttt{switch-case} and Loop stores \texttt{while}, \texttt{for}, \texttt{do-while} and other loop statements.
 
 There is an ASTMatcher written for every type of C++ statement which we are interested regarding slicing. All of them captures the statement and the variables in it via the bind method. The hierarchy of them is created during the processing phase: for every statement which may have children, a create method is called which implements the Factory method design pattern and determines what kind of statement to create based on the type of the AST node. 
 
@@ -671,7 +674,7 @@ Every statement has four important fields:
 
 These sets are also filled during processing.
 
-The literature of PDGs writes about region and predicate nodes regarding loop and branch statements, but I have found these unnecessary to include in the graph, since they do not add any information to it, only makes traversals slower. Since we are only interested in variables, predicate nodes can be eliminated by putting the variables of them into the use set of the branch or loop statement. Also, region nodes are unnecessary, since any statement can have arbitrary amount of children, only assignment does not have any, by definition.
+The literature of PDGs writes about region and predicate nodes regarding loop and branch statements, but I have found these unnecessary to being included in the graph, since they do not add any information to it, only makes traversals slower. Since we are only interested in variables, predicate nodes can be eliminated by putting the variables of them into the use set of the branch or loop statement. Also, region nodes are unnecessary, since any statement can have arbitrary amount of children, only assignment does not have any, by definition.
 
 The Control dependence subgraph will have a structure of a tree. This will make the data dependence building algorithm simpler. 
 
@@ -754,7 +757,7 @@ int main(){
 
 It can be seen from the example that in all the \texttt{while} loops, the variable $x$ is being assigned a new value, and that means that it should have a backedge to every loop which uses $x$. Also, the initial definition of $x$ on line 2 should have an edge to all uses of $x$ too, and the definition of it on line 6.
 
-After addressing the need for the loop references there is another type of statement which is need to be tracker along recursive calls: the Branches. For understanding this, we must take a look at the following code on the left and it's CFG on the right:
+After addressing the need for the loop references there is another type of statement which is need to be tracked along recursive calls: the Branches. For understanding this, we must take a look at the following code on the left and it's CFG on the right:
 
 \begin{minipage}[c]{0.5\textwidth}
 \begin{lstlisting}
@@ -775,16 +778,22 @@ int fn(int y){
 
 From this simple example it can be seen that the value of $y$ on line 7 depends on that which branch gets executed. Therefore we need to draw def-order dependence edges from line 2 to both of the definitions of $x$ under the branch, and also need to draw def-use dependence edges from them to line 7.
 
-This is multiple definition propagation is handled by implementing the set of defs as a multivalue map which has a key which stores the reference to the Clang AST node of the variable declaration (the reference to the \textit{VarDecl}), and a value which is a set which stores the latest definitions of that variable. The value has a single definition in it when outside of a branch, and only stores as many definitions as many branches a branch has, plus optionally the inherited definition before the branch. In case of an If statement, this amount is two plus one at maximum, but in case of a Switch-Case statement, it could equal to the amount of cases in it plus one. 
-\clearpage
-\begin{wrapfigure}{r}{0.5\textwidth}
-\includegraphics[width=0.5\textwidth]{if_test}
+This is multiple definition propagation is handled by implementing the set of defs as a multivalue map which has a key which stores the reference to the Clang AST node of the variable declaration (the reference to the \textit{VarDecl}), and a value which is a set which stores the latest definitions of that variable. The value has a single definition in it when outside of a branch, and only stores as many definitions as many branches a branch has, plus optionally the inherited definition before the branch. To distinguish between the definitions, I have used a three valued enum for labeling edges, which have an additional \texttt{None} type among \texttt{True} and \texttt{False}, which represents definitions originated from a parent caller. Originally, the \texttt{None} label is not used in the PDG, only in the algorithm. When it is going into a recursive call, the \texttt{DataEdges} function turns all inherited definitions' edges in \texttt{defs} to \texttt{None}. Since the structure of \texttt{defs} lives only in the algorithm, the original labels of the edges between nodes are not modified. 
+
+In case of an If statement, this amount is two plus one at maximum, but in case of a Switch-Case statement, it could equal to the amount of cases in it plus one. 
+
+To get a picture of what goes on, take a look at the PDG of the example in figure \ref{fig:if_test}. 
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.6\textwidth]{if_test}
 \caption{PDG of example}
 \label{fig:if_test}
-\end{wrapfigure}
-To get a picture of the case, take a look at figure \ref{fig:if_test}. When the algorithm visits the \texttt{if} statement, it inherits the initial definition of $x$, and while drawing data dependence edges to both of the branches, it collects their definitions, and returns them to the uppermost Compound statement, which is the root node in this example. Thus when it visits the final node, \texttt{y = x;}, it will know that there has been definitions of $x$ on both branches, so it draws those dependence edges. The algorithm recognize that $x$ is defined on both branches, thus it does not draw dependence edge from the initial definition to \texttt{y = x;}, since that is not directly dependent on it. Otherwise, if there has been a definition of $x$ in only one of the branches, it would also draw edge over the \texttt{if} statement. 
-
-The most difficult part of drawing dependences are the loop-carried ones. For explaining, I have created another example code:
+\end{figure}
+When the algorithm visits the \texttt{if} statement, it inherits the initial definition of $x$, and while drawing data dependence edges to both of the branches, it collects their definitions, and returns them to the uppermost Compound statement, which is the root node in this example. Thus when it visits the final node, \texttt{y = x;}, it will know that there has been definitions of $x$ on both branches, so it draws those dependence edges. The algorithm recognize that $x$ is defined on both branches, thus it does not draw dependence edge from the initial definition to \texttt{y = x;}, because the definitions in the branch \textit{intervenes} the path between them, therefore it is not directly dependent on that. But otherwise, if there has been a definition of $x$ in only one of the branches, it would also draw edge over the \texttt{if} statement, between them, because then there would be a path in the CFG which ensure the direct def-use dependence. 
+%
+The most difficult part of the algorithm to implement was drawing loop-carried dependences. For explaining the details, I must bring up the code example from chapter 2. So, taken that we have the following code:
+\clearpage
 \begin{lstlisting}
 int main(){
   int x = 0;
@@ -800,9 +809,60 @@ int main(){
 }
 \end{lstlisting}
 
+In this, I have combined a Loop with a Branch to show how would the algorithm determine the loop-carried dependence between line 10. and 6. At the first level of recursion, it visits the only child of the Loop node, a Compound. Then it visits that node's children, the Branch and an Assignment, collecting definitions from them. When the recursion returns to the level of the Loop, the \texttt{defs} set stores the following definitions:
 
+\lstset{numbers=none}
+\begin{lstlisting}
+[(x,((2,None),(8,False),(10,True))),(y,((3,None),(6,True)))]
+\end{lstlisting}
+
+In the set, I have referenced the statements by their line numbers. Each of them has an associated label, which are their relative control dependence label which they are reachable by from their direct parent node. The \texttt{defs} set contains three definitions for variable $x$ and two for $y$, one for each coming from an upper node. The trick is here is in line 9. of the algorithm: in case of visiting a Loop, it visits all it's children again.
+
+Before iterating over them again, it deletes the local definitions, like \texttt{int var = def;}, as those lifetime ends with the scope, and they are created again in every loop iteration. This is also done when returning from a recursive call, to ensure that the algorithm does not carry any `dead` variable. So when it visits the children of the Loop the second time, and starts determining the dependences of statement on line 6, it has the definition of $x$ from line 10 in the \texttt{defs} structure, therefore it will draw an edge between them. It also has the definition of $x$ from line 8, but since their edge labels are not the same, and not a previous parent definition either, there will not be an edge drawn between them. This is handled by deleting the definitions coming from the \textit{then} branch when visiting \textit{else}. 
+
+There is also a fine example of the loop-independent data dependence in the example between statements on line 3. and 6.
+
+The def-use edges are handled on the lines 25-26 in the algorithm. They are much simpler to detect than the def-def edges.
+
+Also, the algorithm handles all combinations of nested control statements, and also the scopes created by Compounds in C++. To demonstrate this, I have created the following code:
+\lstset{numbers=left}
+\begin{lstlisting}
+int f(int x,int y){
+  x = 1;
+  {
+    int x = 2;
+    y = x; 
+  }
+  y = x;
+  {
+    int x = 3;
+    {
+      int x = 4;
+    }
+    x = y;
+  }
+  return x;
+}
+\end{lstlisting}
+
+It contains blocks without control structures. I have put the liveness of the variables to the test. As it is known in C++, when a variable with the same name gets declared in an inner scope as the outer scope, the inner one hides the definition of the outer. Luckily, these distictions are handled by Clang, so the algorithm just had to be cared about the inner variables' lifetime. And because the PDG includes these scopes into it's structure with the Compound statements, this is taken care of.
+I have included the result PDG here:
+\begin{figure}[h]
+\centering
+\includegraphics[width=.8\textwidth]{compound_block_test}
+\caption{PDG of the scope test}
+\label{fig:scope_test}
+\end{figure}
+
+In the PDG, it can be seen that the liveness of the definition of $x$ lives out the first inner scope, and also influences the definition of $y$ at line 7.
+
+To note, data dependence analysis would have been simpler if the algorithm used a control-flow graph as input instead of the control-dependence graph. The problems with that that although Clang has an internal CFG module for analysing code, going through that would needed mapping between AST and CFG nodes, and it would added additional cost to the processing of the AST. In this way, the algorithm abstracts itself away from the AST, and this separation enables us to freely extend the algorithm to different kind of language elements of C++.
 
 \section{Implementing slicing}
+
+With having the PDG built up from the source code, the algorithm of slicing gets easier. 
+
+
 
 \subsection{Limitations}
 

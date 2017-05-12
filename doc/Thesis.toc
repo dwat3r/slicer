@@ -14,15 +14,15 @@
 \select@language {english} \contentsline {subsubsection}{\numberline {2.3.4.1}The algorithm}{15}
 \select@language {english} \contentsline {chapter}{\numberline {3}LLVM/Clang infrastructure}{19}
 \select@language {english} \contentsline {section}{\numberline {3.1}About Clang}{19}
-\select@language {english} \contentsline {section}{\numberline {3.2}The Clang AST}{19}
+\select@language {english} \contentsline {section}{\numberline {3.2}The Clang AST}{20}
 \select@language {english} \contentsline {subsection}{\numberline {3.2.1}The RecursiveASTVisitor class}{21}
-\select@language {english} \contentsline {section}{\numberline {3.3}AST Matchers}{21}
+\select@language {english} \contentsline {section}{\numberline {3.3}AST Matchers}{22}
 \select@language {english} \contentsline {chapter}{\numberline {4}Implementation and algorithm}{24}
 \select@language {english} \contentsline {section}{\numberline {4.1}The approach}{24}
 \select@language {english} \contentsline {section}{\numberline {4.2}Building the PDG}{25}
 \select@language {english} \contentsline {subsection}{\numberline {4.2.1}Control dependences}{25}
 \select@language {english} \contentsline {subsection}{\numberline {4.2.2}Data dependences}{26}
-\select@language {english} \contentsline {section}{\numberline {4.3}Implementing slicing}{30}
-\select@language {english} \contentsline {subsection}{\numberline {4.3.1}Limitations}{30}
-\select@language {english} \contentsline {section}{\numberline {4.4}Summary and further works}{31}
-\select@language {english} \contentsline {chapter}{Glossary}{31}
+\select@language {english} \contentsline {section}{\numberline {4.3}Implementing slicing}{33}
+\select@language {english} \contentsline {subsection}{\numberline {4.3.1}Limitations}{33}
+\select@language {english} \contentsline {section}{\numberline {4.4}Summary and further works}{33}
+\select@language {english} \contentsline {chapter}{Glossary}{33}
