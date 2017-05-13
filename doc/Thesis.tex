@@ -63,7 +63,7 @@
 \hrule
 \vspace{6cm}
 \begin{center}
-\LARGE{\textbf{Applying slicing algorithms on large code bases}}
+\LARGE{\textbf{Applying slicing algorithms \\ on large code bases}}
 \end{center}
 \vspace{3cm}
 \begin{tabular}{p{7cm} p{8cm}}
@@ -82,7 +82,7 @@
 \chapter{Introduction}
 \epigraph{Everyone knows that debugging is twice as hard as writing a program in the first place. So if you're as clever as you can be when you write it, how will you ever debug it?}{\textit{Brian Kernighan}}
 
-Nowadays, there are a lot of tools available for debugging. A developer can examine call stacks, variable informations, and so on. There are a lot of times when a bug is when some variable does not behave like the writer of that code part would expect. When the programmer discovers it, he must follow back the path of assignments, and find out where did it get an unexpected value. Program slicing targets this kind of debugging. We can define a program slice as a part of the program which contains a selected statement, and all other statements which influences it, or gets influenced by it. These two types are respectively called backward and forward slicing. Basically this is what many programmers do intuitively, when facing with bugs. In this thesis, I'll introduce a few approaches for computing slices, and describe a working prototype tool application, which can analyze C++ programs, and compute slices of them. I've used the help of the Clang/LLVM compiler infrastructure, which builds the AST of the program and provides an interface to analyse it using C++.
+Nowadays, there are a lot of tools available for debugging. A developer can examine call stacks, variable information, and so on. There are a lot of times when a bug is that some variable does not behave like the writer of that code part would expect. When the programmer discovers it, he must follow back the path of assignments, and find out where did it get an unexpected value. Program slicing targets this kind of debugging. We can define a program slice as a part of the program which contains a selected statement, and all other statements which influences it, or gets influenced by it. These two types are respectively called backward and forward slicing. Basically this is what many programmers do intuitively, when facing with bugs. In this thesis, I'll introduce a few approaches for computing slices, and describe a working prototype tool application, which can analyze C++ programs, and compute slices of them. I've used the help of the Clang/LLVM compiler infrastructure, which builds the AST of the program and provides an interface to analyse it using C++.
 
 %TODO describe the structure of the thesis.
 In the second chapter, I will describe three known algorithms and analyze them by performance, effectiveness and usability regarding slicing. In the next chapter, I will introduce the Clang/LLVM compiler infrastructure, and it's library for analyzing C++ code, and how I used it for the task. In the last chapter, I will describe the algorithm I have used to implement slicing, and how I implemented it.
@@ -546,7 +546,7 @@ int main(){
 \end{lstlisting}
 \begin{figure}[h]
 \lstset{
-xleftmargin=-80pt,
+xleftmargin=-50pt,
 aboveskip=\smallskipamount,
 belowskip=\smallskipamount}
 \begin{lstlisting}
@@ -591,8 +591,6 @@ The source positions are also encoded in the nodes, but for space efficiency, th
 \subsection{The RecursiveASTVisitor class}
 
 Clang provides the \texttt{LibTooling} library to work with the AST. First, Clang parses the source code, and performs the compilation steps necessary to build the AST for us. Therefore if there's an error in the code, we won't get a partial AST. After then, we must provide a few classes which then can take care to run our action as a compilation step. The entry point is the \texttt{ASTFrontendAction} class, which creates an \texttt{ASTConsumer}, which can access the AST of the whole translation unit. Clang provides the \texttt{RecursiveASTVisitor} class, where we can create two types of methods for processing nodes: \texttt{Visit<NodeType>} and \texttt{Traverse<NodeType>}, where we put the node type which we want to process in the name of the method. With Visit, we can access the node, but Traverse can be used for controlling the traversal of the nodes, for example, if we do not want to visit any node under an If Statement, or to swap the traversal order of the two branches.
-
-I have started the implementation with this API, but soon found out about the AST Matchers, which provided a better and easier to use solution.
 
 \section{AST Matchers}
 
@@ -856,18 +854,85 @@ I have included the result PDG here:
 
 In the PDG, it can be seen that the liveness of the definition of $x$ lives out the first inner scope, and also influences the definition of $y$ at line 7.
 
-To note, data dependence analysis would have been simpler if the algorithm used a control-flow graph as input instead of the control-dependence graph. The problems with that that although Clang has an internal CFG module for analysing code, going through that would needed mapping between AST and CFG nodes, and it would added additional cost to the processing of the AST. In this way, the algorithm abstracts itself away from the AST, and this separation enables us to freely extend the algorithm to different kind of language elements of C++.
+To note, data dependence analysis would have been simpler if the algorithm used a control-flow graph as input instead of the control-dependence graph. The problems with that that although Clang has an internal CFG module for analysing code, going through that would have needed mapping between AST and CFG nodes, and it would have added additional cost to the processing of the AST. In this way, the algorithm abstracts itself away from the AST, and this separation enables us to freely extend it to different types of language elements of C++.
 
 \section{Implementing slicing}
 
-With having the PDG built up from the source code, the algorithm of slicing gets easier. 
+With having the PDG built up from the source code, finding slices for a variable at a certain point in the program becomes a reachability search in the PDG. To be exact, reachability from one specific node - the slicing criterion - to all possibly reachable node in the graph. It means that we must determine all statements which have a path on the control and data dependence edges from the criterion to them.
 
+There are various algorithms for accomplishing this task. To name a few of them, there is the Floyd-Warshall algorithm for directed graphs, Thorup's algorithm for planar digraphs, and Kameda's algorithm for planar, acyclic undirected graphs. There is also the two basic search algorithms: breadth-first (BFS) and depth-first search (DFS). The structure of the PDG does not fit to apply Thorup's and Kameda's algorithm, but the Floyd-Warshall and the basic searches can be applied. Before applying one of them, I have compared them by time complexity. The Floyd-Warshall algorithm is $O(|V^3|)$ in the worst case, but the breadth-first search only needs $O(|V| + |E|)$ in the same case.
 
+To be able to produce both backward and forward slices, I have put references of the parent nodes in the implementation of the PDG builder algorithm. The pseudocode for the slicing can be seen on the next page. 
+
+It has the only difference to the standard BFS that the \texttt{backwards} boolean parameter controls in which direction should it search for reachable nodes. When it completes, the statements included in the slice can be found in the \texttt{child} map, which contains pairs of statement references. The pairs represents edges which have the BFS reached, so the tool just goes over the \texttt{child} map and marks all nodes found in it. 
+\clearpage
+\begin{lstlisting}
+procedure slice(slicingStmt,backwards)
+  create empty map child
+  create empty queue Q
+  create empty set S
+  add slicingStmt to Q
+  let child[slicingStmt] null
+  let current = slicingStmt
+  while Q is not empty:
+    current = Q.dequeue()
+    create empty set toVisit
+    if backwards is true:
+      add control and data parent nodes of current to toVisit
+    else:
+      add control and data child nodes of current to toVisit
+    
+    for each node in toVisit: 
+      if node is in S:
+        insert node to S
+        let child[node] = current
+        Q.equeue(node)
+\end{lstlisting}
+
+I have created an auxilliary function which dumps the PDG structure in a GraphViz dot format, and then used the command-line tool of GraphViz to visualize them. I have used the introduced prototype tool for all of the graphs in this thesis.
+
+I have created a code and the PDG graph, backward and forward slice generated from it to show the results of the tool. It can be seen below. It has slightly more complex logic, which was used to test the prototype for proper graph generation.
+
+\begin{lstlisting}
+int f(int p1, int p2){
+  int local = 0;
+  int local3 = 0;
+  if(local){
+    int local2 = 1;
+    p1 = local2;
+  }
+  else{
+    p2 = local;
+  }
+  while(p2 > 0){
+    p1 = local3;
+    local = local3;
+  }
+  return p1 + local;
+}
+\end{lstlisting}
+
+\includegraphics[width=1.1\textwidth]{cica}
+\\
+\\
+\includegraphics[width=1.1\textwidth]{cica_backward_slice}
+\\
+\\
+\includegraphics[width=1.1\textwidth]{cica_forward_slice}
+\\
+\\
+The slicing criterion is the statement on line 6, regarding variable \texttt{p1}.
 
 \subsection{Limitations}
-
 %larger ones
-%jumps
+Although the algorithm for building the PDG takes care of most of the language features of C++, it is not complete, and has it's limits. Due to the complications faced when making the data-dependence edge building work, I had run out of time covering the features I will describe below.
+
+\subsubsection{Jumps}
+
+In C++, there are four type of jump statements: \texttt{continue}, \texttt{break}, \texttt{return}, and \texttt{goto}. The first two can only be found inside loops, and with \texttt{return}, they are called structured transfers of control in the literature. They are left out of the algorithm because they introduce control dependence on nodes which will make the control dependence subgraph a graph, and would need additional handling during the data dependence edge builiding. Basically they complicate a lot of part of the PDG creation, but from that, the slices become slightly more precise with it. I thought they was too much work for too little gain, and focused on other language features.
+
+This is true for \texttt{goto} even more: It is an unstructured jump statement which has a functional scope, therefore the control can jump to both forward and backward inside the function, introducing way more complicated control dependence edges. As it is seen very rarely in the code written nowadays, it was left out of the algorithm for practical reasons. To show an example, here is a code with goto below:
+
 \begin{lstlisting}[language=C++]
 while(x < 0){
   if(y < 2) goto label; 
@@ -877,9 +942,11 @@ label:
 x = 1;
 \end{lstlisting}
 
-In this example, the third line is control dependent on the second, so if we're considering a slice regarding variable $x$ in the last statement, then the second line must be in the slice.
+In it, the third line is control dependent on the second, so if we're considering a slice regarding variable $x$ in the last statement, then the second line must be in the slice. But, since the goto can jump out of the loop, it's parent is also control dependent on it, not mentioning what could happen if there is a jump \textit{backwards} in the code.
 
-%pointers
+\subsubsection{Pointers}
+
+There is another language feature left out of the algorithm: the datatypes which stores an address of a variable. They can be simple pointers or array types. There could be complications when multiple pointers point to the same memory location, which is called \textit{aliasing}. To be able to produce correct slices on them, \textit{points-to analysis} should be made. There are a lot of research exist in this field. Due to the complexity of the task, and the limited time available, I have not incorporated these into my prototype tool.
 
 
 \section{Summary and further works}

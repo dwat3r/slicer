@@ -23,6 +23,8 @@
 \select@language {english} \contentsline {subsection}{\numberline {4.2.1}Control dependences}{25}
 \select@language {english} \contentsline {subsection}{\numberline {4.2.2}Data dependences}{26}
 \select@language {english} \contentsline {section}{\numberline {4.3}Implementing slicing}{33}
-\select@language {english} \contentsline {subsection}{\numberline {4.3.1}Limitations}{33}
-\select@language {english} \contentsline {section}{\numberline {4.4}Summary and further works}{33}
-\select@language {english} \contentsline {chapter}{Glossary}{33}
+\select@language {english} \contentsline {subsection}{\numberline {4.3.1}Limitations}{36}
+\select@language {english} \contentsline {subsubsection}{\numberline {4.3.1.1}Jumps}{36}
+\select@language {english} \contentsline {subsubsection}{\numberline {4.3.1.2}Pointers}{36}
+\select@language {english} \contentsline {section}{\numberline {4.4}Summary and further works}{37}
+\select@language {english} \contentsline {chapter}{Glossary}{37}
