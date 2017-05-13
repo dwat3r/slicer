@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014/W32TeX) (preloaded format=pdflatex 2015.5.24)  14 MAY 2017 00:45
+This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014/W32TeX) (preloaded format=pdflatex 2015.5.24)  14 MAY 2017 00:39
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -948,38 +948,13 @@ Chapter 3.
 [19
 
 ]
-Overfull \hbox (1.8964pt too wide) in paragraph at lines 553--554
-[][][][][][][][][][][][][][][][][][][][][][][][][][][] 
- []
-
-
-Overfull \hbox (20.79196pt too wide) in paragraph at lines 561--562
-[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
- []
-
-
-Overfull \hbox (8.19492pt too wide) in paragraph at lines 566--567
-[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
- []
-
-
-Overfull \hbox (14.49344pt too wide) in paragraph at lines 570--571
-[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
- []
-
-
-Overfull \hbox (45.98605pt too wide) in paragraph at lines 573--574
+Overfull \hbox (15.98605pt too wide) in paragraph at lines 573--574
 [][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
  []
 
 
-Overfull \hbox (33.389pt too wide) in paragraph at lines 575--576
+Overfull \hbox (3.389pt too wide) in paragraph at lines 575--576
 [][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
- []
-
-
-Overfull \hbox (1.8964pt too wide) in paragraph at lines 577--578
-[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
  []
 
 [20] [21]
@@ -1127,7 +1102,7 @@ onts/type1/public/cm-super/sfrm1440.pfb><c:/texlive/2014/texmf-dist/fonts/type1
 -super/sfti1200.pfb><c:/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sft
 t0800.pfb><c:/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sftt1000.pfb>
 <c:/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sftt1200.pfb>
-Output written on Thesis.pdf (40 pages, 1604561 bytes).
+Output written on Thesis.pdf (40 pages, 1604560 bytes).
 PDF statistics:
  265 PDF objects out of 1000 (max. 8388607)
  174 compressed objects within 2 object streams
