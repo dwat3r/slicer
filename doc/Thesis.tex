@@ -946,11 +946,23 @@ In it, the third line is control dependent on the second, so if we're considerin
 
 \subsubsection{Pointers}
 
-There is another language feature left out of the algorithm: the datatypes which stores an address of a variable. They can be simple pointers or array types. There could be complications when multiple pointers point to the same memory location, which is called \textit{aliasing}. To be able to produce correct slices on them, \textit{points-to analysis} should be made. There are a lot of research exist in this field. Due to the complexity of the task, and the limited time available, I have not incorporated these into my prototype tool.
+There is another language feature left out of the algorithm: the datatypes which stores an address of a variable. They can be simple pointers or array types. There could be complications when multiple pointers point to the same memory location, which is called \textit{aliasing}. To be able to produce correct slices on them, \textit{points-to analysis} should be made. There are a lot of research exist in this field. Due to the complexity of the task, and the limited time available, I have not incorporated these into my prototype tool. 
 
+\subsubsection{Concurrency}
+
+And at last, there are program codes which execute certain parts of it concurrently, and may or may not access or write variables during the process. There is a study carried out by Cheng\cite{Slicing-concurrent}, in which he defines a modified version of the control-flow graph called nondeterministic parallel control flow net, and a program dependence net (PDN) as an extension of the PDG to deal with concurrent data dependences. The PDN has additional edges compared to the PDG, for determining selection, synchronization and communication dependences. These dependences needs additional measures to take into consideration, and they are out of the scope of this thesis.
 
 \section{Summary and further works}
 
+During the research about the topic of the thesis I have studied different aspects of how a static analyis tool can help the development of an application. There are numerous tools available today to aid programmers in their tasks, and to create programs faster, more efficiently, and to make debugging easier. There are quite a few only within the Clang/LLVM project itself. With it's LibTooling library it enables us to build tools which can analyze program codes to find errors and potential bugs. During compilation, graph structures are formed from the code, most importantly the Abstract Syntax Tree and the control-flow graph. With them, finding semantical errors or data-flow information abstracts to a graph-based problem.
+
+Slicing is one kind of data-flow problem, which can be solved with creating another graph structure from the AST and perform graph search algorithms for getting reachable nodes out of it. With the help of the ASTMatchers library of Clang, I could develop an algorithm for building the PDG and slicing C++ functions statically.
+
+However, further work can be done in this subject. Weiser extended slicing to whole programs with multiple functions, which requires the System Dependence Graph (SDG) to be built, which has PDG for every function and a several sets for keeping track of the function parameter variables, the returning variables and their impact on the overall data flow of the program. In object-oriented C++ code, there are more can be done to slice correctly, to track inheritance relations between objects and so on. 
+
+But the prototype can be a base for a code analysis tool which embeds into an IDE, like Visual Studio or QtCreator for instance, by using their API for handling user interaction in their editor. 
+
+The main focus of this thesis was a research for implementing an abstract slicing algorithm to handle real-world code. Overall, with doing the thesis I have gained a deeper understanding of the compilation process, the Clang library, the field of static analysis tools, and also with the features of C++. I will be able to use all these experience in my further work. 
 
 
 
@@ -1045,6 +1057,13 @@ There is another language feature left out of the algorithm: the datatypes which
 \bibitem{Frama-C-slicing}
   \emph{Slicing plug-in for Frama-C}
   \url{https://frama-c.com/slicing.html}
+  
+\bibitem{Slicing-concurrent}
+  Cheng, Jingde,
+  \emph{Slicing concurrent programs},
+  Automated and Algorithmic Debugging, 
+  223-240,
+  1993.
 
 \end{thebibliography}
 
