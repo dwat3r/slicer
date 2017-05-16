@@ -9,10 +9,10 @@ CONFIG -= app_bundle
 
 TEMPLATE = app
 
-SOURCES += main.cpp \
-    slicer.cpp \
-    relations.cpp \
-    relations_builder.cpp
+SOURCES += src/main.cpp \
+        src/pdg.cpp \
+        src/pdgBuilder.cpp \
+        src/pdgBuilderAction.cpp
 
 CXXFLAGS=$$system(llvm-config --cxxflags)
 LDFLAGS=$$system(llvm-config --ldflags --libs --system-libs)
@@ -34,10 +34,11 @@ QMAKE_LIBS+= $$LDFLAGS \
   -lclangAST \
   -lclangLex \
   -lclangBasic\
-  -lclangTooling
+  -lclangTooling \
+  -lclangASTMatchers
 
-HEADERS += \
-    slicer.h \
-    relations.h \
-    relations_builder.h \
-    relation_ops.h
+HEADERS += include/pdg.h \
+        include/pdgBuilder.h \
+        include/pdgBuilderAction.h
+
+INCLUDEPATH += include/
