@@ -1,0 +1,25 @@
+digraph {
+rankdir=TD;
+2[label="{}"]; 
+2 -> 3[label="T",style=bold];
+3[label="int x = 0;"];
+3 -> 0;
+3 -> 5;
+3 -> 6;
+2 -> 4[label="T",style=bold];
+4[label="int y = 1;"];
+4 -> 0;
+4 -> 5;
+2 -> 0[label="T",style=bold];
+0[label="while (x > y)"]; 
+0 -> 1[label="T",style=bold];
+1[label="{}"]; 
+1 -> 5[label="T",style=bold];
+5[label="y = x"];
+5 -> 0;
+1 -> 6[label="T",style=bold];
+6[label="x = 2"];
+6 -> 0;
+6 -> 5;
+{ rank=same 3 4 0 }{ rank=same 1 }{ rank=same 5 6 }
+}
