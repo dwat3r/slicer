@@ -15,12 +15,12 @@ AST_MATCHER(UnaryOperator, isIncrementDecrementOp) {
 }
 std::string getFile(const clang::Stmt* stmt, clang::SourceManager* sm) {
   assert(!(stmt == nullptr || sm == nullptr));
-  clang::FileID fileID = sm->getFileID(stmt->getLocStart());
+  clang::FileID fileID = sm->getFileID(stmt->getBeginLoc());
   const clang::FileEntry* fileEntry = sm->getFileEntryForID(fileID);
   if (!fileEntry) {
     return "";
   }
-  return fileEntry->getName();  
+  return fileEntry->getName().str();  
 }
 }
 void PDGBuilder::dumpDots() {
@@ -52,8 +52,8 @@ bool PDGBuilder::slicingStmtPos::refined(unsigned int sl,unsigned int sc,unsigne
   return ret;
 }
 void PDGBuilder::setSlicingStmt(const ast_matchers::MatchFinder::MatchResult &result, const clang::Stmt* astRef) {
-  clang::FullSourceLoc start = result.Context->getFullLoc(astRef->getLocStart());
-  clang::FullSourceLoc end = result.Context->getFullLoc(astRef->getLocEnd());
+  clang::FullSourceLoc start = result.Context->getFullLoc(astRef->getBeginLoc());
+  clang::FullSourceLoc end = result.Context->getFullLoc(astRef->getEndLoc());
   
   if (start.getSpellingLineNumber()   <= lineNo &&
       start.getSpellingColumnNumber() <= colNo  &&

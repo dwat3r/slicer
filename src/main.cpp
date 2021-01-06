@@ -48,7 +48,7 @@ int main(int argc, const char **argv) {
                  OptionsParser.getSourcePathList());
 
   auto Factory =
-    llvm::make_unique<clang::slicer::PDGBuilderActionFactory>(
+    std::make_unique<clang::slicer::PDGBuilderActionFactory>(
       FuncName,LineNo,ColNo,DumpDot);
   return Tool.run(Factory.get());
 }

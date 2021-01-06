@@ -39,8 +39,8 @@ public:
     , dumpDot(_dumpDot)
   {}
 
-  clang::FrontendAction *create() override {
-    return new PDGBuilderAction(funcName, lineNo, colNo, dumpDot);
+  std::unique_ptr<clang::FrontendAction> create() override {
+    return std::make_unique<PDGBuilderAction>(funcName, lineNo, colNo, dumpDot);
   }
 
 private:

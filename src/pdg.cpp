@@ -240,10 +240,10 @@ std::string Statement::EdgeToStr(Statement::Edge e) {
 std::string Statement::stmt2str(const clang::Stmt *s, clang::SourceManager &sm) {
   // (T, U) => "T,,"
   std::string text = clang::Lexer::getSourceText(clang::CharSourceRange::getTokenRange(s->getSourceRange()), 
-    sm, clang::LangOptions(), 0);
+    sm, clang::LangOptions(), 0).str();
   if (text.at(text.size() - 1) == ',')
     return clang::Lexer::getSourceText(clang::CharSourceRange::getCharRange(s->getSourceRange()), 
-      sm, clang::LangOptions(), 0);
+      sm, clang::LangOptions(), 0).str();
   return text;
 }
 std::string Statement::firstOnly(const clang::Stmt *s, const clang::Stmt *s2, clang::SourceManager &sm) {
