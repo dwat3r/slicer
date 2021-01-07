@@ -1,0 +1,23 @@
+digraph {
+rankdir=TD;
+2[label="{}"]; 
+2 -> 3[label="T",style=bold];
+3[label="long int r = x;",color=red];
+3 -> 1[color=red];
+2 -> 4[label="T",style=bold];
+4[label="int not_r = 1;"];
+2 -> 5[label="T",style=bold];
+5[label="int definitely_not_r = 2;"];
+2 -> 0[label="T",style=bold];
+0[label="while (--x >=2)
+		"]; 
+0 -> 1[label="T",style=bold];
+1[label="r *= x",color=red];
+1 -> 7[color=red];
+2 -> 6[label="T",style=bold];
+6[label="long still_not_r = 3;"];
+2 -> 7[label="T",style=bold];
+7[label="return r",color=red];
+2 -> 0;
+{ rank=same 3 4 5 0 6 7 }{ rank=same 1 }
+}

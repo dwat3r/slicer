@@ -1,1 +1,1 @@
-for %%v in (*.dot) do dot -Tpng "%%v" -o "%%~nv.png"
+for %%v in (*.dot) do "C:\Program Files\Graphviz 2.44.1\bin\dot.exe" -Tpng "%%v" -o "%%~nv.png"
