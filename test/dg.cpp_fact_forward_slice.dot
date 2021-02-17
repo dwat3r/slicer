@@ -19,5 +19,7 @@ rankdir=TD;
 2 -> 7[label="T",style=bold];
 7[label="return r",color=red];
 2 -> 0;
+2 -> 1;
+2 -> 3;
 { rank=same 3 4 5 0 6 7 }{ rank=same 1 }
 }
