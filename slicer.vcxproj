@@ -101,7 +101,7 @@ psapi.lib shell32.lib ole32.lib uuid.lib  version.lib C:\llvm\bin\Debug\lib\clan
       </AdditionalOptions>
       <DisableSpecificWarnings>4530;4146</DisableSpecificWarnings>
       <ExceptionHandling>false</ExceptionHandling>
-      <AdditionalIncludeDirectories>C:\Users\Denis\source\repos\slicer\include;C:\Users\Denis\llvm\llvm-project\clang\include;C:\Users\Denis\llvm\llvm-project\llvm\include;C:\Users\Denis\llvm\llvm-project\build-x64\include;C:\Users\Denis\llvm\llvm-project\build-x64\tools\clang\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
     <Link>
