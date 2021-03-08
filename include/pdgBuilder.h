@@ -17,71 +17,71 @@
   */
 namespace clang
 {
-	namespace slicer
-	{
-		class PDGBuilder : public ast_matchers::MatchFinder::MatchCallback
-		{
-		public:
-			struct slicingStmtPos
-			{
-				slicingStmtPos() {}
-				
-				slicingStmtPos(int _sline, int _scol, int _eline, int _ecol) : sline(_sline), scol(_scol),
-				                                                               eline(_eline), ecol(_ecol)
-				{
-				}
+  namespace slicer
+  {
+    class PDGBuilder : public ast_matchers::MatchFinder::MatchCallback
+    {
+    public:
+      struct slicingStmtPos
+      {
+        slicingStmtPos() = default;
 
-				unsigned int sline{0};
-				unsigned int scol{0};
-				unsigned int eline{INT_MAX};
-				unsigned int ecol{INT_MAX};
-				bool refined(unsigned int sl, unsigned int sc, unsigned int el, unsigned int ec);
-			};
+        slicingStmtPos(int _sline, int _scol, int _eline, int _ecol) : sline(_sline), scol(_scol),
+                                                                       eline(_eline), ecol(_ecol)
+        {
+        }
 
-			explicit PDGBuilder() = default;
+        unsigned int sline{0};
+        unsigned int scol{0};
+        unsigned int eline{INT_MAX};
+        unsigned int ecol{INT_MAX};
+        bool refined(unsigned int sl, unsigned int sc, unsigned int el, unsigned int ec);
+      };
 
-			explicit PDGBuilder(std::string _funcName,
-			                    int _lineNo,
-			                    int _colNo,
-			                    bool _dumpDot) : funcName(std::move(std::move(_funcName)))
-			                                     , lineNo(_lineNo)
-			                                     , colNo(_colNo)
-			                                     , dumpDot(_dumpDot)
-			{
-			}
+      explicit PDGBuilder() = default;
 
-			void registerMatchers(ast_matchers::MatchFinder* MatchFinder);
+      explicit PDGBuilder(std::string _funcName,
+                          int _lineNo,
+                          int _colNo,
+                          bool _dumpDot) : funcName(std::move(std::move(_funcName)))
+                                           , lineNo(_lineNo)
+                                           , colNo(_colNo)
+                                           , dumpDot(_dumpDot)
+      {
+      }
 
-			void run(const ast_matchers::MatchFinder::MatchResult& result) override;
+      void registerMatchers(ast_matchers::MatchFinder* MatchFinder);
 
-			void onEndOfTranslationUnit() override;
+      void run(const ast_matchers::MatchFinder::MatchResult& result) override;
 
-		private:
-			bool hasStmt(const Stmt* value)
-			{
-				return stmt_map.find(value) != stmt_map.end();
-			}
+      void onEndOfTranslationUnit() override;
 
-			static FullSourceLoc getLoc(const ast_matchers::MatchFinder::MatchResult& result, const Stmt* astRef)
-			{
-				return result.Context->getFullLoc(astRef->getBeginLoc());
-			}
+    private:
+      bool hasStmt(const Stmt* value)
+      {
+        return stmt_map.find(value) != stmt_map.end();
+      }
 
-			void setSlicingStmt(const ast_matchers::MatchFinder::MatchResult& result, const Stmt* astRef);
-			void dumpDots();
-			// tool params
-			const std::string funcName;
-			unsigned int lineNo = 0;
-			unsigned int colNo = 0;
-			bool dumpDot = false;
-			const Stmt* slicingStmt = nullptr;
-			slicingStmtPos slicePos;
-			SourceManager* sm = nullptr;
-			// the function
-			Stmt* root = nullptr;
-			// We store the Statements in a map.
-			std::map<const Stmt*, Statement*> stmt_map;
-		};
-	} // namespace slicer
+      static FullSourceLoc getLoc(const ast_matchers::MatchFinder::MatchResult& result, const Stmt* astRef)
+      {
+        return result.Context->getFullLoc(astRef->getBeginLoc());
+      }
+
+      void setSlicingStmt(const ast_matchers::MatchFinder::MatchResult& result, const Stmt* astRef);
+      void dumpDots();
+      // tool params
+      const std::string funcName;
+      unsigned int lineNo = 0;
+      unsigned int colNo = 0;
+      bool dumpDot = false;
+      const Stmt* slicingStmt = nullptr;
+      slicingStmtPos slicePos;
+      SourceManager* sm = nullptr;
+      // the function
+      Stmt* root = nullptr;
+      // We store the Statements in a map.
+      std::map<const Stmt*, Statement*> stmt_map;
+    };
+  } // namespace slicer
 } // namespace clang
 #endif // PDGBUILDER_H

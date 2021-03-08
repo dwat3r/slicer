@@ -41,12 +41,12 @@ static cl::opt<bool> DumpDot("dump-dot",
 
 int main(int argc, const char** argv)
 {
-	CommonOptionsParser OptionsParser(argc, argv, Slicer);
-	ClangTool Tool(OptionsParser.getCompilations(),
-	               OptionsParser.getSourcePathList());
+  CommonOptionsParser OptionsParser(argc, argv, Slicer);
+  ClangTool Tool(OptionsParser.getCompilations(),
+                 OptionsParser.getSourcePathList());
 
-	const auto Factory =
-		std::make_unique<clang::slicer::PDGBuilderActionFactory>(
-			FuncName, LineNo, ColNo, DumpDot);
-	return Tool.run(Factory.get());
+  const auto Factory =
+    std::make_unique<clang::slicer::PDGBuilderActionFactory>(
+      FuncName, LineNo, ColNo, DumpDot);
+  return Tool.run(Factory.get());
 }
