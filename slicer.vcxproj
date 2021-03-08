@@ -21,32 +21,32 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{51009651-1C0D-489C-945A-220D2783C945}</ProjectGuid>
     <RootNamespace>slicer</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.14393.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -72,10 +72,7 @@
     <IncludePath>C:\llvm\bin\tools\clang\include;C:\llvm\include;C:\llvm\tools\clang\include;C:\llvm\bin\include;$(ProjectDir)include;$(IncludePath)</IncludePath>
     <LibraryPath>C:\llvm\bin\tools\clang\lib;C:\llvm\lib;C:\llvm\tools\clang\lib;C:\llvm\bin\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(ProjectDir)include;C:\llvm\tools\clang\include;C:\llvm\include;C:\llvm\bin\tools\clang\include;C:\llvm\bin\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\llvm\tools\clang\lib;C:\llvm\lib;C:\llvm\bin\tools\clang\lib;C:\llvm\bin\lib;C:\llvm\bin\Debug\lib;$(LibraryPath)</LibraryPath>
-  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
@@ -100,18 +97,21 @@ psapi.lib shell32.lib ole32.lib uuid.lib  version.lib C:\llvm\bin\Debug\lib\clan
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalOptions>-IC:\llvm\bin\Debug\include /DWIN32 /D_WINDOWS   /W4 -wd4141 -wd4146 -wd4180 -wd4244 -wd4258 -wd4267 -wd4291 -wd4345 -wd4351 -wd4355 -wd4456 -wd4457 -wd4458 -wd4459 -wd4503 -wd4624 -wd4722 -wd4800 -wd4100 -wd4127 -wd4512 -wd4505 -wd4610 -wd4510 -wd4702 -wd4245 -wd4706 -wd4310 -wd4701 -wd4703 -wd4389 -wd4611 -wd4805 -wd4204 -wd4577 -wd4091 -wd4592 -wd4319 -wd4324 -w14062 -we4238 /Zc:inline /Zc:strictStrings /Oi /Zc:rvalueCast   /EHs-c- /GR-  -D_CRT_SECURE_NO_DEPRECATE -D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE -D_CRT_NONSTDC_NO_WARNINGS -D_SCL_SECURE_NO_DEPRECATE -D_SCL_SECURE_NO_WARNINGS -DUNICODE -D_UNICODE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS
- %(AdditionalOptions)</AdditionalOptions>
-      <DisableSpecificWarnings>4530</DisableSpecificWarnings>
+      <AdditionalOptions>
+      </AdditionalOptions>
+      <DisableSpecificWarnings>4530;4146</DisableSpecificWarnings>
       <ExceptionHandling>false</ExceptionHandling>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
     <Link>
-      <AdditionalOptions>-LIBPATH:C:\llvm\bin\Debug\lib 
-C:\llvm\bin\Debug\lib\LLVMInterpreter.lib C:\llvm\bin\Debug\lib\LLVMTableGen.lib C:\llvm\bin\Debug\lib\LLVMLibDriver.lib C:\llvm\bin\Debug\lib\LLVMOption.lib C:\llvm\bin\Debug\lib\LLVMSymbolize.lib C:\llvm\bin\Debug\lib\LLVMDebugInfoPDB.lib C:\llvm\bin\Debug\lib\LLVMDebugInfoDWARF.lib C:\llvm\bin\Debug\lib\LLVMOrcJIT.lib C:\llvm\bin\Debug\lib\LLVMLineEditor.lib C:\llvm\bin\Debug\lib\LLVMObjectYAML.lib C:\llvm\bin\Debug\lib\LLVMMIRParser.lib C:\llvm\bin\Debug\lib\LLVMCoverage.lib C:\llvm\bin\Debug\lib\LLVMLTO.lib C:\llvm\bin\Debug\lib\LLVMPasses.lib C:\llvm\bin\Debug\lib\LLVMObjCARCOpts.lib C:\llvm\bin\Debug\lib\LLVMX86Disassembler.lib C:\llvm\bin\Debug\lib\LLVMX86AsmParser.lib C:\llvm\bin\Debug\lib\LLVMX86CodeGen.lib C:\llvm\bin\Debug\lib\LLVMGlobalISel.lib C:\llvm\bin\Debug\lib\LLVMSelectionDAG.lib C:\llvm\bin\Debug\lib\LLVMAsmPrinter.lib C:\llvm\bin\Debug\lib\LLVMDebugInfoCodeView.lib C:\llvm\bin\Debug\lib\LLVMDebugInfoMSF.lib C:\llvm\bin\Debug\lib\LLVMCodeGen.lib C:\llvm\bin\Debug\lib\LLVMX86Desc.lib C:\llvm\bin\Debug\lib\LLVMMCDisassembler.lib C:\llvm\bin\Debug\lib\LLVMX86Info.lib C:\llvm\bin\Debug\lib\LLVMX86AsmPrinter.lib C:\llvm\bin\Debug\lib\LLVMX86Utils.lib C:\llvm\bin\Debug\lib\LLVMMCJIT.lib C:\llvm\bin\Debug\lib\LLVMExecutionEngine.lib C:\llvm\bin\Debug\lib\LLVMTarget.lib C:\llvm\bin\Debug\lib\LLVMRuntimeDyld.lib C:\llvm\bin\Debug\lib\LLVMCoroutines.lib C:\llvm\bin\Debug\lib\LLVMipo.lib C:\llvm\bin\Debug\lib\LLVMInstrumentation.lib C:\llvm\bin\Debug\lib\LLVMVectorize.lib C:\llvm\bin\Debug\lib\LLVMScalarOpts.lib C:\llvm\bin\Debug\lib\LLVMLinker.lib C:\llvm\bin\Debug\lib\LLVMIRReader.lib C:\llvm\bin\Debug\lib\LLVMAsmParser.lib C:\llvm\bin\Debug\lib\LLVMInstCombine.lib C:\llvm\bin\Debug\lib\LLVMTransformUtils.lib C:\llvm\bin\Debug\lib\LLVMBitWriter.lib C:\llvm\bin\Debug\lib\LLVMAnalysis.lib C:\llvm\bin\Debug\lib\LLVMObject.lib C:\llvm\bin\Debug\lib\LLVMMCParser.lib C:\llvm\bin\Debug\lib\LLVMMC.lib C:\llvm\bin\Debug\lib\LLVMBitReader.lib C:\llvm\bin\Debug\lib\LLVMProfileData.lib C:\llvm\bin\Debug\lib\LLVMCore.lib C:\llvm\bin\Debug\lib\LLVMSupport.lib C:\llvm\bin\Debug\lib\LLVMDemangle.lib
-psapi.lib shell32.lib ole32.lib uuid.lib
-   C:\llvm\bin\Debug\lib\clangFrontend.lib  C:\llvm\bin\Debug\lib\clangParse.lib  C:\llvm\bin\Debug\lib\clangSema.lib  C:\llvm\bin\Debug\lib\clangStaticAnalyzerFrontend.lib  C:\llvm\bin\Debug\lib\clangStaticAnalyzerCheckers.lib  C:\llvm\bin\Debug\lib\clangStaticAnalyzerCore.lib  C:\llvm\bin\Debug\lib\clangDriver.lib  C:\llvm\bin\Debug\lib\clangEdit.lib  C:\llvm\bin\Debug\lib\clangAnalysis.lib  C:\llvm\bin\Debug\lib\clangSerialization.lib  C:\llvm\bin\Debug\lib\clangAST.lib  C:\llvm\bin\Debug\lib\clangLex.lib  C:\llvm\bin\Debug\lib\clangBasic.lib  C:\llvm\bin\Debug\lib\clangTooling.lib C:\llvm\bin\Debug\lib\clangASTMatchers.lib version.lib %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>
+      </AdditionalOptions>
       <SubSystem>Console</SubSystem>
       <TargetMachine>MachineX64</TargetMachine>
+      <AdditionalLibraryDirectories>C:\llvm\bin\Debug\lib
+</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Version.lib;clangAnalysis.lib;clangARCMigrate.lib;clangAST.lib;clangASTMatchers.lib;clangBasic.lib;clangCodeGen.lib;clangCrossTU.lib;clangDependencyScanning.lib;clangDirectoryWatcher.lib;clangDriver.lib;clangDynamicASTMatchers.lib;clangEdit.lib;clangFormat.lib;clangFrontend.lib;clangFrontendTool.lib;clangHandleCXX.lib;clangHandleLLVM.lib;clangIndex.lib;clangLex.lib;clangParse.lib;clangRewrite.lib;clangRewriteFrontend.lib;clangSema.lib;clangSerialization.lib;clangStaticAnalyzerCheckers.lib;clangStaticAnalyzerCore.lib;clangStaticAnalyzerFrontend.lib;clangTesting.lib;clangTooling.lib;clangToolingASTDiff.lib;clangToolingCore.lib;clangToolingInclusions.lib;clangToolingRefactoring.lib;clangToolingSyntax.lib;clangTransformer.lib;libclang.lib;LLVMAggressiveInstCombine.lib;LLVMAnalysis.lib;LLVMAsmParser.lib;LLVMAsmPrinter.lib;LLVMBinaryFormat.lib;LLVMBitReader.lib;LLVMBitstreamReader.lib;LLVMBitWriter.lib;LLVMCFGuard.lib;LLVMCodeGen.lib;LLVMCore.lib;LLVMCoroutines.lib;LLVMCoverage.lib;LLVMDebugInfoCodeView.lib;LLVMDebugInfoDWARF.lib;LLVMDebugInfoMSF.lib;LLVMDemangle.lib;LLVMExecutionEngine.lib;LLVMExtensions.lib;LLVMFrontendOpenMP.lib;LLVMGlobalISel.lib;LLVMInstCombine.lib;LLVMInstrumentation.lib;LLVMipo.lib;LLVMIRReader.lib;LLVMLinker.lib;LLVMLTO.lib;LLVMMC.lib;LLVMMCDisassembler.lib;LLVMMCJIT.lib;LLVMMCParser.lib;LLVMObjCARCOpts.lib;LLVMObject.lib;LLVMOption.lib;LLVMPasses.lib;LLVMProfileData.lib;LLVMRemarks.lib;LLVMRuntimeDyld.lib;LLVMScalarOpts.lib;LLVMSelectionDAG.lib;LLVMSupport.lib;LLVMTableGen.lib;LLVMTableGenGlobalISel.lib;LLVMTarget.lib;LLVMTextAPI.lib;LLVMTransformUtils.lib;LLVMVectorize.lib;LLVMX86AsmParser.lib;LLVMX86CodeGen.lib;LLVMX86Desc.lib;LLVMX86Disassembler.lib;LLVMX86Info.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
